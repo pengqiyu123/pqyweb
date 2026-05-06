@@ -105,6 +105,19 @@
             z-index: 1;
         }
 
+        .cover-wrapper.passive {
+            pointer-events: none;
+        }
+
+        .cover-wrapper.scene-hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .cover-wrapper.passive .cover-disclaimer {
+            pointer-events: none;
+        }
+
         /* Glassmorphism Card */
         .cover-card {
             position: relative;
@@ -167,6 +180,44 @@
             margin-bottom: 2.5rem;
             line-height: 1.6;
             font-weight: 300;
+        }
+
+        .background-controls {
+            position: fixed;
+            top: 1.2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            display: inline-flex;
+            gap: 0.5rem;
+            padding: 0.45rem;
+            border-radius: 999px;
+            background: rgba(9, 12, 26, 0.48);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(18px);
+            box-shadow: 0 18px 35px rgba(0, 0, 0, 0.24);
+        }
+
+        .view-switch-btn {
+            border: 0;
+            border-radius: 999px;
+            padding: 0.72rem 1.1rem;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            transition: all 0.25s ease;
+        }
+
+        .view-switch-btn.active {
+            color: #fff;
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.3), rgba(165, 180, 252, 0.26));
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+        }
+
+        .cover-visibility-btn {
+            margin-left: 0.1rem;
+            border-radius: 999px;
+            padding: 0.7rem 1rem;
         }
 
         /* Update Log */
@@ -302,6 +353,395 @@
             color: var(--text-secondary);
         }
 
+        .character-background {
+            position: fixed;
+            inset: 0;
+            z-index: 2;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 2rem 1rem 0;
+            background:
+                radial-gradient(circle at top right, rgba(255, 255, 255, 0.16), transparent 34%),
+                linear-gradient(145deg, #0f1437 0%, #17255d 38%, #364cc7 100%);
+        }
+
+        .character-background.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .character-background::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 22px 22px;
+            mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.72), transparent 88%);
+            pointer-events: none;
+        }
+
+        .character-stage-shell {
+            position: relative;
+            width: min(1280px, calc(100vw - 64px));
+            min-height: min(760px, calc(100vh - 84px));
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .scene-brand {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 1rem;
+            position: absolute;
+            left: 1.5rem;
+            top: 1.5rem;
+        }
+
+        .scene-brand-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+            backdrop-filter: blur(8px);
+        }
+
+        .scene-brand-copy {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: rgba(255, 255, 255, 0.88);
+            font-size: 0.95rem;
+        }
+
+        .scene-brand-copy strong {
+            display: block;
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .scene-brand-copy span {
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 0.82rem;
+        }
+
+        .scene-stage {
+            position: relative;
+            z-index: 1;
+            height: 390px;
+            width: 456px;
+            margin-top: 3.5rem;
+            transform: translate(-120px, 44px) scale(1.12);
+            transform-origin: center bottom;
+        }
+
+        .scene-login-panel {
+            position: absolute;
+            right: 48px;
+            top: 92px;
+            z-index: 6;
+            width: min(360px, calc(100vw - 96px));
+            pointer-events: auto;
+        }
+
+        .character {
+            position: absolute;
+            bottom: 0;
+            transform-origin: bottom center;
+            transition: transform 0.35s ease, height 0.45s ease;
+        }
+
+        .character-eyes {
+            position: absolute;
+            display: flex;
+            transition: transform 0.2s ease;
+        }
+
+        .eye {
+            width: 20px;
+            height: 20px;
+            border-radius: 999px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: height 0.12s ease;
+        }
+
+        .eye.pupil-only {
+            background: transparent;
+            overflow: visible;
+        }
+
+        .eye.blink {
+            height: 3px;
+        }
+
+        .pupil {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #232323;
+            transition: transform 0.12s ease-out;
+        }
+
+        .pupil.large {
+            width: 12px;
+            height: 12px;
+        }
+
+        .character-purple {
+            left: 72px;
+            width: 182px;
+            height: 398px;
+            border-radius: 12px 12px 0 0;
+            background: #6c3ff5;
+            z-index: 1;
+        }
+
+        .character-black {
+            left: 240px;
+            width: 124px;
+            height: 310px;
+            border-radius: 10px 10px 0 0;
+            background: #272727;
+            z-index: 2;
+        }
+
+        .character-orange {
+            left: 0;
+            width: 240px;
+            height: 198px;
+            border-radius: 130px 130px 0 0;
+            background: #ff9b6b;
+            z-index: 3;
+        }
+
+        .character-yellow {
+            left: 314px;
+            width: 142px;
+            height: 230px;
+            border-radius: 78px 78px 0 0;
+            background: #e8d754;
+            z-index: 4;
+        }
+
+        .character-yellow .mouth {
+            position: absolute;
+            width: 72px;
+            height: 4px;
+            border-radius: 999px;
+            background: #232323;
+            left: 36px;
+            top: 92px;
+            transition: transform 0.12s ease-out;
+        }
+
+        .scene-highlight {
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -35%);
+            background: rgba(255, 255, 255, 0.13);
+            filter: blur(74px);
+            pointer-events: none;
+        }
+
+        .cover-card.is-hidden {
+            opacity: 0;
+            transform: translateY(18px) scale(0.98);
+            pointer-events: none;
+        }
+
+        .cover-card {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .demo-login-shell {
+            border-radius: 22px;
+            padding: 1.5rem;
+            background: rgba(13, 21, 62, 0.74);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(18px);
+        }
+
+        .demo-login-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            border-radius: 999px;
+            padding: 0.35rem 0.75rem;
+            background: rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.78);
+            font-size: 0.78rem;
+            margin-bottom: 1rem;
+        }
+
+        .demo-login-shell h3 {
+            margin: 0 0 0.45rem;
+            font-size: 1.6rem;
+            color: #fff;
+        }
+
+        .demo-login-shell p {
+            margin: 0 0 1.3rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .demo-login-form {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .demo-field {
+            display: grid;
+            gap: 0.42rem;
+        }
+
+        .demo-field label {
+            font-size: 0.84rem;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .demo-field input {
+            width: 100%;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(3, 6, 18, 0.84);
+            color: #fff;
+            padding: 0.9rem 1rem;
+            font-size: 0.94rem;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .demo-field input:focus {
+            border-color: rgba(96, 165, 250, 0.72);
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.16);
+            transform: translateY(-1px);
+        }
+
+        .demo-password-wrap {
+            position: relative;
+        }
+
+        .demo-password-toggle {
+            position: absolute;
+            right: 0.9rem;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 0;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.62);
+            font-size: 1rem;
+        }
+
+        .demo-login-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            color: var(--text-secondary);
+            font-size: 0.82rem;
+        }
+
+        .demo-remember {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .demo-remember input {
+            accent-color: #7dd3fc;
+        }
+
+        .demo-login-link {
+            color: #a5cfff;
+            text-decoration: none;
+        }
+
+        .demo-login-message {
+            display: none;
+            padding: 0.85rem 0.95rem;
+            border-radius: 14px;
+            border: 1px solid rgba(248, 113, 113, 0.32);
+            background: rgba(127, 29, 29, 0.28);
+            color: #fecaca;
+            font-size: 0.88rem;
+        }
+
+        .demo-login-message.show {
+            display: block;
+        }
+
+        .demo-login-message.success {
+            border-color: rgba(56, 189, 248, 0.35);
+            background: rgba(12, 74, 110, 0.34);
+            color: #bae6fd;
+        }
+
+        .demo-login-submit,
+        .demo-login-alt {
+            width: 100%;
+            border-radius: 16px;
+            padding: 0.92rem 1rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .demo-login-submit {
+            border: 0;
+            background: linear-gradient(135deg, #6ea8ff, #8b7dff);
+            color: #fff;
+            box-shadow: 0 14px 28px rgba(86, 114, 255, 0.24);
+        }
+
+        .demo-login-alt {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.04);
+            color: #fff;
+        }
+
+        .demo-login-submit:hover,
+        .demo-login-alt:hover {
+            transform: translateY(-2px);
+        }
+
+        .demo-login-footer {
+            margin-top: 1rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.84rem;
+        }
+
+        .demo-login-footer a {
+            color: #fff;
+            text-decoration: none;
+        }
+
         /* Mobile Adjustments */
         @media (max-width: 768px) {
             .cover-card {
@@ -311,6 +751,27 @@
 
             .cover-title {
                 font-size: 1.8rem;
+            }
+
+            .background-controls {
+                width: calc(100vw - 1.5rem);
+                max-width: 100%;
+                top: 0.75rem;
+                padding: 0.4rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .scene-stage {
+                transform: translate(-36px, 16px) scale(0.82);
+                transform-origin: center bottom;
+                width: 560px;
+            }
+
+            .scene-login-panel {
+                right: 12px;
+                top: 116px;
+                width: min(320px, calc(100vw - 32px));
             }
         }
     </style>
@@ -323,6 +784,96 @@
     <!-- Loading -->
     <div id="loading" class="loading">
         <div class="loading-spinner"></div>
+    </div>
+
+    <div id="characterBackground" class="character-background">
+        <div class="character-stage-shell">
+            <div class="scene-brand">
+                <div class="scene-brand-copy">
+                    <div class="scene-brand-badge"><i class="fas fa-sparkles"></i></div>
+                    <div>
+                        <strong>煜的工具站</strong>
+                        <span>角色互动模式</span>
+                    </div>
+                </div>
+            </div>
+            <div class="scene-highlight"></div>
+            <div class="scene-stage" id="sceneStage">
+                <div class="character character-purple" data-character="purple">
+                    <div class="character-eyes" style="left:45px; top:42px; gap:26px;">
+                        <div class="eye" data-eye="purple-left"><div class="pupil" data-pupil="purple-left"></div></div>
+                        <div class="eye" data-eye="purple-right"><div class="pupil" data-pupil="purple-right"></div></div>
+                    </div>
+                </div>
+                <div class="character character-black" data-character="black">
+                    <div class="character-eyes" style="left:26px; top:30px; gap:20px;">
+                        <div class="eye" data-eye="black-left"><div class="pupil" data-pupil="black-left"></div></div>
+                        <div class="eye" data-eye="black-right"><div class="pupil" data-pupil="black-right"></div></div>
+                    </div>
+                </div>
+                <div class="character character-orange" data-character="orange">
+                    <div class="character-eyes" style="left:82px; top:92px; gap:34px;">
+                        <div class="eye pupil-only"><div class="pupil large" data-pupil="orange-left"></div></div>
+                        <div class="eye pupil-only"><div class="pupil large" data-pupil="orange-right"></div></div>
+                    </div>
+                </div>
+                <div class="character character-yellow" data-character="yellow">
+                    <div class="character-eyes" style="left:52px; top:40px; gap:26px;">
+                        <div class="eye pupil-only"><div class="pupil large" data-pupil="yellow-left"></div></div>
+                        <div class="eye pupil-only"><div class="pupil large" data-pupil="yellow-right"></div></div>
+                    </div>
+                    <div class="mouth" data-mouth="yellow"></div>
+                </div>
+            </div>
+            <div class="scene-login-panel">
+                <aside class="demo-login-shell">
+                    <div class="demo-login-badge">
+                        <i class="fas fa-sparkles"></i>
+                        <span>角色互动演示面板</span>
+                    </div>
+                    <h3>Welcome back!</h3>
+                    <p>保留模拟账号密码交互，用来驱动角色动作。这里是背景场景的一部分。</p>
+                    <form class="demo-login-form" id="demoLoginForm">
+                        <div class="demo-field">
+                            <label for="demoEmail">Email</label>
+                            <input id="demoEmail" type="email" placeholder="anna@gmail.com" autocomplete="off">
+                        </div>
+                        <div class="demo-field">
+                            <label for="demoPassword">Password</label>
+                            <div class="demo-password-wrap">
+                                <input id="demoPassword" type="password" placeholder="••••••••">
+                                <button type="button" class="demo-password-toggle" id="demoPasswordToggle" aria-label="显示或隐藏密码">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="demo-login-meta">
+                            <label class="demo-remember" for="demoRemember">
+                                <input id="demoRemember" type="checkbox">
+                                <span>Remember for 30 days</span>
+                            </label>
+                            <a href="#" class="demo-login-link">Forgot password?</a>
+                        </div>
+                        <div id="demoLoginMessage" class="demo-login-message"></div>
+                        <button type="submit" class="demo-login-submit" id="demoLoginSubmit">Log in</button>
+                        <button type="button" class="demo-login-alt">
+                            <i class="fas fa-envelope"></i>
+                            Log in with Google
+                        </button>
+                    </form>
+                    <div class="demo-login-footer">
+                        Don't have an account?
+                        <a href="#">Sign up</a>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </div>
+
+    <div class="background-controls" aria-label="背景控制">
+        <button type="button" class="view-switch-btn active" data-bg-mode="particles">粒子背景</button>
+        <button type="button" class="view-switch-btn" data-bg-mode="characters">角色互动</button>
+        <button type="button" class="btn btn-sm btn-outline-light cover-visibility-btn" id="coverVisibilityBtn">隐藏窗口</button>
     </div>
 
     <div class="cover-wrapper">
@@ -340,14 +891,12 @@
                         <i class="fas fa-chevron-down ms-1 update-log-toggle-icon"></i>
                     </button>
                 </div>
-                <!-- 最新一条 -->
                 <ul class="update-log-list">
                     <li>
                         <span class="update-log-date">2025-12-13</span>
                         新增"音乐钢琴键"交互式钢琴模拟器：支持电脑键盘和手机触控演奏，2个八度音阶（C4到C6），使用Web Audio API生成钢琴音色，模拟真实钢琴的指数衰减特性，支持主动停止和自动停止，手机竖屏自动旋转90度横屏显示。
                     </li>
                 </ul>
-                <!-- 历史记录 -->
                 <div id="updateLogHistory" class="update-log-history">
                     <ul class="update-log-list">
                         <li>
@@ -417,7 +966,13 @@
             }
 
             initUpdateLogToggle();
-            initCanvasAnimation();
+            const backgroundController = initBackgroundModes();
+            if (backgroundController) {
+                initCharacterBackground(backgroundController);
+                initCanvasAnimation(backgroundController);
+            } else {
+                initCanvasAnimation();
+            }
         });
 
         function initUpdateLogToggle() {
@@ -434,8 +989,428 @@
             });
         }
 
+        function initBackgroundModes() {
+            const buttons = document.querySelectorAll('[data-bg-mode]');
+            const coverCard = document.querySelector('.cover-card');
+            const coverWrapper = document.querySelector('.cover-wrapper');
+            const visibilityBtn = document.getElementById('coverVisibilityBtn');
+            const characterBackground = document.getElementById('characterBackground');
+            const canvas = document.getElementById('bg-canvas');
+            if (!buttons.length || !coverCard || !coverWrapper || !visibilityBtn || !characterBackground || !canvas) return null;
+
+            const state = {
+                mode: 'particles',
+                coverVisible: true
+            };
+
+            function applyState() {
+                const isParticleMode = state.mode === 'particles';
+                buttons.forEach((button) => button.classList.toggle('active', button.dataset.bgMode === state.mode));
+                characterBackground.classList.toggle('active', !isParticleMode);
+                canvas.style.opacity = isParticleMode ? '1' : '0';
+                coverCard.classList.toggle('is-hidden', !isParticleMode || !state.coverVisible);
+                coverWrapper.classList.toggle('passive', !isParticleMode || !state.coverVisible);
+                coverWrapper.classList.toggle('scene-hidden', !isParticleMode);
+                visibilityBtn.style.display = isParticleMode ? 'inline-flex' : 'none';
+                visibilityBtn.textContent = state.coverVisible ? '隐藏窗口' : '显示窗口';
+                window.dispatchEvent(new CustomEvent('pqy:bg-mode-change', { detail: { ...state } }));
+            }
+
+            buttons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    state.mode = button.dataset.bgMode || 'particles';
+                    applyState();
+                });
+            });
+
+            visibilityBtn.addEventListener('click', () => {
+                state.coverVisible = !state.coverVisible;
+                applyState();
+            });
+
+            applyState();
+            return state;
+        }
+
+        function initCharacterBackground(backgroundState) {
+            const pupils = Array.from(document.querySelectorAll('[data-pupil]'));
+            const blinkEyes = {
+                purple: Array.from(document.querySelectorAll('[data-eye^="purple"]')),
+                black: Array.from(document.querySelectorAll('[data-eye^="black"]'))
+            };
+            const emailInput = document.getElementById('demoEmail');
+            const passwordInput = document.getElementById('demoPassword');
+            const passwordToggle = document.getElementById('demoPasswordToggle');
+            const loginForm = document.getElementById('demoLoginForm');
+            const loginMessage = document.getElementById('demoLoginMessage');
+            const loginSubmit = document.getElementById('demoLoginSubmit');
+            const characters = {
+                purple: document.querySelector('[data-character="purple"]'),
+                black: document.querySelector('[data-character="black"]'),
+                orange: document.querySelector('[data-character="orange"]'),
+                yellow: document.querySelector('[data-character="yellow"]')
+            };
+            const yellowMouth = document.querySelector('[data-mouth="yellow"]');
+            if (!pupils.length || !emailInput || !passwordInput || !passwordToggle || !loginForm || !loginMessage || !loginSubmit) return;
+
+            const maxMap = {
+                purple: 4,
+                black: 4,
+                orange: 5,
+                yellow: 5
+            };
+            const characterBases = {
+                purple: { left: 72, top: 42, gap: 26 },
+                black: { left: 26, top: 30, gap: 20 },
+                orange: { left: 82, top: 92, gap: 34 },
+                yellow: { left: 52, top: 40, gap: 26 }
+            };
+            const characterEyes = {
+                purple: characters.purple?.querySelector('.character-eyes'),
+                black: characters.black?.querySelector('.character-eyes'),
+                orange: characters.orange?.querySelector('.character-eyes'),
+                yellow: characters.yellow?.querySelector('.character-eyes')
+            };
+
+            const motionState = {
+                mode: 'idle',
+                targetX: window.innerWidth / 2,
+                targetY: window.innerHeight / 2
+            };
+            let showPassword = false;
+            let isTyping = false;
+            let typingTimer = null;
+            let peekLoopActive = false;
+            let isPurplePeeking = false;
+
+            function blink(name) {
+                (blinkEyes[name] || []).forEach((eye) => eye.classList.add('blink'));
+                window.setTimeout(() => {
+                    (blinkEyes[name] || []).forEach((eye) => eye.classList.remove('blink'));
+                }, 140);
+            }
+
+            function scheduleBlink(name) {
+                const wait = Math.random() * 3500 + 2800;
+                window.setTimeout(() => {
+                    blink(name);
+                    scheduleBlink(name);
+                }, wait);
+            }
+
+            function schedulePeekLoop() {
+                if (!(showPassword && passwordInput.value && backgroundState.mode === 'characters')) {
+                    peekLoopActive = false;
+                    isPurplePeeking = false;
+                    return;
+                }
+                const wait = Math.random() * 2600 + 1800;
+                peekLoopActive = true;
+                window.setTimeout(() => {
+                    if (!(showPassword && passwordInput.value && backgroundState.mode === 'characters')) {
+                        peekLoopActive = false;
+                        isPurplePeeking = false;
+                        return;
+                    }
+                    isPurplePeeking = true;
+                    setMotion('peek', window.innerWidth * 0.42, window.innerHeight * 0.32);
+                    window.setTimeout(() => {
+                        isPurplePeeking = false;
+                        if (backgroundState.mode === 'characters') {
+                            setMotion('peek', window.innerWidth * 0.42, window.innerHeight * 0.32);
+                        }
+                    }, 800);
+                    schedulePeekLoop();
+                }, wait);
+            }
+
+            function armTypingPulse() {
+                isTyping = true;
+                window.clearTimeout(typingTimer);
+                typingTimer = window.setTimeout(() => {
+                    isTyping = false;
+                    if (motionState.mode === 'together') {
+                        motionState.mode = 'idle';
+                        updateCharacterPose();
+                        updateFacePositions();
+                        updatePupils({ clientX: motionState.targetX, clientY: motionState.targetY });
+                    }
+                }, 950);
+            }
+
+            function updateCharacterPose() {
+                if (!characters.purple || !characters.black) return;
+                const active = backgroundState.mode === 'characters';
+                const passwordFilled = passwordInput.value.length > 0;
+                const hiddenPasswordMode = passwordFilled && !showPassword;
+                const visiblePasswordMode = passwordFilled && showPassword;
+                const poseMap = {
+                    idle: {
+                        purple: { height: 400, transform: 'skewX(-6deg)' },
+                        black: { transform: 'skewX(4deg)' },
+                        orange: { transform: 'skewX(-3deg)' },
+                        yellow: { transform: 'skewX(-2deg)' }
+                    },
+                    together: {
+                        purple: { height: 438, transform: 'skewX(-14deg) translateX(32px)' },
+                        black: { transform: 'skewX(10deg) translateX(12px)' },
+                        orange: { transform: 'skewX(-3deg)' },
+                        yellow: { transform: 'skewX(-2deg)' }
+                    },
+                    peek: {
+                        purple: { height: 400, transform: 'skewX(0deg)' },
+                        black: { transform: 'skewX(0deg)' },
+                        orange: { transform: 'skewX(0deg)' },
+                        yellow: { transform: 'skewX(0deg)' }
+                    },
+                    focus: {
+                        purple: { height: 424, transform: 'skewX(-9deg) translateX(10px)' },
+                        black: { transform: 'skewX(6deg)' },
+                        orange: { transform: 'skewX(-3deg)' },
+                        yellow: { transform: 'skewX(-2deg)' }
+                    }
+                };
+                const pose = poseMap[motionState.mode] || poseMap.idle;
+                characters.purple.style.height = active ? `${hiddenPasswordMode || isTyping ? 440 : pose.purple.height}px` : '398px';
+                characters.purple.style.transform = active
+                    ? (visiblePasswordMode ? 'skewX(0deg)' : (hiddenPasswordMode || isTyping) ? 'skewX(-18deg) translateX(40px)' : pose.purple.transform)
+                    : 'skewX(0deg)';
+                characters.black.style.transform = active
+                    ? (visiblePasswordMode ? 'skewX(0deg)' : motionState.mode === 'together' ? 'skewX(10deg) translateX(20px)' : hiddenPasswordMode || isTyping ? 'skewX(4deg)' : pose.black.transform)
+                    : 'skewX(0deg)';
+                if (characters.orange) {
+                    characters.orange.style.transform = active ? (visiblePasswordMode ? 'skewX(0deg)' : pose.orange.transform) : 'skewX(0deg)';
+                }
+                if (characters.yellow) {
+                    characters.yellow.style.transform = active ? (visiblePasswordMode ? 'skewX(0deg)' : pose.yellow.transform) : 'skewX(0deg)';
+                }
+            }
+
+            function setEyeOffset(name, x, y) {
+                const eyeGroup = characterEyes[name];
+                const base = characterBases[name];
+                if (!eyeGroup || !base) return;
+                eyeGroup.style.left = `${base.left + x}px`;
+                eyeGroup.style.top = `${base.top + y}px`;
+             }
+
+            function updateFacePositions() {
+                const passwordFilled = passwordInput.value.length > 0;
+                const visiblePasswordMode = passwordFilled && showPassword;
+
+                if (visiblePasswordMode) {
+                    setEyeOffset('purple', -25, -5);
+                    setEyeOffset('black', -16, -4);
+                    setEyeOffset('orange', -32, -5);
+                    setEyeOffset('yellow', -32, -5);
+                    return;
+                }
+
+                if (motionState.mode === 'together') {
+                    setEyeOffset('purple', 10, 18);
+                    setEyeOffset('black', 6, -14);
+                    setEyeOffset('orange', -4, 0);
+                    setEyeOffset('yellow', -2, -4);
+                    return;
+                }
+
+                if (motionState.mode === 'peek') {
+                    setEyeOffset('purple', -18, -10);
+                    setEyeOffset('black', -12, -8);
+                    setEyeOffset('orange', -16, -8);
+                    setEyeOffset('yellow', -16, -10);
+                    return;
+                }
+
+                if (motionState.mode === 'focus') {
+                    setEyeOffset('purple', 2, 4);
+                    setEyeOffset('black', 2, 2);
+                    setEyeOffset('orange', 0, 2);
+                    setEyeOffset('yellow', 0, 2);
+                    return;
+                }
+
+                setEyeOffset('purple', 0, 0);
+                setEyeOffset('black', 0, 0);
+                setEyeOffset('orange', 0, 0);
+                setEyeOffset('yellow', 0, 0);
+            }
+
+            function setMotion(mode, targetX, targetY, timeoutMs) {
+                motionState.mode = mode;
+                if (typeof targetX === 'number') motionState.targetX = targetX;
+                if (typeof targetY === 'number') motionState.targetY = targetY;
+                updateCharacterPose();
+                updateFacePositions();
+                updatePupils({ clientX: motionState.targetX, clientY: motionState.targetY });
+                if (timeoutMs) {
+                    window.setTimeout(() => {
+                        if (motionState.mode === mode) {
+                            motionState.mode = 'idle';
+                            updateCharacterPose();
+                            updateFacePositions();
+                            updatePupils({ clientX: motionState.targetX, clientY: motionState.targetY });
+                        }
+                    }, timeoutMs);
+                }
+            }
+
+            function updatePupils(event) {
+                const passwordFilled = passwordInput.value.length > 0;
+                const visiblePasswordMode = passwordFilled && showPassword;
+                const sourceX = typeof event?.clientX === 'number' ? event.clientX : motionState.targetX;
+                const sourceY = typeof event?.clientY === 'number' ? event.clientY : motionState.targetY;
+                pupils.forEach((pupil) => {
+                    const key = pupil.dataset.pupil;
+                    const owner = key.split('-')[0];
+                    const rect = pupil.parentElement.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+                    let dx = sourceX - centerX;
+                    let dy = sourceY - centerY;
+
+                    if (visiblePasswordMode) {
+                        if (owner === 'purple') {
+                            dx = isPurplePeeking ? 18 : -18;
+                            dy = isPurplePeeking ? 20 : -18;
+                        } else if (owner === 'black') {
+                            dx = -16;
+                            dy = -16;
+                        } else {
+                            dx = -18;
+                            dy = -16;
+                        }
+                    } else if (motionState.mode === 'together') {
+                        if (owner === 'purple') {
+                            dx = 15;
+                            dy = 20;
+                        } else if (owner === 'black') {
+                            dx = 0;
+                            dy = -16;
+                        }
+                    }
+
+                    const distance = Math.hypot(dx, dy) || 1;
+                    const limit = maxMap[owner] || 4;
+                    const factor = Math.min(limit, distance) / distance;
+                    pupil.style.transform = `translate(${dx * factor}px, ${dy * factor}px)`;
+                });
+
+                if (yellowMouth) {
+                    if (visiblePasswordMode) {
+                        yellowMouth.style.transform = 'translate(-30px, 0)';
+                    } else {
+                        yellowMouth.style.transform = `translateX(${sourceX > window.innerWidth / 2 ? 4 : -4}px)`;
+                    }
+                }
+            }
+
+            window.addEventListener('mousemove', (event) => {
+                if (backgroundState.mode !== 'characters') return;
+                motionState.targetX = event.clientX;
+                motionState.targetY = event.clientY;
+                if (motionState.mode === 'idle' || motionState.mode === 'focus') {
+                    updateCharacterPose();
+                    updateFacePositions();
+                }
+                updatePupils(event);
+            });
+            window.addEventListener('pqy:bg-mode-change', () => {
+                if (backgroundState.mode === 'characters') {
+                    setMotion('together', window.innerWidth * 0.54, window.innerHeight * 0.42, 900);
+                } else {
+                    motionState.mode = 'idle';
+                    updateCharacterPose();
+                    updateFacePositions();
+                    updatePupils();
+                }
+            });
+
+            emailInput.addEventListener('focus', () => {
+                armTypingPulse();
+                if (backgroundState.mode !== 'characters') return;
+                const rect = emailInput.getBoundingClientRect();
+                setMotion('together', rect.left + rect.width / 2, rect.top, 900);
+            });
+
+            emailInput.addEventListener('input', () => {
+                armTypingPulse();
+                if (backgroundState.mode !== 'characters') return;
+                const rect = emailInput.getBoundingClientRect();
+                setMotion('together', rect.left + rect.width / 2, rect.top, 900);
+            });
+
+            emailInput.addEventListener('blur', () => {
+                if (backgroundState.mode !== 'characters') return;
+                setMotion('idle', motionState.targetX, motionState.targetY);
+            });
+
+            passwordInput.addEventListener('focus', () => {
+                armTypingPulse();
+                if (backgroundState.mode !== 'characters') return;
+                const rect = passwordInput.getBoundingClientRect();
+                setMotion('focus', rect.left + rect.width / 2, rect.top, 900);
+            });
+
+            passwordInput.addEventListener('input', () => {
+                armTypingPulse();
+                if (backgroundState.mode !== 'characters') return;
+                const rect = passwordInput.getBoundingClientRect();
+                setMotion('focus', rect.left + rect.width / 2, rect.top, 900);
+                if (showPassword && !peekLoopActive) {
+                    schedulePeekLoop();
+                }
+            });
+
+            passwordInput.addEventListener('blur', () => {
+                if (backgroundState.mode !== 'characters') return;
+                setMotion('idle', motionState.targetX, motionState.targetY);
+            });
+
+            passwordToggle.addEventListener('click', () => {
+                showPassword = !showPassword;
+                passwordInput.type = showPassword ? 'text' : 'password';
+                passwordToggle.innerHTML = showPassword ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
+                if (backgroundState.mode !== 'characters') return;
+                if (showPassword && passwordInput.value) {
+                    setMotion('peek', window.innerWidth * 0.42, window.innerHeight * 0.32, 900);
+                    schedulePeekLoop();
+                } else {
+                    setMotion('focus', motionState.targetX, motionState.targetY, 700);
+                }
+            });
+
+            loginForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                loginMessage.classList.remove('show', 'success');
+                loginSubmit.textContent = 'Signing in...';
+                loginSubmit.disabled = true;
+                if (backgroundState.mode === 'characters') {
+                    setMotion('together', window.innerWidth * 0.54, window.innerHeight * 0.42, 1100);
+                }
+
+                window.setTimeout(() => {
+                    if (emailInput.value === 'erik@gmail.com' && passwordInput.value === '1234') {
+                        loginMessage.textContent = 'Login successful! 这是演示版交互。';
+                        loginMessage.classList.add('show', 'success');
+                    } else {
+                        loginMessage.textContent = 'Invalid email or password. Try erik@gmail.com / 1234';
+                        loginMessage.classList.add('show');
+                    }
+                    loginSubmit.textContent = 'Log in';
+                    loginSubmit.disabled = false;
+                }, 350);
+            });
+
+            scheduleBlink('purple');
+            scheduleBlink('black');
+            updateCharacterPose();
+            updateFacePositions();
+            updatePupils();
+        }
+
         // Canvas Animation Logic
-        function initCanvasAnimation() {
+        function initCanvasAnimation(backgroundState) {
             const canvas = document.getElementById('bg-canvas');
             const ctx = canvas.getContext('2d');
             let width, height;
@@ -540,6 +1515,12 @@
 
             // Animation Loop
             function animate() {
+                if (backgroundState && backgroundState.mode !== 'particles') {
+                    ctx.clearRect(0, 0, width, height);
+                    requestAnimationFrame(animate);
+                    return;
+                }
+
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; // Trails effect
                 ctx.fillRect(0, 0, width, height);
 
