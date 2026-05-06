@@ -7,5 +7,7 @@ venv/
 node_modules/
 backend/uploads/
 backend/outputs/
+frontend/miyao/
+cloudflared-windows-amd64.exe
 .DS_Store
 Thumbs.db
