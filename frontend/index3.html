@@ -900,50 +900,7 @@
                             <div class="panel-title">AI 学习伙伴</div>
                         </div>
                         <div class="panel-subtitle">聚合主流大模型助手 · 一键开启 AI 对话。</div>
-                        <div class="games-grid">
-                            <a href="https://www.qianwen.com/chat" class="game-pill" target="_blank">
-                                <div class="pill-icon game"><i class="fas fa-robot"></i></div>
-                                <div>
-                                    <div class="pill-text-main">通义千问</div>
-                                    <div class="pill-text-sub">阿里巴巴大模型助手。</div>
-                                </div>
-                            </a>
-                            <a href="https://www.doubao.com/chat" class="game-pill" target="_blank">
-                                <div class="pill-icon game"><i class="fas fa-comment-dots"></i></div>
-                                <div>
-                                    <div class="pill-text-main">豆包 AI</div>
-                                    <div class="pill-text-sub">字节跳动智能助手。</div>
-                                </div>
-                            </a>
-                            <a href="https://chat.deepseek.com/" class="game-pill" target="_blank">
-                                <div class="pill-icon game"><i class="fas fa-meteor"></i></div>
-                                <div>
-                                    <div class="pill-text-main">DeepSeek</div>
-                                    <div class="pill-text-sub">国产大模型探索站。</div>
-                                </div>
-                            </a>
-                            <a href="https://www.kimi.com/" class="game-pill" target="_blank">
-                                <div class="pill-icon game"><i class="fas fa-star"></i></div>
-                                <div>
-                                    <div class="pill-text-main">Kimi</div>
-                                    <div class="pill-text-sub">长文档理解与创作助手。</div>
-                                </div>
-                            </a>
-                            <a href="https://chatgpt.com/" class="game-pill" target="_blank">
-                                <div class="pill-icon game"><i class="fas fa-infinity"></i></div>
-                                <div>
-                                    <div class="pill-text-main">ChatGPT</div>
-                                    <div class="pill-text-sub">多场景通用型 AI 聊天助手。</div>
-                                </div>
-                            </a>
-                            <a href="https://gemini.google.com/app" class="game-pill" target="_blank">
-                                <div class="pill-icon game"><i class="fas fa-gem"></i></div>
-                                <div>
-                                    <div class="pill-text-main">Gemini</div>
-                                    <div class="pill-text-sub">Google 智能助手。</div>
-                                </div>
-                            </a>
-                        </div>
+                        <div class="games-grid" id="aiGrid3"></div>
                     </div>
                 </div>
 
@@ -986,79 +943,91 @@
         (function () {
             if (!window.INDEX_DATA) return;
             const TOOL_META = {
-                music: { icon: 'fa-music', name: '音乐解码器', desc: '轻松处理音乐文件格式' },
-                suffix: { icon: 'fa-exchange-alt', name: '后缀批量转换', desc: '批量转换文件后缀' },
-                wallpaper: { icon: 'fa-image', name: '拾光壁纸库', desc: '高质量壁纸资源' },
-                video_no_watermark: { icon: 'fa-video', name: '无水印视频下载', desc: '支持抖音/快手等平台' },
-                obs: { icon: 'fa-desktop', name: 'OBS 录制与直播', desc: '开源屏幕录制软件' },
-                gamepad_viewer: { icon: 'fa-gamepad', name: '手柄按键可视化', desc: '在线展示手柄输入状态' },
-                steam: { icon: 'fa-steam', name: 'Steam 官网', desc: 'PC游戏数字发行平台', iconClass: 'fab' },
-                bilitools: { icon: 'fa-wrench', name: 'BiliTools', desc: 'B站小工具集合' },
-                chinese_bqb: { icon: 'fa-smile', name: '中文表情包仓库', desc: '丰富的表情包素材' },
-                china_textbook: { icon: 'fa-book', name: '所有年级教材下载', desc: '电子教材资源' },
-                printer_baidu: { icon: 'fa-print', name: '打印机（百度网盘）', desc: '打印驱动存档' },
-                extractor_pdf: { icon: 'fa-file-pdf', name: 'ExtractorPDF', desc: '从PDF提取文字' },
-                abra: { icon: 'fa-lock', name: 'Abra.js 文本加密', desc: '在线加密解密' },
-                pakeplus: { icon: 'fa-box-open', name: 'PakePlus 网页打包', desc: '网页打包成桌面应用' }
+                music: { icon: 'fa-music' },
+                suffix: { icon: 'fa-exchange-alt' },
+                wallpaper: { icon: 'fa-image' },
+                video_no_watermark: { icon: 'fa-video' },
+                obs: { icon: 'fa-desktop' },
+                gamepad_viewer: { icon: 'fa-gamepad' },
+                xjlz: { icon: 'fa-link' },
+                steam: { icon: 'fa-steam', iconClass: 'fab' },
+                bilitools: { icon: 'fa-wrench' },
+                chinese_bqb: { icon: 'fa-smile' },
+                china_textbook: { icon: 'fa-book' },
+                printer_baidu: { icon: 'fa-print' },
+                extractor_pdf: { icon: 'fa-file-pdf' },
+                abra: { icon: 'fa-lock' },
+                pakeplus: { icon: 'fa-box-open' },
+                aishort: { icon: 'fa-magic' },
+                image_to_excel: { icon: 'fa-table' }
             };
             const GAME_META = {
-                drum: { icon: 'fa-drum', name: '敲木鱼', desc: '放松心情的小互动' },
-                earth3d: { icon: 'fa-globe', name: '3D 地球模型', desc: '地理科普小实验' },
-                solar: { icon: 'fa-sun', name: '太阳系模型', desc: '认识行星与轨道' },
-                g2048: { icon: 'fa-border-all', name: '2048 数字合并', desc: '合并数字方块的小益智游戏' },
-                tetris: { icon: 'fa-shapes', name: '俄罗斯方块', desc: '经典下落方块消除' },
-                minesweeper: { icon: 'fa-bomb', name: '扫雷', desc: '锻炼逻辑推理' },
-                klotski: { icon: 'fa-th-large', name: '华容道', desc: '移动数字方块' },
-                snake: { icon: 'fa-gamepad', name: '贪吃蛇', desc: '控制小蛇吃食物' },
-                particles: { icon: 'fa-braille', name: '粒子幻境', desc: '手势交互的 3D 粒子体验' },
-                sudoku: { icon: 'fa-table-cells', name: '数独', desc: '逻辑数字填字游戏' },
-                memory_flip: { icon: 'fa-clone', name: '记忆翻牌', desc: '考验记忆力' },
-                tictactoe: { icon: 'fa-hashtag', name: '井字棋', desc: '经典小游戏' },
-                gomoku: { icon: 'fa-circle', name: '五子棋', desc: '连成五子获胜' },
-                breakout: { icon: 'fa-table-tennis-paddle-ball', name: '弹球消砖', desc: '经典破坏砖块游戏' },
-                maze: { icon: 'fa-route', name: '迷宫逃脱', desc: '找到出口逃离迷宫' },
-                wellchess: { icon: 'fa-border-all', name: '水井棋', desc: '传统棋类游戏' },
-                pipechess: { icon: 'fa-chess-board', name: '水井棋(在线)', desc: '在线对弈小棋类' },
-                voidslicer: { icon: 'fa-lemon', name: '虚空切水果', desc: '手势切水果游戏' }
+                drum: { icon: 'fa-drum' },
+                earth3d: { icon: 'fa-globe' },
+                solar: { icon: 'fa-sun' },
+                g2048: { icon: 'fa-border-all' },
+                tetris: { icon: 'fa-shapes' },
+                minesweeper: { icon: 'fa-bomb' },
+                klotski: { icon: 'fa-th-large' },
+                snake: { icon: 'fa-gamepad' },
+                particles: { icon: 'fa-braille' },
+                sudoku: { icon: 'fa-table-cells' },
+                memory_flip: { icon: 'fa-clone' },
+                tictactoe: { icon: 'fa-hashtag' },
+                gomoku: { icon: 'fa-circle' },
+                breakout: { icon: 'fa-table-tennis-paddle-ball' },
+                maze: { icon: 'fa-route' },
+                piano: { icon: 'fa-music' },
+                wellchess: { icon: 'fa-border-all' },
+                pipechess: { icon: 'fa-chess-board' },
+                voidslicer: { icon: 'fa-lemon' }
             };
             const LEARN_META = {
-                idiom: { icon: 'fa-book-open', name: '成语学习', desc: '加深语文积累' },
-                quadratic: { icon: 'fa-chart-line', name: '二次方程学习', desc: '可视化解读' },
-                fraction_compare: { icon: 'fa-percent', name: '分数大小比较', desc: '动手比一比' },
-                poem_order: { icon: 'fa-book', name: '古诗排序', desc: '拖动句子拼古诗' },
-                dictionary: { icon: 'fa-book-reader', name: '现代汉语词典', desc: '查字词小助手' },
-                radical: { icon: 'fa-language', name: '偏旁部首拼汉字', desc: '组合汉字学习' },
-                projection: { icon: 'fa-cube', name: '三视图教学', desc: '空间想象力训练' },
-                food_chain: { icon: 'fa-fish', name: '食物链学习', desc: '拖拽构建能量流' },
-                vertical_add: { icon: 'fa-th', name: '竖式叠加', desc: '手写质感算式' },
-                fast_calc: { icon: 'fa-calculator', name: '速算练习', desc: '卡通答题板' },
-                fast_skill: { icon: 'fa-lightbulb', name: '速算技巧', desc: '脑算小窍门' },
-                linear: { icon: 'fa-equals', name: '一次方程学习', desc: '入门方程思维' }
+                idiom: { icon: 'fa-book-open' },
+                quadratic: { icon: 'fa-chart-line' },
+                fraction_compare: { icon: 'fa-percent' },
+                poem_order: { icon: 'fa-book' },
+                dictionary: { icon: 'fa-book-reader' },
+                radical: { icon: 'fa-language' },
+                projection: { icon: 'fa-cube' },
+                food_chain: { icon: 'fa-fish' },
+                fast_skill: { icon: 'fa-lightbulb' },
+                fast_calc: { icon: 'fa-calculator' },
+                linear: { icon: 'fa-equals' }
+            };
+            const AI_META = {
+                qianwen: { icon: 'fa-robot' },
+                doubao: { icon: 'fa-comment-dots' },
+                deepseek: { icon: 'fa-meteor' },
+                kimi: { icon: 'fa-star' },
+                chatgpt: { icon: 'fa-infinity' },
+                gemini: { icon: 'fa-gem' }
             };
             function renderTool(container, items, meta) {
                 if (!container) return;
                 container.innerHTML = items.map(function (item) {
-                    var m = meta[item.id] || { icon: 'fa-link', name: item.id, desc: '' };
+                    var m = meta[item.id] || { icon: 'fa-link' };
                     var target = item.target ? ' target="' + item.target + '"' : '';
                     var iconClass = m.iconClass || 'fas';
                     return '<a href="' + item.url + '" class="tool-pill"' + target + '>' +
                         '<div class="pill-icon tool"><i class="' + iconClass + ' ' + m.icon + '"></i></div>' +
-                        '<div><div class="pill-text-main">' + m.name + '</div><div class="pill-text-sub">' + m.desc + '</div></div></a>';
+                        '<div><div class="pill-text-main">' + item.title + '</div><div class="pill-text-sub">' + item.description + '</div></div></a>';
                 }).join('');
             }
             function renderGame(container, items, meta) {
                 if (!container) return;
                 container.innerHTML = items.map(function (item) {
-                    var m = meta[item.id] || { icon: 'fa-gamepad', name: item.id, desc: '' };
+                    var m = meta[item.id] || { icon: 'fa-gamepad' };
                     var target = item.target ? ' target="' + item.target + '"' : '';
                     return '<a href="' + item.url + '" class="game-pill"' + target + '>' +
                         '<div class="pill-icon game"><i class="fas ' + m.icon + '"></i></div>' +
-                        '<div><div class="pill-text-main">' + m.name + '</div><div class="pill-text-sub">' + m.desc + '</div></div></a>';
+                        '<div><div class="pill-text-main">' + item.title + '</div><div class="pill-text-sub">' + item.description + '</div></div></a>';
                 }).join('');
             }
             renderTool(document.getElementById('toolsGrid3'), INDEX_DATA.tools, TOOL_META);
             renderGame(document.getElementById('gamesGrid3'), INDEX_DATA.funGames, GAME_META);
             renderGame(document.getElementById('learningGrid3'), INDEX_DATA.learning, LEARN_META);
+            renderGame(document.getElementById('aiGrid3'), INDEX_DATA.ai, AI_META);
         })();
     </script>
 </body>

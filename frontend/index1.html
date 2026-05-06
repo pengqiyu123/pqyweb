@@ -1073,6 +1073,111 @@
                         */
             </script>
             <script src="fullscreen-btn.js"></script>
+            <script src="index.data.js"></script>
+            <script>
+                (function () {
+                    if (!window.INDEX_DATA) return;
+
+                    const TOOL_META = {
+                        music: { icon: 'fa-music', color: '#ff9bd9', badges: ['音频', '提取'] },
+                        suffix: { icon: 'fa-exchange-alt', color: '#92f3ff', badges: ['批量', '文件'] },
+                        wallpaper: { icon: 'fa-image', color: '#ffe18d', badges: ['壁纸', '灵感'] },
+                        video_no_watermark: { icon: 'fa-video', color: '#8bf3b6', badges: ['视频', '采集'] },
+                        obs: { icon: 'fa-desktop', color: '#7fd0ff', badges: ['录屏', '直播'] },
+                        gamepad_viewer: { icon: 'fa-gamepad', color: '#b7ff9b', badges: ['手柄', '可视化'] },
+                        xjlz: { icon: 'fa-link', color: '#ffb8a1', badges: ['网站'] },
+                        steam: { icon: 'fa-steam', color: '#66a6ff', badges: ['游戏'], iconClass: 'fab' },
+                        bilitools: { icon: 'fa-wrench', color: '#9dd9ff', badges: ['开源', '工具'] },
+                        chinese_bqb: { icon: 'fa-smile', color: '#ffcf70', badges: ['表情'] },
+                        china_textbook: { icon: 'fa-book', color: '#b6ffae', badges: ['教材'] },
+                        printer_baidu: { icon: 'fa-print', color: '#ffc1c1', badges: ['资源'] },
+                        extractor_pdf: { icon: 'fa-file-pdf', color: '#ff9fa6', badges: ['PDF', '提取'] },
+                        abra: { icon: 'fa-lock', color: '#c4b5ff', badges: ['加密'] },
+                        pakeplus: { icon: 'fa-box', color: '#ffd4a8', badges: ['打包', '桌面'] },
+                        aishort: { icon: 'fa-magic', color: '#a78bfa', badges: ['AI', '提示词'] },
+                        image_to_excel: { icon: 'fa-table', color: '#7dd3fc', badges: ['表格', 'AI', 'Excel'] }
+                    };
+
+                    const GAME_META = {
+                        drum: { icon: 'fa-drum' },
+                        earth3d: { icon: 'fa-globe' },
+                        solar: { icon: 'fa-sun' },
+                        g2048: { icon: 'fa-th' },
+                        tetris: { icon: 'fa-cubes' },
+                        minesweeper: { icon: 'fa-bomb' },
+                        klotski: { icon: 'fa-puzzle-piece' },
+                        snake: { icon: 'fa-dragon' },
+                        particles: { icon: 'fa-braille' },
+                        sudoku: { icon: 'fa-table-cells' },
+                        memory_flip: { icon: 'fa-clone' },
+                        tictactoe: { icon: 'fa-hashtag' },
+                        gomoku: { icon: 'fa-circle' },
+                        breakout: { icon: 'fa-table-tennis-paddle-ball' },
+                        maze: { icon: 'fa-route' },
+                        piano: { icon: 'fa-music' },
+                        wellchess: { icon: 'fa-border-all' },
+                        pipechess: { icon: 'fa-chess-board' },
+                        voidslicer: { icon: 'fa-lemon' }
+                    };
+
+                    const LEARN_META = {
+                        idiom: { icon: 'fa-book-open' },
+                        quadratic: { icon: 'fa-chart-line' },
+                        fraction_compare: { icon: 'fa-percent' },
+                        poem_order: { icon: 'fa-book' },
+                        dictionary: { icon: 'fa-book-reader' },
+                        radical: { icon: 'fa-language' },
+                        projection: { icon: 'fa-cube' },
+                        food_chain: { icon: 'fa-fish' },
+                        fast_skill: { icon: 'fa-lightbulb' },
+                        fast_calc: { icon: 'fa-calculator' },
+                        linear: { icon: 'fa-equals' }
+                    };
+
+                    const AI_META = {
+                        qianwen: { icon: 'fa-robot' },
+                        doubao: { icon: 'fa-comment-dots' },
+                        deepseek: { icon: 'fa-meteor' },
+                        kimi: { icon: 'fa-star' },
+                        chatgpt: { icon: 'fa-infinity' },
+                        gemini: { icon: 'fa-gem' }
+                    };
+
+                    function renderTools(container, items) {
+                        if (!container) return;
+                        container.innerHTML = items.map(function (item) {
+                            var meta = TOOL_META[item.id] || { icon: 'fa-link', color: '#9dd9ff', badges: [] };
+                            var iconClass = meta.iconClass || 'fas';
+                            var target = item.target ? ' target="' + item.target + '"' : '';
+                            var badges = (meta.badges || []).map(function (badge) {
+                                return '<span>' + badge + '</span>';
+                            }).join('');
+
+                            return '<a class="tool-card" href="' + item.url + '"' + target + '>' +
+                                '<div class="tool-icon" style="color:' + meta.color + ';"><i class="' + iconClass + ' ' + meta.icon + '"></i></div>' +
+                                '<h4>' + item.title + '</h4>' +
+                                '<p>' + item.description + '</p>' +
+                                '<div class="mini-badges">' + badges + '</div>' +
+                                '</a>';
+                        }).join('');
+                    }
+
+                    function renderMiniCards(container, items, metaMap) {
+                        if (!container) return;
+                        container.innerHTML = items.map(function (item) {
+                            var meta = metaMap[item.id] || { icon: 'fa-link' };
+                            var target = item.target ? ' target="' + item.target + '"' : '';
+                            return '<a class="mini-card" href="' + item.url + '"' + target + '><i class="fas ' + meta.icon + '"></i>' +
+                                '<div><h4>' + item.title + '</h4><p>' + item.description + '</p></div></a>';
+                        }).join('');
+                    }
+
+                    renderTools(document.querySelector('#tools .card-grid'), INDEX_DATA.tools);
+                    renderMiniCards(document.querySelector('#playground .playground'), INDEX_DATA.funGames, GAME_META);
+                    renderMiniCards(document.querySelector('#learning .playground'), INDEX_DATA.learning, LEARN_META);
+                    renderMiniCards(document.querySelector('#ai .playground'), INDEX_DATA.ai, AI_META);
+                })();
+            </script>
 </body>
 
 </html>

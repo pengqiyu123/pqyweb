@@ -951,35 +951,119 @@
     <script>
         (function () {
             if (!window.INDEX_DATA) return;
-            const LABELS = {
-                music: '音乐解码器', suffix: '后缀批量转换', wallpaper: '拾光壁纸库',
-                video_no_watermark: '无水印视频下载', obs: 'OBS 录制与直播',
-                gamepad_viewer: '手柄按键可视化', steam: 'Steam 官网', bilitools: 'BiliTools',
-                chinese_bqb: '中文表情包仓库', china_textbook: '所有年级教材下载',
-                printer_baidu: '打印机（百度网盘）', extractor_pdf: 'ExtractorPDF',
-                abra: 'Abra.js 文本加密', pakeplus: 'PakePlus 网页打包',
-                drum: '敲木鱼', earth3d: '3D地球模型', solar: '太阳系模型',
-                g2048: '2048 数字合并', tetris: '俄罗斯方块', minesweeper: '扫雷',
-                klotski: '华容道', snake: '贪吃蛇', particles: '粒子幻境',
-                sudoku: '数独', memory_flip: '记忆翻牌', tictactoe: '井字棋',
-                gomoku: '五子棋', breakout: '弹球消砖', maze: '迷宫逃脱',
-                wellchess: '水井棋', pipechess: '水井棋(在线)', voidslicer: '虚空切水果',
-                idiom: '成语学习', quadratic: '二次方程学习', fraction_compare: '分数大小比较',
-                poem_order: '古诗排序', dictionary: '汉语字典', radical: '偏旁部首拼汉字',
-                projection: '三视图教学', food_chain: '食物链学习',
-                vertical_add: '竖式叠加', fast_calc: '速算练习', fast_skill: '速算技巧', linear: '一次方程学习'
+
+            const FEATURED = {
+                tools: ['music', 'suffix', 'wallpaper', 'video_no_watermark'],
+                funGames: ['drum', 'earth3d', 'solar', 'particles'],
+                learning: ['idiom', 'quadratic', 'fraction_compare', 'poem_order']
             };
-            function render(container, items) {
+
+            function byIds(items, ids) {
+                return ids.map(function (id) {
+                    return items.find(function (item) { return item.id === id; });
+                }).filter(Boolean);
+            }
+
+            function renderHexGrid(container, items) {
                 if (!container) return;
                 container.innerHTML = items.map(function (item) {
                     var target = item.target ? ' target="' + item.target + '"' : '';
-                    var label = LABELS[item.id] || item.id;
-                    return '<a class="games-modal-card-item" href="' + item.url + '"' + target + '><span>' + label + '</span></a>';
+                    return '<a class="hex-card" href="' + item.url + '"' + target + '>' +
+                        '<span>' + item.title + '</span>' +
+                        '<small>' + item.description + '</small>' +
+                        '</a>';
                 }).join('');
             }
-            render(document.getElementById('toolsModalGrid2'), INDEX_DATA.tools);
-            render(document.getElementById('funGamesModalGrid2'), INDEX_DATA.funGames);
-            render(document.getElementById('learningModalGrid2'), INDEX_DATA.learning);
+
+            function renderModalGrid(container, items) {
+                if (!container) return;
+                container.innerHTML = items.map(function (item) {
+                    var target = item.target ? ' target="' + item.target + '"' : '';
+                    return '<a class="games-modal-card-item" href="' + item.url + '"' + target + '><span>' + item.title + '</span></a>';
+                }).join('');
+            }
+
+            renderHexGrid(
+                document.querySelector('#tools .hex-grid'),
+                byIds(INDEX_DATA.tools, FEATURED.tools).concat([
+                    { url: '#', title: '更多工具', description: '展开全部工具列表' }
+                ])
+            );
+            renderHexGrid(
+                document.querySelector('#games .hex-grid'),
+                byIds(INDEX_DATA.funGames, FEATURED.funGames).concat([
+                    { url: '#', title: '更多游戏', description: '展开全部趣味小游戏' }
+                ])
+            );
+            renderHexGrid(
+                document.querySelector('#learning .hex-grid'),
+                byIds(INDEX_DATA.learning, FEATURED.learning).concat([
+                    { url: '#', title: '更多学习', description: '展开全部学习模块' }
+                ])
+            );
+            renderHexGrid(document.querySelector('#ai .hex-grid'), INDEX_DATA.ai);
+
+            renderModalGrid(document.getElementById('toolsModalGrid2'), INDEX_DATA.tools);
+            renderModalGrid(document.getElementById('funGamesModalGrid2'), INDEX_DATA.funGames);
+            renderModalGrid(document.getElementById('learningModalGrid2'), INDEX_DATA.learning);
+
+        })();
+    </script>
+    <script>
+        (function () {
+            const gamesModal2 = document.getElementById('gamesModal2');
+            const closeBtn2 = document.getElementById('closeGamesModal2');
+            const funGamesModal2 = document.getElementById('funGamesModal2');
+            const closeFunGamesModal2 = document.getElementById('closeFunGamesModal2');
+            const toolsModal2 = document.getElementById('toolsModal2');
+            const closeToolsModal2 = document.getElementById('closeToolsModal2');
+
+            if (!gamesModal2 || !closeBtn2 || !funGamesModal2 || !closeFunGamesModal2 || !toolsModal2 || !closeToolsModal2) {
+                return;
+            }
+
+            function toggleModal(modal, show) {
+                modal.style.display = show ? 'flex' : 'none';
+                modal.setAttribute('aria-hidden', show ? 'false' : 'true');
+                document.body.style.overflow = show ? 'hidden' : '';
+            }
+
+            document.addEventListener('click', function (e) {
+                const target = e.target.closest('.hex-card');
+                if (!target) return;
+
+                if (target.textContent.indexOf('更多学习') !== -1) {
+                    e.preventDefault();
+                    toggleModal(gamesModal2, true);
+                } else if (target.textContent.indexOf('更多游戏') !== -1) {
+                    e.preventDefault();
+                    toggleModal(funGamesModal2, true);
+                } else if (target.textContent.indexOf('更多工具') !== -1) {
+                    e.preventDefault();
+                    toggleModal(toolsModal2, true);
+                }
+            });
+
+            closeBtn2.addEventListener('click', function () { toggleModal(gamesModal2, false); });
+            closeFunGamesModal2.addEventListener('click', function () { toggleModal(funGamesModal2, false); });
+            closeToolsModal2.addEventListener('click', function () { toggleModal(toolsModal2, false); });
+
+            gamesModal2.addEventListener('click', function (e) {
+                if (e.target === gamesModal2) toggleModal(gamesModal2, false);
+            });
+            funGamesModal2.addEventListener('click', function (e) {
+                if (e.target === funGamesModal2) toggleModal(funGamesModal2, false);
+            });
+            toolsModal2.addEventListener('click', function (e) {
+                if (e.target === toolsModal2) toggleModal(toolsModal2, false);
+            });
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key !== 'Escape') return;
+                if (gamesModal2.style.display === 'flex') toggleModal(gamesModal2, false);
+                if (funGamesModal2.style.display === 'flex') toggleModal(funGamesModal2, false);
+                if (toolsModal2.style.display === 'flex') toggleModal(toolsModal2, false);
+            });
         })();
     </script>
 </body>
