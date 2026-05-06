@@ -1,0 +1,71 @@
+/* 移动端优化样式 */
+@media (max-width: 768px) {
+    body {
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow-x: hidden !important;
+        width: 100% !important;
+    }
+    
+    #app {
+        padding: 10px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+    }
+    
+    .el-upload-dragger {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 20px !important;
+    }
+    
+    .el-button {
+        margin: 5px !important;
+        padding: 12px 20px !important;
+        min-height: 44px !important;
+        min-width: 80px !important;
+    }
+    
+    .el-row {
+        width: 100% !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+    }
+    
+    .el-table {
+        width: 100% !important;
+        font-size: 12px !important;
+    }
+    
+    .el-input__inner {
+        height: 44px !important;
+        font-size: 16px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    #app {
+        padding: 8px !important;
+    }
+    
+    .el-button {
+        padding: 10px 16px !important;
+        font-size: 13px !important;
+    }
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .el-button {
+        min-height: 48px !important;
+        padding: 12px 24px !important;
+        font-size: 16px !important;
+    }
+    
+    .el-input__inner {
+        height: 48px !important;
+        font-size: 16px !important;
+    }
+}

@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>食物链学习</title>
+    <style>
+        :root {
+            --primary-color: #4caf50;
+            --secondary-color: #8bc34a;
+            --accent-color: #ff9800;
+            --bg-color: #f5f5f5;
+            --panel-bg: #ffffff;
+            --border-color: #ddd;
+            --text-color: #333;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background-color: var(--panel-bg);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .organisms-panel h2,
+        .chain-panel h2 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        .organisms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 15px;
+        }
+
+        .organism-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: grab;
+            transition: all 0.3s ease;
+            background-color: white;
+            position: relative;
+        }
+
+        .organism-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow);
+        }
+
+        .organism-icon {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+        }
+
+        .organism-name {
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .organism-role {
+            font-size: 0.8rem;
+            color: var(--accent-color);
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: black;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 10;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9rem;
+        }
+        .tooltip .tooltip-text.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .info-icon {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .chain-container {
+            min-height: 200px;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            gap: 10px;
+            background-color: #fafafa;
+        }
+
+        .chain-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: move;
+            transition: all 0.3s ease;
+            background-color: white;
+            min-width: 80px;
+        }
+
+        .chain-item:hover {
+            transform: scale(1.05);
+            border-color: var(--primary-color);
+        }
+
+        .chain-item.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        .chain-item.error {
+            animation: shake 0.5s;
+            border-color: var(--error-color);
+            background-color: #ffebee;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .chain-arrow {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .validate-btn {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .validate-btn:hover {
+            background-color: #45a049;
+        }
+
+        .reset-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .reset-btn:hover {
+            background-color: #da190b;
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .success {
+            background-color: #e8f5e9;
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .error {
+            background-color: #ffebee;
+            color: var(--error-color);
+            border: 1px solid var(--error-color);
+        }
+
+        .energy-flow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(to right, transparent, var(--primary-color), transparent);
+            opacity: 0;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .energy-flow-animation {
+            animation: flow 3s ease-in-out;
+        }
+
+        @keyframes flow {
+            0% {
+                left: -100%;
+                opacity: 0.8;
+            }
+            100% {
+                left: 100%;
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌱 交互式食物链构建器</h1>
+            <p>拖拽生物图标到轨道上构建食物链，验证其逻辑正确性</p>
+        </header>
+
+        <div class="main-content">
+            <div class="panel organisms-panel">
+                <h2>生物角色库</h2>
+                <div class="organisms-grid" id="organisms-grid">
+                    <!-- 生物图标将通过JavaScript生成 -->
+                </div>
+            </div>
+
+            <div class="panel chain-panel">
+                <h2>食物链轨道</h2>
+                <div class="chain-container" id="chain-container" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <!-- 食物链项目将通过JavaScript生成 -->
+                </div>
+                <div class="controls">
+                    <button class="validate-btn" id="validate-btn">✅ 验证顺序</button>
+                    <button class="reset-btn" id="reset-btn">🔄 一键重置</button>
+                </div>
+                <div class="feedback" id="feedback">欢迎使用食物链学习工具！请从左侧拖拽生物到右侧轨道构建食物链</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="energy-flow" id="energy-flow"></div>
+
+    <script>
+        // 生物数据
+        const organismsData = [
+            { id: 'grass', name: '草', icon: '🌱', role: '生产者', description: '通过光合作用制造有机物，是生态系统的基础' },
+            { id: 'rabbit', name: '兔', icon: '🐰', role: '初级消费者', description: '以植物为食的草食性动物' },
+            { id: 'locust', name: '蝗虫', icon: '🦗', role: '初级消费者', description: '以植物为食的昆虫' },
+            { id: 'frog', name: '青蛙', icon: '🐸', role: '次级消费者', description: '以昆虫等小型动物为食' },
+            { id: 'snake', name: '蛇', icon: '🐍', role: '三级消费者', description: '以小型哺乳动物、鸟类等为食' },
+            { id: 'wolf', name: '狼', icon: '🐺', role: '顶级消费者', description: '以大型哺乳动物为食的肉食动物' },
+            { id: 'eagle', name: '鹰', icon: '🦅', role: '顶级消费者', description: '天空中的顶级捕食者' },
+            { id: 'mushroom', name: '蘑菇', icon: '🍄', role: '分解者', description: '分解有机物，促进物质循环' },
+            { id: 'organic', name: '有机物', icon: '🧪', role: '有机物', description: '由动植物遗体和排泄物形成，供分解者利用并重新进入循环' }
+        ];
+
+        // 有效捕食关系
+        const validRelationships = {
+            'grass': ['rabbit', 'locust'],
+            'rabbit': ['wolf', 'eagle', 'organic'],
+            'locust': ['frog', 'organic'],
+            'frog': ['snake', 'organic'],
+            'snake': ['eagle', 'organic'],
+            'wolf': ['organic'],
+            'eagle': ['organic'],
+            'mushroom': ['grass'],
+            'organic': ['mushroom']
+        };
+
+        // 当前食物链
+        let currentChain = [];
+
+        // DOM元素
+        const organismsGrid = document.getElementById('organisms-grid');
+        const chainContainer = document.getElementById('chain-container');
+        const validateBtn = document.getElementById('validate-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const feedback = document.getElementById('feedback');
+        const energyFlow = document.getElementById('energy-flow');
+
+        // 显示生物信息（切换小弹窗显示状态）
+        function showOrganismInfo(tooltipEl) {
+            if (!tooltipEl) return;
+
+            const isVisible = tooltipEl.classList.contains('visible');
+
+            // 先关闭其它已打开的弹窗
+            document.querySelectorAll('.tooltip .tooltip-text.visible').forEach(el => {
+                if (el !== tooltipEl) {
+                    el.classList.remove('visible');
+                }
+            });
+
+            // 切换当前这个
+            if (isVisible) {
+                tooltipEl.classList.remove('visible');
+            } else {
+                tooltipEl.classList.add('visible');
+            }
+        }
+
+        // 初始化生物库
+        function initOrganisms() {
+            organismsGrid.innerHTML = '';
+            organismsData.forEach(org => {
+                const item = document.createElement('div');
+                item.className = 'organism-item tooltip';
+                item.draggable = true;
+                item.ondragstart = drag;
+                item.dataset.id = org.id;
+
+                item.innerHTML = `
+                    <div class="info-icon">ⓘ</div>
+                    <div class="organism-icon">${org.icon}</div>
+                    <div class="organism-name">${org.name}</div>
+                    <div class="organism-role">${org.role}</div>
+                    <span class="tooltip-text">${org.role}: ${org.description}</span>
+                `;
+
+                // 支持点击将生物添加到食物链（适配手机触控）
+                item.addEventListener('click', () => {
+                    addToChain(org);
+                });
+
+                const infoIcon = item.querySelector('.info-icon');
+                if (infoIcon) {
+                    infoIcon.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const tooltipEl = item.querySelector('.tooltip-text');
+                        showOrganismInfo(tooltipEl);
+                    });
+                }
+
+                organismsGrid.appendChild(item);
+            });
+        }
+
+        // 拖拽事件
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.closest('.organism-item').dataset.id);
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData("text");
+            const organism = organismsData.find(o => o.id === data);
+            
+            if (organism) {
+                addToChain(organism);
+            }
+        }
+
+        // 添加生物到食物链
+        function addToChain(organism) {
+            // 检查是否已存在（避免重复添加）
+            if (currentChain.some(item => item.id === organism.id)) {
+                showFeedback(`⚠️ ${organism.name} 已在食物链中`, 'error');
+                return;
+            }
+            
+            currentChain.push(organism);
+            renderChain();
+            showFeedback(`✅ ${organism.name} 已添加到食物链`, 'success');
+        }
+
+        // 从食物链移除生物（点击轨道中的卡片时触发）
+        function removeFromChainById(id) {
+            const index = currentChain.findIndex(item => item.id === id);
+            if (index !== -1) {
+                const removed = currentChain.splice(index, 1)[0];
+                renderChain();
+                if (removed) {
+                    showFeedback(`↩️ ${removed.name} 已从食物链移除`, 'success');
+                }
+            }
+        }
+
+        // 渲染食物链
+        function renderChain() {
+            chainContainer.innerHTML = '';
+            
+            currentChain.forEach((org, index) => {
+                const item = document.createElement('div');
+                item.className = 'chain-item';
+                item.draggable = true;
+                item.dataset.id = org.id;
+                item.ondragstart = dragChainItem;
+                
+                // 支持点击将生物从食物链移回（适配手机触控）
+                item.addEventListener('click', () => {
+                    removeFromChainById(org.id);
+                });
+                
+                item.innerHTML = `
+                    <div class="organism-icon">${org.icon}</div>
+                    <div class="organism-name">${org.name}</div>
+                `;
+                
+                chainContainer.appendChild(item);
+                
+                // 添加箭头（除了最后一个元素）
+                if (index < currentChain.length - 1) {
+                    const arrow = document.createElement('div');
+                    arrow.className = 'chain-arrow';
+                    arrow.innerHTML = '→';
+                    chainContainer.appendChild(arrow);
+                }
+            });
+        }
+
+        // 拖拽食物链中的项目
+        function dragChainItem(ev) {
+            ev.dataTransfer.setData("text", ev.target.closest('.chain-item').dataset.id);
+            ev.target.closest('.chain-item').classList.add('dragging');
+        }
+
+        // 验证食物链
+        function validateChain() {
+            if (currentChain.length < 2) {
+                showFeedback('食物链至少需要2个生物', 'error');
+                return;
+            }
+
+            // 检查每个相邻的生物对
+            for (let i = 0; i < currentChain.length - 1; i++) {
+                const current = currentChain[i];
+                const next = currentChain[i + 1];
+                
+                // 检查捕食/物质流动关系
+                if (!validRelationships[current.id] || !validRelationships[current.id].includes(next.id)) {
+                    // 高亮错误节点
+                    highlightError(i, i + 1);
+                    showFeedback(`❌ ${current.name} 不能直接连接到 ${next.name}！`, 'error');
+                    return;
+                }
+            }
+
+            // 验证成功
+            showFeedback('✅ 食物链构建成功！', 'success');
+            playEnergyFlowAnimation();
+        }
+
+        // 高亮错误节点
+        function highlightError(index1, index2) {
+            const items = chainContainer.querySelectorAll('.chain-item');
+            if (items[index1]) items[index1].classList.add('error');
+            if (items[index2]) items[index2].classList.add('error');
+            
+            // 3秒后移除错误样式
+            setTimeout(() => {
+                if (items[index1]) items[index1].classList.remove('error');
+                if (items[index2]) items[index2].classList.remove('error');
+            }, 3000);
+        }
+
+        // 播放能量流动动画
+        function playEnergyFlowAnimation() {
+            energyFlow.classList.add('energy-flow-animation');
+            
+            setTimeout(() => {
+                energyFlow.classList.remove('energy-flow-animation');
+            }, 3000);
+        }
+
+        // 重置食物链
+        function resetChain() {
+            currentChain = [];
+            renderChain();
+            showFeedback('食物链已重置', 'success');
+        }
+
+        // 显示反馈信息
+        function showFeedback(message, type) {
+            feedback.textContent = message;
+            feedback.className = 'feedback ' + type;
+        }
+
+        // 事件监听器
+        validateBtn.addEventListener('click', validateChain);
+        resetBtn.addEventListener('click', resetChain);
+
+        // 初始化
+        initOrganisms();
+        showFeedback('欢迎使用食物链学习工具！请从左侧拖拽生物到右侧轨道构建食物链', 'success');
+    </script>
+    <script src="fullscreen-btn.js"></script>
+</body>
+</html>
+
+
+

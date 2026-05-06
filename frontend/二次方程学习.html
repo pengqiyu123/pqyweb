@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二次方程学习</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            padding: 16px;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        /* 头部 */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 24px 20px;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+
+        .header-actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        /* 成就按钮 */
+        .achieve-btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1f2937;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .achieve-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+        }
+
+        /* 内容区 */
+        .content-area {
+            padding: 24px 20px;
+        }
+
+        /* 卡片通用样式 */
+        .card {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 2px solid #e5e7eb;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 函数显示 */
+        .function-display {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f0f4ff, #e8f4fd);
+            border-radius: 16px;
+            margin-bottom: 16px;
+            border: 2px solid #c7d2fe;
+        }
+
+        .function-display .formula {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #4f46e5;
+            font-family: 'SF Mono', ui-monospace, monospace;
+        }
+
+        .function-display .formula .coef {
+            color: #dc2626;
+        }
+
+        /* 关键点信息 */
+        .key-points {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .key-point {
+            background: white;
+            padding: 14px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #e5e7eb;
+        }
+
+        .key-point .label {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .key-point .value {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .key-point.vertex .value { color: #dc2626; }
+        .key-point.axis .value { color: #7c3aed; }
+        .key-point.intercept .value { color: #ea580c; }
+
+        /* 滑块控制 */
+        .slider-group {
+            margin-bottom: 16px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .slider-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .slider-value {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #667eea;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #e5e7eb, #d1d5db);
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+            transition: transform 0.15s;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            cursor: pointer;
+            border: none;
+        }
+
+        /* 按钮组 */
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .btn {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.35);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        /* 图像与参数布局 */
+        .graph-section {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .graph-section .canvas-card {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .graph-section .params-card {
+            width: 260px;
+            flex-shrink: 0;
+        }
+
+        /* 画布容器 */
+        .canvas-container {
+            background: #0f172a;
+            border-radius: 12px;
+            padding: 12px;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        /* 原理说明 */
+        .principle-section {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            border: 2px solid #a7f3d0;
+        }
+
+        .explanation {
+            font-size: 0.9rem;
+            line-height: 1.8;
+            color: #059669;
+            padding: 14px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            border: 1px solid #a7f3d0;
+        }
+
+        .formula-box {
+            background: linear-gradient(135deg, #f0f4ff, #e8f4fd);
+            padding: 14px 18px;
+            border-radius: 10px;
+            font-family: 'SF Mono', ui-monospace, monospace;
+            font-size: 0.95rem;
+            color: #4f46e5;
+            margin-bottom: 16px;
+            text-align: center;
+            border: 2px solid #c7d2fe;
+        }
+
+        .derivation-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .derivation-steps h4 {
+            font-size: 0.9rem;
+            color: #059669;
+            margin-bottom: 8px;
+        }
+
+        .step {
+            padding: 10px 14px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #10b981;
+            font-family: 'SF Mono', ui-monospace, monospace;
+            font-size: 0.85rem;
+            color: #374151;
+        }
+
+        /* 成就弹窗 */
+        .achievement-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .achievement-modal.show {
+            display: flex;
+        }
+
+        .achievement-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 420px;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .achievement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 24px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1f2937;
+        }
+
+        .achievement-header h2 {
+            margin: 0;
+            font-size: 1.2em;
+        }
+
+        .achievement-header .close-btn {
+            background: none;
+            border: none;
+            color: #1f2937;
+            font-size: 1.6em;
+            cursor: pointer;
+        }
+
+        .achievement-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .achievement-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+        }
+
+        .achievement-item.unlocked {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            border-color: #22c55e;
+        }
+
+        .achievement-item.locked {
+            opacity: 0.5;
+        }
+
+        .achievement-icon {
+            font-size: 2em;
+            width: 50px;
+            text-align: center;
+        }
+
+        .achievement-info {
+            flex: 1;
+        }
+
+        .achievement-name {
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .achievement-desc {
+            font-size: 0.85em;
+            color: #6b7280;
+        }
+
+        .achievement-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1f2937;
+            padding: 14px 28px;
+            border-radius: 30px;
+            box-shadow: 0 8px 30px rgba(251, 191, 36, 0.5);
+            z-index: 2000;
+            animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s;
+            font-weight: 600;
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        @keyframes toastOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .graph-section {
+                flex-direction: column;
+            }
+
+            .graph-section .params-card {
+                width: 100%;
+            }
+
+            .buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding: 24px;
+            }
+
+            .header h1 {
+                font-size: 2.2rem;
+            }
+
+            .header p {
+                font-size: 1rem;
+            }
+
+            .card {
+                padding: 24px;
+            }
+
+            .function-display .formula {
+                font-size: 1.8rem;
+            }
+
+            .buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .graph-section .params-card {
+                width: 280px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .key-points {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📐 二次方程学习</h1>
+            <p>探索 y = ax² + bx + c 的奥秘，理解抛物线的特性</p>
+            <div class="header-actions">
+                <button class="achieve-btn" onclick="showAchievementModal()">🏆 成就</button>
+            </div>
+        </div>
+
+        <!-- 成就弹窗 -->
+        <div class="achievement-modal" id="achievementModal">
+            <div class="achievement-content">
+                <div class="achievement-header">
+                    <h2>🏆 学习成就</h2>
+                    <button class="close-btn" onclick="closeAchievementModal()">×</button>
+                </div>
+                <div class="achievement-list" id="achievementList"></div>
+            </div>
+        </div>
+
+        <div class="content-area">
+        <!-- 函数显示 -->
+        <div class="function-display">
+            <div class="formula">
+                y = <span class="coef" id="aDisplay">1</span>x² + <span class="coef" id="bDisplay">0</span>x + <span class="coef" id="cDisplay">0</span>
+            </div>
+        </div>
+
+        <!-- 关键点信息 -->
+        <div class="key-points">
+            <div class="key-point vertex">
+                <div class="label">顶点坐标</div>
+                <div class="value">(<span id="vertexX">0.00</span>, <span id="vertexY">0.00</span>)</div>
+            </div>
+            <div class="key-point axis">
+                <div class="label">对称轴</div>
+                <div class="value">x = <span id="axisX">0.00</span></div>
+            </div>
+            <div class="key-point intercept">
+                <div class="label">y轴截距</div>
+                <div class="value">(0, <span id="yInterceptY">0.00</span>)</div>
+            </div>
+        </div>
+
+        <!-- 图像与参数并排布局 -->
+        <div class="graph-section">
+            <!-- 图像显示 -->
+            <div class="card canvas-card">
+                <div class="canvas-container">
+                    <canvas id="graphCanvas" width="800" height="500"></canvas>
+                </div>
+            </div>
+
+            <!-- 参数控制 -->
+            <div class="card params-card">
+                <div class="card-title">🎛️ 参数调节</div>
+                
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-label">二次项系数 a</span>
+                        <span class="slider-value" id="aValue">1.0</span>
+                    </div>
+                    <input type="range" id="aSlider" class="slider" min="-5" max="5" step="0.1" value="1" oninput="updateFunction()">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-label">一次项系数 b</span>
+                        <span class="slider-value" id="bValue">0.0</span>
+                    </div>
+                    <input type="range" id="bSlider" class="slider" min="-5" max="5" step="0.1" value="0" oninput="updateFunction()">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-label">常数项 c</span>
+                        <span class="slider-value" id="cValue">0.0</span>
+                    </div>
+                    <input type="range" id="cSlider" class="slider" min="-5" max="5" step="0.1" value="0" oninput="updateFunction()">
+                </div>
+
+                <div class="buttons">
+                    <button class="btn btn-primary" onclick="resetParameters()">🔄 重置</button>
+                    <button class="btn btn-primary" onclick="randomFunction()">🎲 随机</button>
+                    <button class="btn btn-secondary" onclick="toggleGrid()">📐 网格</button>
+                    <button class="btn btn-secondary" onclick="toggleLabels()">🏷️ 标签</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 原理说明 -->
+        <div class="card principle-section">
+            <div class="card-title">🔍 原理说明</div>
+            <div class="explanation" id="explanation">
+                当前函数开口向上，顶点在原点，对称轴为 y 轴
+            </div>
+            
+            <div class="formula-box">
+                顶点公式: x = -b/(2a), y = (4ac-b²)/(4a)
+            </div>
+            
+            <div class="derivation-steps">
+                <h4>📝 配方法推导</h4>
+                <div class="step">① y = ax² + bx + c</div>
+                <div class="step">② y = a(x² + (b/a)x) + c</div>
+                <div class="step">③ y = a(x + b/2a)² - b²/4a + c</div>
+                <div class="step">④ y = a(x + b/2a)² + (4ac-b²)/4a</div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script>
+        // 成就系统
+        const achievements = [
+            { id: 'first_view', name: '初识抛物线', desc: '第一次调整参数观察函数', icon: '👀' },
+            { id: 'adjust_a', name: '开口探索', desc: '调整二次项系数a', icon: '📐' },
+            { id: 'adjust_b', name: '平移探索', desc: '调整一次项系数b', icon: '↔️' },
+            { id: 'adjust_c', name: '上下移动', desc: '调整常数项c', icon: '↕️' },
+            { id: 'negative_a', name: '开口向下', desc: '设置a为负数观察向下开口', icon: '🔻' },
+            { id: 'random_func', name: '随机探索', desc: '使用随机函数功能', icon: '🎲' },
+            { id: 'toggle_grid', name: '网格控制', desc: '切换网格显示', icon: '📏' },
+            { id: 'toggle_labels', name: '标签控制', desc: '切换标签显示', icon: '🏷️' },
+            { id: 'vertex_origin', name: '原点顶点', desc: '让顶点落在原点', icon: '🎯' },
+            { id: 'wide_parabola', name: '宽阔抛物线', desc: '设置|a|<1观察宽抛物线', icon: '🌈' }
+        ];
+
+        let quadData = { unlocked: [], aAdjusted: false, bAdjusted: false, cAdjusted: false };
+
+        function loadQuadData() {
+            try {
+                const saved = localStorage.getItem('quad_achievements');
+                if (saved) quadData = JSON.parse(saved);
+            } catch(e) {}
+        }
+
+        function saveQuadData() {
+            try {
+                localStorage.setItem('quad_achievements', JSON.stringify(quadData));
+            } catch(e) {}
+        }
+
+        function unlockAchievement(id) {
+            if (quadData.unlocked.includes(id)) return false;
+            quadData.unlocked.push(id);
+            saveQuadData();
+            const ach = achievements.find(a => a.id === id);
+            if (ach) showAchievementToast(ach);
+            return true;
+        }
+
+        function showAchievementToast(ach) {
+            const toast = document.createElement('div');
+            toast.className = 'achievement-toast';
+            toast.innerHTML = `${ach.icon} 成就解锁：${ach.name}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function showAchievementModal() {
+            renderAchievementList();
+            document.getElementById('achievementModal').classList.add('show');
+        }
+
+        function closeAchievementModal() {
+            document.getElementById('achievementModal').classList.remove('show');
+        }
+
+        function renderAchievementList() {
+            const list = document.getElementById('achievementList');
+            list.innerHTML = achievements.map(ach => {
+                const unlocked = quadData.unlocked.includes(ach.id);
+                return `
+                    <div class="achievement-item ${unlocked ? 'unlocked' : 'locked'}">
+                        <div class="achievement-icon">${ach.icon}</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">${ach.name}</div>
+                            <div class="achievement-desc">${ach.desc}</div>
+                        </div>
+                        ${unlocked ? '<span style="color:#22c55e;font-size:1.2em">✓</span>' : '<span style="color:#9ca3af">🔒</span>'}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        loadQuadData();
+
+        // 全局变量
+        let a = 1, b = 0, c = 0;
+        let showGrid = true;
+        let showLabels = true;
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // 画布自适应容器宽度
+        function resizeCanvas() {
+            if (!canvas) return;
+            const container = canvas.parentElement;
+            if (!container) return;
+            const baseWidth = 800;
+            const baseHeight = 500;
+            const availableWidth = container.clientWidth ? container.clientWidth - 20 : baseWidth;
+            const width = Math.min(baseWidth, availableWidth);
+            const height = width * (baseHeight / baseWidth);
+            canvas.width = width;
+            canvas.height = height;
+        }
+
+        // 更新函数参数
+        function updateFunction() {
+            // 获取滑块值
+            a = parseFloat(document.getElementById('aSlider').value);
+            b = parseFloat(document.getElementById('bSlider').value);
+            c = parseFloat(document.getElementById('cSlider').value);
+
+            // 更新显示值
+            document.getElementById('aValue').textContent = a.toFixed(1);
+            document.getElementById('bValue').textContent = b.toFixed(1);
+            document.getElementById('cValue').textContent = c.toFixed(1);
+
+            // 更新函数显示
+            document.getElementById('aDisplay').textContent = a;
+            document.getElementById('bDisplay').textContent = b;
+            document.getElementById('cDisplay').textContent = c;
+
+            // 计算顶点坐标
+            const vertexX = -b / (2 * a);
+            const vertexY = a * vertexX * vertexX + b * vertexX + c;
+
+            // 更新信息显示
+            document.getElementById('vertexX').textContent = vertexX.toFixed(2);
+            document.getElementById('vertexY').textContent = vertexY.toFixed(2);
+            document.getElementById('axisX').textContent = vertexX.toFixed(2);
+            document.getElementById('yInterceptY').textContent = c.toFixed(2);
+
+            // 更新解释文本
+            updateExplanation();
+
+            // 绘制图形
+            drawGraph();
+
+            // 成就检查
+            unlockAchievement('first_view');
+            if (!quadData.aAdjusted && a !== 1) {
+                quadData.aAdjusted = true;
+                saveQuadData();
+                unlockAchievement('adjust_a');
+            }
+            if (!quadData.bAdjusted && b !== 0) {
+                quadData.bAdjusted = true;
+                saveQuadData();
+                unlockAchievement('adjust_b');
+            }
+            if (!quadData.cAdjusted && c !== 0) {
+                quadData.cAdjusted = true;
+                saveQuadData();
+                unlockAchievement('adjust_c');
+            }
+            if (a < 0) unlockAchievement('negative_a');
+            if (Math.abs(a) < 1 && a !== 0) unlockAchievement('wide_parabola');
+            if (Math.abs(vertexX) < 0.1 && Math.abs(vertexY) < 0.1) unlockAchievement('vertex_origin');
+        }
+
+        // 更新解释文本
+        function updateExplanation() {
+            let explanation = '';
+            
+            if (a > 0) {
+                explanation += `当 a > 0 时，抛物线开口向上`;
+            } else if (a < 0) {
+                explanation += `当 a < 0 时，抛物线开口向下`;
+            } else {
+                explanation += `当 a = 0 时，这不是二次函数`;
+            }
+
+            if (a !== 0) {
+                if (Math.abs(a) > 1) {
+                    explanation += `，且 |a| > 1，抛物线开口较窄`;
+                } else if (Math.abs(a) < 1) {
+                    explanation += `，且 |a| < 1，抛物线开口较宽`;
+                }
+
+                const vertexX = -b / (2 * a);
+                if (b !== 0) {
+                    explanation += `，对称轴为 x = ${vertexX.toFixed(2)}`;
+                } else {
+                    explanation += `，对称轴为 y 轴`;
+                }
+
+                if (c !== 0) {
+                    explanation += `，图像上下平移 ${c > 0 ? '向上' : '向下'} ${Math.abs(c)} 个单位`;
+                }
+            }
+
+            document.getElementById('explanation').textContent = explanation;
+        }
+
+        // 绘制图形
+        function drawGraph() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const scale = 40; // 每个单位像素数
+
+            // 清空画布 - 深色背景
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, width, height);
+
+            // 绘制网格
+            if (showGrid) {
+                ctx.strokeStyle = 'rgba(148, 163, 184, 0.15)';
+                ctx.lineWidth = 1;
+
+                // 垂直线
+                for (let x = -10; x <= 10; x++) {
+                    ctx.beginPath();
+                    ctx.moveTo(centerX + x * scale, 0);
+                    ctx.lineTo(centerX + x * scale, height);
+                    ctx.stroke();
+                }
+
+                // 水平线
+                for (let y = -10; y <= 10; y++) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, centerY + y * scale);
+                    ctx.lineTo(width, centerY + y * scale);
+                    ctx.stroke();
+                }
+            }
+
+            // 绘制坐标轴
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.6)';
+            ctx.lineWidth = 2;
+
+            // x轴
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(width, centerY);
+            ctx.stroke();
+
+            // y轴
+            ctx.beginPath();
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, height);
+            ctx.stroke();
+
+            // 绘制箭头
+            // x轴箭头
+            ctx.beginPath();
+            ctx.moveTo(width - 10, centerY - 5);
+            ctx.lineTo(width, centerY);
+            ctx.lineTo(width - 10, centerY + 5);
+            ctx.stroke();
+
+            // y轴箭头
+            ctx.beginPath();
+            ctx.moveTo(centerX - 5, 10);
+            ctx.lineTo(centerX, 0);
+            ctx.lineTo(centerX + 5, 10);
+            ctx.stroke();
+
+            // 标记刻度
+            if (showLabels) {
+                ctx.fillStyle = 'rgba(148, 163, 184, 0.7)';
+                ctx.font = '11px -apple-system, sans-serif';
+
+                // x轴刻度
+                for (let x = -10; x <= 10; x++) {
+                    if (x !== 0) {
+                        ctx.fillText(x.toString(), centerX + x * scale - 5, centerY + 15);
+                    }
+                }
+
+                // y轴刻度
+                for (let y = -10; y <= 10; y++) {
+                    if (y !== 0) {
+                        ctx.fillText((-y).toString(), centerX - 15, centerY + y * scale + 4);
+                    }
+                }
+            }
+
+            // 绘制函数曲线
+            ctx.strokeStyle = '#818cf8';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+
+            // 计算函数值并绘制曲线
+            for (let x = -10; x <= 10; x += 0.01) {
+                const screenX = centerX + x * scale;
+                const screenY = centerY - (a * x * x + b * x + c) * scale;
+
+                if (x === -10) {
+                    ctx.moveTo(screenX, screenY);
+                } else {
+                    ctx.lineTo(screenX, screenY);
+                }
+            }
+
+            ctx.stroke();
+
+            // 计算顶点坐标
+            const vertexX = -b / (2 * a);
+            const vertexY = a * vertexX * vertexX + b * vertexX + c;
+            const vertexScreenX = centerX + vertexX * scale;
+            const vertexScreenY = centerY - vertexY * scale;
+
+            // 绘制顶点
+            ctx.fillStyle = '#f87171';
+            ctx.beginPath();
+            ctx.arc(vertexScreenX, vertexScreenY, 7, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // 标注顶点（根据开口方向调整位置，避免与曲线重叠）
+            ctx.fillStyle = '#f87171';
+            ctx.font = '12px -apple-system, sans-serif';
+            const labelOffsetY = a > 0 ? 25 : -15; // 开口向上时标签在下方，开口向下时在上方
+            ctx.fillText(`顶点(${vertexX.toFixed(2)}, ${vertexY.toFixed(2)})`, vertexScreenX + 12, vertexScreenY + labelOffsetY);
+
+            // 绘制对称轴
+            ctx.strokeStyle = '#c084fc';
+            ctx.setLineDash([5, 5]);
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(vertexScreenX, 0);
+            ctx.lineTo(vertexScreenX, height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 标注对称轴
+            ctx.fillStyle = '#c084fc';
+            ctx.fillText(`x = ${vertexX.toFixed(2)}`, vertexScreenX + 10, 20);
+
+            // 绘制y轴截距点
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY - c * scale, 6, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // 标注y轴截距
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillText(`(0, ${c})`, centerX + 10, centerY - c * scale - 10);
+
+            // 计算并绘制x轴截距（如果存在）
+            if (a !== 0) {
+                const discriminant = b * b - 4 * a * c;
+                if (discriminant >= 0) {
+                    const x1 = (-b + Math.sqrt(discriminant)) / (2 * a);
+                    const x2 = (-b - Math.sqrt(discriminant)) / (2 * a);
+
+                    // 绘制x轴截距点
+                    if (x1 >= -width / (2 * scale) && x1 <= width / (2 * scale)) {
+                        const x1Screen = centerX + x1 * scale;
+                        ctx.fillStyle = '#4ade80';
+                        ctx.beginPath();
+                        ctx.arc(x1Screen, centerY, 6, 0, 2 * Math.PI);
+                        ctx.fill();
+                        ctx.fillStyle = '#4ade80';
+                        ctx.fillText(`(${x1.toFixed(2)}, 0)`, x1Screen + 10, centerY - 10);
+                    }
+
+                    if (x2 >= -width / (2 * scale) && x2 <= width / (2 * scale)) {
+                        const x2Screen = centerX + x2 * scale;
+                        ctx.fillStyle = '#4ade80';
+                        ctx.beginPath();
+                        ctx.arc(x2Screen, centerY, 6, 0, 2 * Math.PI);
+                        ctx.fill();
+                        ctx.fillStyle = '#4ade80';
+                        ctx.fillText(`(${x2.toFixed(2)}, 0)`, x2Screen + 10, centerY + 20);
+                    }
+                }
+            }
+        }
+
+        // 重置参数
+        function resetParameters() {
+            document.getElementById('aSlider').value = 1;
+            document.getElementById('bSlider').value = 0;
+            document.getElementById('cSlider').value = 0;
+            updateFunction();
+        }
+
+        // 随机函数
+        function randomFunction() {
+            const newA = (Math.random() * 8 - 4).toFixed(1);
+            const newB = (Math.random() * 8 - 4).toFixed(1);
+            const newC = (Math.random() * 8 - 4).toFixed(1);
+
+            document.getElementById('aSlider').value = newA;
+            document.getElementById('bSlider').value = newB;
+            document.getElementById('cSlider').value = newC;
+            unlockAchievement('random_func');
+            updateFunction();
+        }
+
+        // 切换网格显示
+        function toggleGrid() {
+            showGrid = !showGrid;
+            unlockAchievement('toggle_grid');
+            drawGraph();
+        }
+
+        // 切换刻度和标签显示
+        function toggleLabels() {
+            showLabels = !showLabels;
+            unlockAchievement('toggle_labels');
+            drawGraph();
+        }
+
+        // 页面加载完成后初始化图像
+        document.addEventListener('DOMContentLoaded', function() {
+            resizeCanvas();
+            updateFunction();
+
+            // 窗口尺寸变化时自适应画布
+            window.addEventListener('resize', function() {
+                resizeCanvas();
+                updateFunction();
+            });
+        });
+    </script>
+    <script src="fullscreen-btn.js"></script>
+</body>
+</html>

@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>偏旁部首拼汉字</title>
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --accent: #0ea5e9;
+            --text: #1f2937;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --border: #e5e7eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1120px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 24px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        h1 {
+            font-size: 32px;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+
+        .intro {
+            font-size: 16px;
+            color: #6b7280;
+            max-width: 800px;
+            margin: 0 auto 24px;
+        }
+
+        .main-card {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 32px;
+            margin-bottom: 32px;
+        }
+
+        @media (max-width: 992px) {
+            .main-card {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+
+        .radical-display {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .radical-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .radical-pinyin {
+            font-size: 16px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .radical-meaning {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .change-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .change-btn:hover {
+            background-color: #256316;
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .compose-area {
+            min-height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-size: 64px;
+            background-color: #fafafa;
+        }
+
+        .compose-result {
+            font-size: 64px;
+        }
+
+        .compose-meaning {
+            margin-top: 8px;
+            font-size: 16px;
+            color: #4b5563;
+            text-align: center;
+        }
+
+        .candidates {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 992px) {
+            .candidates {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .candidate-btn {
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background-color: white;
+            font-size: 24px;
+            cursor: grab;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .candidate-btn:hover {
+            border-color: var(--accent);
+            box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.2);
+        }
+
+        .candidate-btn:active {
+            cursor: grabbing;
+        }
+
+        .candidate-btn.success {
+            border-color: var(--success);
+            background-color: #ecfdf5;
+        }
+
+        .candidate-btn.failed {
+            border-color: #ef4444;
+            background-color: #fef2f2;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .control-btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .control-btn:hover {
+            background-color: #0284c7;
+        }
+
+        .clear-btn { background-color: #6b7280; }
+        .clear-btn:hover { background-color: #4b5563; }
+        
+        .hint-btn { background-color: var(--warning); }
+        .hint-btn:hover { background-color: #d97706; }
+        
+        .library-btn { background-color: #8b5cf6; }
+        .library-btn:hover { background-color: #7c3aed; }
+        
+        .speak-btn { background-color: #10b981; }
+        .speak-btn:hover { background-color: #059669; }
+
+        .success-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 32px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-char {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .modal-pinyin {
+            font-size: 24px;
+            margin-bottom: 16px;
+            color: var(--primary);
+        }
+
+        .modal-meaning {
+            font-size: 18px;
+            margin-bottom: 16px;
+        }
+
+        .modal-examples {
+            font-size: 16px;
+            margin-bottom: 24px;
+            color: #6b7280;
+        }
+
+        .close-modal {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .library-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .library-content {
+            background-color: white;
+            padding: 24px;
+            border-radius: 12px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .library-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        .library-table th,
+        .library-table td {
+            border: 1px solid var(--border);
+            padding: 8px;
+            text-align: left;
+        }
+
+        .library-table th {
+            background-color: #f3f4f6;
+        }
+
+        .learning-area {
+            padding: 24px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+
+        .learning-area h2 {
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+
+        .radical-info {
+            margin-bottom: 16px;
+        }
+
+        .structure-info {
+            margin-top: 16px;
+        }
+
+        .structure-example {
+            display: inline-block;
+            margin: 0 8px;
+            font-size: 18px;
+        }
+
+        .question-desc {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #6b7280;
+            text-align: center;
+        }
+
+        .stats-bar {
+            margin-top: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            font-size: 14px;
+            color: #4b5563;
+        }
+
+        .stats-item {
+            padding: 4px 10px;
+            background-color: #f3f4f6;
+            border-radius: 999px;
+        }
+
+        .stats-item span {
+            font-weight: bold;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>偏旁部首拼汉字</h1>
+            <p class="intro">汉字由偏旁部首和其他部件组成，认识常见部件有助于识字与书写。本页可通过“偏旁 + 右侧汉字”的组合来学习常见汉字。</p>
+        </header>
+
+        <div class="main-card">
+            <div class="left-panel">
+                <div class="radical-display" id="radical-display">氵</div>
+                <div class="radical-name" id="radical-name">三点水</div>
+                <div class="radical-pinyin" id="radical-pinyin">sān diǎn shuǐ</div>
+                <div class="radical-meaning" id="radical-meaning"></div>
+                <button class="change-btn" id="change-btn">更换一题</button>
+            </div>
+
+            <div class="right-panel">
+                <div class="compose-area" id="compose-area">
+                    <div>
+                        <div class="compose-result" id="compose-result">拖拽汉字到此</div>
+                        <div class="compose-meaning" id="compose-meaning"></div>
+                    </div>
+                </div>
+
+                <div class="question-desc" id="question-desc"></div>
+
+                <div class="candidates" id="candidates">
+                    <!-- 候选汉字将通过JS生成 -->
+                </div>
+
+                <div class="controls">
+                    <button class="control-btn clear-btn" id="clear-btn">清除</button>
+                    <button class="control-btn hint-btn" id="hint-btn">提示</button>
+                    <button class="control-btn library-btn" id="library-btn">查看字库</button>
+                    <button class="control-btn speak-btn" id="speak-btn">发音</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stats-item">已练：<span id="stats-total">0</span> 题</div>
+            <div class="stats-item">答对：<span id="stats-correct">0</span> 题</div>
+            <div class="stats-item">正确率：<span id="stats-accuracy">0%</span></div>
+        </div>
+
+        <div class="learning-area">
+            <h2>汉字结构学习</h2>
+            <div class="radical-info">
+                <p><strong>常见偏旁说明：</strong></p>
+                <p>氵常与水、液体有关；讠常与说话、语言有关；女常与女性或礼貌有关；忄常与情感、心理有关；扌常与手部动作有关。</p>
+            </div>
+            <div class="structure-info">
+                <p><strong>汉字结构类型：</strong></p>
+                <p>左右结构（如：江、好）、上下结构（如：思、雷）、全包围结构（如：国、园）、半包围结构（如：边、远）、品字结构（如：众、森）</p>
+                <p>示例：
+                    <span class="structure-example">江（左右）</span>
+                    <span class="structure-example">思（上下）</span>
+                    <span class="structure-example">国（全包围）</span>
+                    <span class="structure-example">边（半包围）</span>
+                    <span class="structure-example">众（品字）</span>
+                </p>
+            </div>
+
+            <div class="radical-overview" style="margin-top: 16px;">
+                <h3>常用表意偏旁总览（79 个）</h3>
+                <table class="library-table">
+                    <thead>
+                        <tr>
+                            <th>编号</th>
+                            <th>偏旁</th>
+                            <th>名称/变体</th>
+                            <th>大致含义</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>亻</td><td>人字旁（人）</td><td>多与人、人物、行为有关</td></tr>
+                        <tr><td>2</td><td>女</td><td>女字旁</td><td>多与女性、性格、礼貌有关</td></tr>
+                        <tr><td>3</td><td>口</td><td>口字旁</td><td>多与嘴巴、说话、声音有关</td></tr>
+                        <tr><td>4</td><td>扌</td><td>手字旁（扌）</td><td>多与手的动作、操作有关</td></tr>
+                        <tr><td>5</td><td>忄</td><td>心字旁（忄）</td><td>多与心理、情感、心情有关</td></tr>
+                        <tr><td>6</td><td>目</td><td>目字旁</td><td>多与眼睛、看见有关</td></tr>
+                        <tr><td>7</td><td>耳</td><td>耳字旁</td><td>多与耳朵、听觉有关</td></tr>
+                        <tr><td>8</td><td>足</td><td>足字旁（⻊）</td><td>多与脚、行走有关</td></tr>
+                        <tr><td>9</td><td>⺼</td><td>肉字旁（⺼/月）</td><td>多与身体、肉、器官有关</td></tr>
+                        <tr><td>10</td><td>骨</td><td>骨字旁</td><td>多与骨头、骨骼有关</td></tr>
+                        <tr><td>11</td><td>齿</td><td>齿字旁</td><td>多与牙齿、咬合有关</td></tr>
+                        <tr><td>12</td><td>面</td><td>面字旁</td><td>多与脸面、外表、表面有关</td></tr>
+                        <tr><td>13</td><td>首</td><td>首字旁</td><td>多与头、首位、领导有关</td></tr>
+                        <tr><td>14</td><td>页</td><td>页字旁</td><td>多与头、脸、器官有关</td></tr>
+                        <tr><td>15</td><td>见</td><td>见字旁</td><td>多与看见、视线有关</td></tr>
+                        <tr><td>16</td><td>虫</td><td>虫字旁</td><td>多与昆虫、小动物有关</td></tr>
+                        <tr><td>17</td><td>鱼</td><td>鱼字旁</td><td>多与鱼类、水生动物有关</td></tr>
+                        <tr><td>18</td><td>鸟</td><td>鸟字旁</td><td>多与鸟类、飞禽有关</td></tr>
+                        <tr><td>19</td><td>犭</td><td>反犬旁（犭）</td><td>多与兽类、动物性格有关</td></tr>
+                        <tr><td>20</td><td>牜</td><td>牛字旁（牜）</td><td>多与牛、家畜、力气有关</td></tr>
+                        <tr><td>21</td><td>马</td><td>马字旁</td><td>多与马、奔跑有关</td></tr>
+                        <tr><td>22</td><td>羊</td><td>羊字旁</td><td>多与羊、祥和、善良有关</td></tr>
+                        <tr><td>23</td><td>豕</td><td>豕字旁</td><td>多与猪、家畜有关</td></tr>
+                        <tr><td>24</td><td>鼠</td><td>鼠字旁</td><td>多与老鼠、啮齿动物有关</td></tr>
+                        <tr><td>25</td><td>龙</td><td>龙字旁</td><td>多与龙、威严、吉祥有关</td></tr>
+                        <tr><td>26</td><td>虎</td><td>虎字旁</td><td>多与老虎、威猛有关</td></tr>
+                        <tr><td>27</td><td>鹿</td><td>鹿字旁</td><td>多与鹿、山林有关</td></tr>
+                        <tr><td>28</td><td>日</td><td>日字旁</td><td>多与太阳、时间、光亮有关</td></tr>
+                        <tr><td>29</td><td>月</td><td>月字旁（月亮）</td><td>多与月亮、时间有关</td></tr>
+                        <tr><td>30</td><td>雨</td><td>雨字头</td><td>多与天气、降水有关</td></tr>
+                        <tr><td>31</td><td>风</td><td>风字旁</td><td>多与风、气流有关</td></tr>
+                        <tr><td>32</td><td>雷</td><td>雷字旁</td><td>多与雷电、震动有关</td></tr>
+                        <tr><td>33</td><td>电</td><td>电字旁</td><td>多与电、能量有关</td></tr>
+                        <tr><td>34</td><td>山</td><td>山字旁</td><td>多与山岳、地形有关</td></tr>
+                        <tr><td>35</td><td>川</td><td>川字旁</td><td>多与河流、水流有关</td></tr>
+                        <tr><td>36</td><td>氵</td><td>水字旁（氵）</td><td>多与水、液体、江河有关</td></tr>
+                        <tr><td>37</td><td>火</td><td>火字旁</td><td>多与火焰、热、光有关</td></tr>
+                        <tr><td>38</td><td>土</td><td>土字旁</td><td>多与土地、泥土、位置有关</td></tr>
+                        <tr><td>39</td><td>石</td><td>石字旁</td><td>多与石头、矿物有关</td></tr>
+                        <tr><td>40</td><td>木</td><td>木字旁</td><td>多与树木、木材有关</td></tr>
+                        <tr><td>41</td><td>艹</td><td>草字头（艹）</td><td>多与草木、植物有关</td></tr>
+                        <tr><td>42</td><td>禾</td><td>禾字旁</td><td>多与庄稼、谷物有关</td></tr>
+                        <tr><td>43</td><td>米</td><td>米字旁</td><td>多与米、粮食、小颗粒有关</td></tr>
+                        <tr><td>44</td><td>麦</td><td>麦字旁</td><td>多与麦子、谷物有关</td></tr>
+                        <tr><td>45</td><td>黑</td><td>黑字旁</td><td>多与黑色、黑暗有关</td></tr>
+                        <tr><td>46</td><td>钅</td><td>金字旁（钅）</td><td>多与金属、钱财、器物有关</td></tr>
+                        <tr><td>47</td><td>王</td><td>玉字旁（王）</td><td>多与玉石、美好、尊贵有关</td></tr>
+                        <tr><td>48</td><td>贝</td><td>贝字旁</td><td>多与钱财、价值有关</td></tr>
+                        <tr><td>49</td><td>衤</td><td>衣字旁（衤）</td><td>多与衣服、穿着有关</td></tr>
+                        <tr><td>50</td><td>饣</td><td>食字旁（饣）</td><td>多与吃喝、食物有关</td></tr>
+                        <tr><td>51</td><td>纟</td><td>绞丝旁（纟）</td><td>多与线、布、颜色有关</td></tr>
+                        <tr><td>52</td><td>革</td><td>革字旁</td><td>多与皮革、鞋包有关</td></tr>
+                        <tr><td>53</td><td>韦</td><td>韦字旁</td><td>多与熟皮、包裹有关</td></tr>
+                        <tr><td>54</td><td>酉</td><td>酉字旁</td><td>多与酒、发酵、调味有关</td></tr>
+                        <tr><td>55</td><td>皿</td><td>皿字旁</td><td>多与器皿、容器有关</td></tr>
+                        <tr><td>56</td><td>罒</td><td>网字旁（罒）</td><td>多与网、围住、罪名有关</td></tr>
+                        <tr><td>57</td><td>宀</td><td>宝盖头（宀）</td><td>多与房屋、家庭、居所有关</td></tr>
+                        <tr><td>58</td><td>广</td><td>广字旁</td><td>多与房屋、场所、店铺有关</td></tr>
+                        <tr><td>59</td><td>厂</td><td>厂字旁</td><td>多与山崖、工厂、房屋有关</td></tr>
+                        <tr><td>60</td><td>尸</td><td>尸字旁</td><td>多与身体姿态、屋舍有关</td></tr>
+                        <tr><td>61</td><td>门</td><td>门字旁</td><td>多与门、出入、宗派有关</td></tr>
+                        <tr><td>62</td><td>车</td><td>车字旁</td><td>多与车辆、交通有关</td></tr>
+                        <tr><td>63</td><td>舟</td><td>舟字旁</td><td>多与船只、航行有关</td></tr>
+                        <tr><td>64</td><td>讠</td><td>言字旁（讠）</td><td>多与说话、语言、文字有关</td></tr>
+                        <tr><td>65</td><td>礻</td><td>示字旁（礻）</td><td>多与祭祀、神灵、礼仪有关</td></tr>
+                        <tr><td>66</td><td>疒</td><td>病字旁（疒）</td><td>多与疾病、身体状态有关</td></tr>
+                        <tr><td>67</td><td>鬼</td><td>鬼字旁</td><td>多与鬼怪、魂魄有关</td></tr>
+                        <tr><td>68</td><td>音</td><td>音字旁</td><td>多与声音、音乐有关</td></tr>
+                        <tr><td>69</td><td>香</td><td>香字旁</td><td>多与香气、气味有关</td></tr>
+                        <tr><td>70</td><td>刂</td><td>立刀旁（刂）</td><td>多与刀具、切割有关</td></tr>
+                        <tr><td>71</td><td>弓</td><td>弓字旁</td><td>多与弓箭、张弛有关</td></tr>
+                        <tr><td>72</td><td>戈</td><td>戈字旁</td><td>多与战争、武器有关</td></tr>
+                        <tr><td>73</td><td>斤</td><td>斤字旁</td><td>多与斧斤、劈砍有关</td></tr>
+                        <tr><td>74</td><td>矢</td><td>矢字旁</td><td>多与箭、发誓有关</td></tr>
+                        <tr><td>75</td><td>穴</td><td>穴字旁</td><td>多与洞穴、空处有关</td></tr>
+                        <tr><td>76</td><td>匚</td><td>匚字旁</td><td>多与方形容器、盛放有关</td></tr>
+                        <tr><td>77</td><td>匸</td><td>匸字旁</td><td>多与隐藏、包围有关</td></tr>
+                        <tr><td>78</td><td>田</td><td>田字旁</td><td>多与田地、格子、农事有关</td></tr>
+                        <tr><td>79</td><td>力</td><td>力字旁</td><td>多与力量、用力有关</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="success-modal" id="success-modal">
+        <div class="modal-content">
+            <div class="modal-char" id="modal-char">江</div>
+            <div class="modal-pinyin" id="modal-pinyin">jiāng</div>
+            <div class="modal-meaning" id="modal-meaning">江河</div>
+            <div class="modal-examples" id="modal-examples">例：江河、长江</div>
+            <button class="speak-btn" id="modal-speak-btn">朗读</button>
+            <button class="close-modal" id="close-modal">关闭</button>
+        </div>
+    </div>
+
+    <div class="library-modal" id="library-modal">
+        <div class="library-content">
+            <h2>字库对照表</h2>
+            <table class="library-table">
+                <thead>
+                    <tr>
+                        <th>偏旁</th>
+                        <th>右侧汉字</th>
+                        <th>合成汉字</th>
+                        <th>拼音</th>
+                        <th>释义/例词</th>
+                    </tr>
+                </thead>
+                <tbody id="library-tbody">
+                    <!-- 表格内容将通过JS生成 -->
+                </tbody>
+            </table>
+            <button class="close-modal" id="close-library">关闭</button>
+        </div>
+    </div>
+
+    <script>
+        // 题库数据
+        const questionBank = [
+            {
+                radical: '氵',
+                radicalName: '三点水',
+                radicalPinyin: 'sān diǎn shuǐ',
+                radicalMeaning: '多与水、液体、江河有关',
+                candidates: [
+                    { char: '工', pinyin: 'gōng', result: { char: '江', pinyin: 'jiāng', meaning: '江河', examples: '江河、长江' } },
+                    { char: '羊', pinyin: 'yáng', result: { char: '洋', pinyin: 'yáng', meaning: '海洋', examples: '海洋、洋流' } },
+                    { char: '青', pinyin: 'qīng', result: { char: '清', pinyin: 'qīng', meaning: '清洁', examples: '清水、清洁' } }
+                ]
+            },
+            {
+                radical: '口',
+                radicalName: '口字旁',
+                radicalPinyin: 'kǒu zì páng',
+                radicalMeaning: '多与嘴巴、说话、声音有关',
+                candidates: [
+                    { char: '丁', pinyin: 'dīng', result: { char: '叮', pinyin: 'dīng', meaning: '叮当', examples: '叮当、叮嘱' } },
+                    { char: '马', pinyin: 'mǎ', result: { char: '吗', pinyin: 'ma', meaning: '疑问助词', examples: '好吗、你好吗' } },
+                    { char: '巴', pinyin: 'bā', result: { char: '吧', pinyin: 'ba', meaning: '语气助词', examples: '走吧、好吧' } }
+                ]
+            },
+            {
+                radical: '女',
+                radicalName: '女字旁',
+                radicalPinyin: 'nǚ zì páng',
+                radicalMeaning: '多与女性、性格、礼貌有关',
+                candidates: [
+                    { char: '子', pinyin: 'zǐ', result: { char: '好', pinyin: 'hǎo', meaning: '友好', examples: '友好、好学' } },
+                    { char: '马', pinyin: 'mǎ', result: { char: '妈', pinyin: 'mā', meaning: '母亲', examples: '妈妈、母亲' } },
+                    { char: '也', pinyin: 'yě', result: { char: '她', pinyin: 'tā', meaning: '女性代词', examples: '她们、她的' } }
+                ]
+            },
+            {
+                radical: '忄',
+                radicalName: '竖心旁',
+                radicalPinyin: 'shù xīn páng',
+                radicalMeaning: '多与心理、情感、心情有关',
+                candidates: [
+                    { char: '青', pinyin: 'qīng', result: { char: '情', pinyin: 'qíng', meaning: '感情', examples: '感情、情绪' } },
+                    { char: '白', pinyin: 'bái', result: { char: '怕', pinyin: 'pà', meaning: '害怕', examples: '害怕、恐怕' } },
+                    { char: '少', pinyin: 'shǎo', result: { char: '忙', pinyin: 'máng', meaning: '忙碌', examples: '忙碌、繁忙' } }
+                ]
+            },
+            {
+                radical: '扌',
+                radicalName: '提手旁',
+                radicalPinyin: 'tí shǒu páng',
+                radicalMeaning: '多与手的动作、操作有关',
+                candidates: [
+                    { char: '丁', pinyin: 'dīng', result: { char: '打', pinyin: 'dǎ', meaning: '击打', examples: '打球、打字' } },
+                    { char: '斤', pinyin: 'jīn', result: { char: '折', pinyin: 'zhé', meaning: '折叠', examples: '折叠、打折' } },
+                    { char: '合', pinyin: 'hé', result: { char: '拾', pinyin: 'shí', meaning: '捡起', examples: '拾起、收拾' } }
+                ]
+            },
+            {
+                radical: '讠',
+                radicalName: '言字旁',
+                radicalPinyin: 'yán zì páng',
+                radicalMeaning: '多与说话、语言、言语有关',
+                candidates: [
+                    { char: '人', pinyin: 'rén', result: { char: '认', pinyin: 'rèn', meaning: '认识', examples: '认识、确认' } },
+                    { char: '午', pinyin: 'wǔ', result: { char: '许', pinyin: 'xǔ', meaning: '许可', examples: '许可、也许' } },
+                    { char: '青', pinyin: 'qīng', result: { char: '请', pinyin: 'qǐng', meaning: '请求', examples: '请问、邀请' } }
+                ]
+            },
+            {
+                radical: '木',
+                radicalName: '木字旁',
+                radicalPinyin: 'mù zì páng',
+                radicalMeaning: '多与树木、木头、植物有关',
+                candidates: [
+                    { char: '子', pinyin: 'zǐ', result: { char: '李', pinyin: 'lǐ', meaning: '李树', examples: '李子、李先生' } },
+                    { char: '目', pinyin: 'mù', result: { char: '相', pinyin: 'xiāng/xiàng', meaning: '互相', examples: '相同、相片' } },
+                    { char: '寸', pinyin: 'cùn', result: { char: '村', pinyin: 'cūn', meaning: '村庄', examples: '村庄、农村' } }
+                ]
+            },
+            {
+                radical: '钅',
+                radicalName: '金字旁',
+                radicalPinyin: 'jīn zì páng',
+                radicalMeaning: '多与金属、钱财、器物有关',
+                candidates: [
+                    { char: '今', pinyin: 'jīn', result: { char: '钦', pinyin: 'qīn', meaning: '钦佩', examples: '钦佩、钦点' } },
+                    { char: '少', pinyin: 'shǎo', result: { char: '钞', pinyin: 'chāo', meaning: '纸币', examples: '纸钞、钞票' } },
+                    { char: '中', pinyin: 'zhōng', result: { char: '钟', pinyin: 'zhōng', meaning: '时钟', examples: '时钟、钟表' } }
+                ]
+            },
+            {
+                radical: '亻',
+                radicalName: '单人旁',
+                radicalPinyin: 'dān rén páng',
+                radicalMeaning: '多与人、人物、行为有关',
+                candidates: [
+                    { char: '可', pinyin: 'kě', result: { char: '何', pinyin: 'hé', meaning: '什么', examples: '为何、如何' } },
+                    { char: '主', pinyin: 'zhǔ', result: { char: '住', pinyin: 'zhù', meaning: '居住', examples: '居住、住在' } },
+                    { char: '言', pinyin: 'yán', result: { char: '信', pinyin: 'xìn', meaning: '相信', examples: '写信、相信' } }
+                ]
+            },
+            {
+                radical: '辶',
+                radicalName: '走之旁',
+                radicalPinyin: 'zǒu zhī páng',
+                radicalMeaning: '多与行走、路程、移动有关',
+                candidates: [
+                    { char: '斤', pinyin: 'jīn', result: { char: '近', pinyin: 'jìn', meaning: '靠近', examples: '接近、靠近' } },
+                    { char: '寸', pinyin: 'cùn', result: { char: '过', pinyin: 'guò', meaning: '经过', examples: '经过、过河' } },
+                    { char: '文', pinyin: 'wén', result: { char: '这', pinyin: 'zhè', meaning: '这个', examples: '这个、这边' } }
+                ]
+            },
+            {
+                radical: '目',
+                radicalName: '目字旁',
+                radicalPinyin: 'mù zì páng',
+                radicalMeaning: '多与眼睛、视力、看见有关',
+                candidates: [
+                    { char: '丁', pinyin: 'dīng', result: { char: '盯', pinyin: 'dīng', meaning: '注视、紧紧看', examples: '盯住、盯着' } },
+                    { char: '艮', pinyin: 'gèn', result: { char: '眼', pinyin: 'yǎn', meaning: '眼睛', examples: '眼睛、眼神' } },
+                    { char: '青', pinyin: 'qīng', result: { char: '睛', pinyin: 'jīng', meaning: '眼珠、眼睛', examples: '眼睛、眼珠' } }
+                ]
+            },
+            {
+                radical: '耳',
+                radicalName: '耳字旁',
+                radicalPinyin: 'ěr zì páng',
+                radicalMeaning: '多与耳朵、听觉有关',
+                candidates: [
+                    { char: '门', pinyin: 'mén', result: { char: '闻', pinyin: 'wén', meaning: '听到、闻到', examples: '新闻、听闻' } },
+                    { char: '卯', pinyin: 'mǎo', result: { char: '聊', pinyin: 'liáo', meaning: '交谈、聊天', examples: '聊天、聊一聊' } },
+                    { char: '止', pinyin: 'zhǐ', result: { char: '耻', pinyin: 'chǐ', meaning: '羞耻', examples: '羞耻、知耻' } }
+                ]
+            },
+            {
+                radical: '足',
+                radicalName: '足字旁',
+                radicalPinyin: 'zú zì páng',
+                radicalMeaning: '多与脚、行走、运动有关',
+                candidates: [
+                    { char: '包', pinyin: 'bāo', result: { char: '跑', pinyin: 'pǎo', meaning: '奔跑', examples: '跑步、跑走' } },
+                    { char: '各', pinyin: 'gè', result: { char: '路', pinyin: 'lù', meaning: '道路', examples: '马路、公路' } },
+                    { char: '兆', pinyin: 'zhào', result: { char: '跳', pinyin: 'tiào', meaning: '跳跃', examples: '跳高、跳舞' } }
+                ]
+            },
+            {
+                radical: '月',
+                radicalName: '肉月旁',
+                radicalPinyin: 'ròu yuè páng',
+                radicalMeaning: '多与身体、肌肉、内脏有关',
+                candidates: [
+                    { char: '半', pinyin: 'bàn', result: { char: '胖', pinyin: 'pàng', meaning: '肥胖', examples: '胖瘦、胖乎乎' } },
+                    { char: '土', pinyin: 'tǔ', result: { char: '肚', pinyin: 'dù', meaning: '肚子', examples: '肚子、肚皮' } },
+                    { char: '各', pinyin: 'gè', result: { char: '胳', pinyin: 'gē', meaning: '胳膊', examples: '胳膊、胳膊肘' } }
+                ]
+            },
+            {
+                radical: '骨',
+                radicalName: '骨字旁',
+                radicalPinyin: 'gǔ zì páng',
+                radicalMeaning: '多与骨头、骨骼有关',
+                candidates: [
+                    { char: '各', pinyin: 'gè', result: { char: '骼', pinyin: 'gé', meaning: '骨骼', examples: '骨骼、骸骨' } },
+                    { char: '亥', pinyin: 'hài', result: { char: '骸', pinyin: 'hái', meaning: '骨骸', examples: '骸骨、遗骸' } },
+                    { char: '隋', pinyin: 'suí', result: { char: '髓', pinyin: 'suǐ', meaning: '骨髓', examples: '骨髓、脑髓' } }
+                ]
+            },
+            {
+                radical: '齿',
+                radicalName: '齿字旁',
+                radicalPinyin: 'chǐ zì páng',
+                radicalMeaning: '多与牙齿、咬合有关',
+                candidates: [
+                    { char: '令', pinyin: 'lìng', result: { char: '龄', pinyin: 'líng', meaning: '年齡', examples: '年龄、高龄' } },
+                    { char: '艮', pinyin: 'gèn', result: { char: '龈', pinyin: 'yín', meaning: '牙龈', examples: '牙龈、龈炎' } },
+                    { char: '区', pinyin: 'qū', result: { char: '龋', pinyin: 'qǔ', meaning: '龋齿', examples: '龋齿、虫牙' } }
+                ]
+            },
+            {
+                radical: '虫',
+                radicalName: '虫字旁',
+                radicalPinyin: 'chóng zì páng',
+                radicalMeaning: '多与昆虫、小动物有关',
+                candidates: [
+                    { char: '文', pinyin: 'wén', result: { char: '蚊', pinyin: 'wén', meaning: '蚊子', examples: '蚊子、蚊虫' } },
+                    { char: '马', pinyin: 'mǎ', result: { char: '蚂', pinyin: 'mǎ', meaning: '多用于“蚂蚁”等词语', examples: '蚂蚁、蚂蟥' } },
+                    { char: '它', pinyin: 'tā', result: { char: '蛇', pinyin: 'shé', meaning: '蛇', examples: '蛇形、毒蛇' } }
+                ]
+            },
+            {
+                radical: '鱼',
+                radicalName: '鱼字旁',
+                radicalPinyin: 'yú zì páng',
+                radicalMeaning: '多与鱼类、水生动物有关',
+                candidates: [
+                    { char: '里', pinyin: 'lǐ', result: { char: '鲤', pinyin: 'lǐ', meaning: '鲤鱼', examples: '鲤鱼、鱼跃龙门' } },
+                    { char: '羊', pinyin: 'yáng', result: { char: '鲜', pinyin: 'xiān', meaning: '新鲜、味道好', examples: '新鲜、鲜鱼' } },
+                    { char: '京', pinyin: 'jīng', result: { char: '鲸', pinyin: 'jīng', meaning: '鲸鱼', examples: '鲸鱼、蓝鲸' } }
+                ]
+            },
+            {
+                radical: '鸟',
+                radicalName: '鸟字旁',
+                radicalPinyin: 'niǎo zì páng',
+                radicalMeaning: '多与鸟类、飞禽有关',
+                candidates: [
+                    { char: '口', pinyin: 'kǒu', result: { char: '鸣', pinyin: 'míng', meaning: '发出叫声', examples: '鸣叫、共鸣' } },
+                    { char: '牙', pinyin: 'yá', result: { char: '鸦', pinyin: 'yā', meaning: '乌鸦', examples: '乌鸦、寒鸦' } },
+                    { char: '合', pinyin: 'hé', result: { char: '鸽', pinyin: 'gē', meaning: '鸽子', examples: '鸽子、信鸽' } }
+                ]
+            },
+            {
+                radical: '犭',
+                radicalName: '反犬旁',
+                radicalPinyin: 'fǎn quǎn páng',
+                radicalMeaning: '多与兽类、动物性格有关',
+                candidates: [
+                    { char: '句', pinyin: 'jù', result: { char: '狗', pinyin: 'gǒu', meaning: '狗', examples: '小狗、狗叫' } },
+                    { char: '良', pinyin: 'liáng', result: { char: '狼', pinyin: 'láng', meaning: '狼', examples: '狼群、恶狼' } },
+                    { char: '苗', pinyin: 'miáo', result: { char: '猫', pinyin: 'māo', meaning: '猫', examples: '小猫、花猫' } }
+                ]
+            },
+            {
+                radical: '牜',
+                radicalName: '牛字旁',
+                radicalPinyin: 'niú zì páng',
+                radicalMeaning: '多与牛、家畜、力气有关',
+                candidates: [
+                    { char: '勿', pinyin: 'wù', result: { char: '物', pinyin: 'wù', meaning: '事物、东西', examples: '动物、万物' } },
+                    { char: '生', pinyin: 'shēng', result: { char: '牲', pinyin: 'shēng', meaning: '牲畜', examples: '牲畜、祭牲' } },
+                    { char: '玄', pinyin: 'xuán', result: { char: '牵', pinyin: 'qiān', meaning: '牵引、拉', examples: '牵牛、牵手' } }
+                ]
+            },
+            {
+                radical: '马',
+                radicalName: '马字旁',
+                radicalPinyin: 'mǎ zì páng',
+                radicalMeaning: '多与马、奔跑、交通工具有关',
+                candidates: [
+                    { char: '吕', pinyin: 'lǚ', result: { char: '驴', pinyin: 'lǘ', meaning: '驴子', examples: '毛驴、骑驴' } },
+                    { char: '史', pinyin: 'shǐ', result: { char: '驶', pinyin: 'shǐ', meaning: '驾驶、行驶', examples: '驾驶、驶过' } },
+                    { char: '奇', pinyin: 'qí', result: { char: '骑', pinyin: 'qí', meaning: '骑乘', examples: '骑马、骑车' } }
+                ]
+            },
+            {
+                radical: '羊',
+                radicalName: '羊字旁',
+                radicalPinyin: 'yáng zì páng',
+                radicalMeaning: '多与羊、祥和、美好有关',
+                candidates: [
+                    { char: '大', pinyin: 'dà', result: { char: '美', pinyin: 'měi', meaning: '美好、美丽', examples: '美丽、美好' } },
+                    { char: '示', pinyin: 'shì', result: { char: '祥', pinyin: 'xiáng', meaning: '吉祥', examples: '吉祥、祥和' } },
+                    { char: '君', pinyin: 'jūn', result: { char: '群', pinyin: 'qún', meaning: '成群、一群', examples: '羊群、人群' } }
+                ]
+            },
+            {
+                radical: '日',
+                radicalName: '日字旁',
+                radicalPinyin: 'rì zì páng',
+                radicalMeaning: '多与太阳、时间、光亮有关',
+                candidates: [
+                    { char: '青', pinyin: 'qīng', result: { char: '晴', pinyin: 'qíng', meaning: '晴朗、天气好', examples: '晴天、放晴' } },
+                    { char: '月', pinyin: 'yuè', result: { char: '明', pinyin: 'míng', meaning: '明亮、清楚', examples: '明亮、说明' } },
+                    { char: '免', pinyin: 'miǎn', result: { char: '晚', pinyin: 'wǎn', meaning: '傍晚、晚上', examples: '早晚、晚安' } }
+                ]
+            },
+            {
+                radical: '雨',
+                radicalName: '雨字头',
+                radicalPinyin: 'yǔ zì tóu',
+                radicalMeaning: '多与天气、降水有关',
+                candidates: [
+                    { char: '彐', pinyin: 'jì', result: { char: '雪', pinyin: 'xuě', meaning: '雪花', examples: '下雪、雪花' } },
+                    { char: '田', pinyin: 'tián', result: { char: '雷', pinyin: 'léi', meaning: '雷声', examples: '打雷、雷雨' } },
+                    { char: '务', pinyin: 'wù', result: { char: '雾', pinyin: 'wù', meaning: '雾气、雾霾', examples: '大雾、雾气' } }
+                ]
+            },
+            {
+                radical: '山',
+                radicalName: '山字旁',
+                radicalPinyin: 'shān zì páng',
+                radicalMeaning: '多与山岳、地形有关',
+                candidates: [
+                    { char: '石', pinyin: 'shí', result: { char: '岩', pinyin: 'yán', meaning: '岩石', examples: '岩石、岩壁' } },
+                    { char: '令', pinyin: 'lìng', result: { char: '岭', pinyin: 'lǐng', meaning: '山岭、山脉', examples: '山岭、岭南' } },
+                    { char: '干', pinyin: 'gān', result: { char: '岸', pinyin: 'àn', meaning: '岸边、岸上', examples: '海岸、江岸' } }
+                ]
+            },
+            {
+                radical: '石',
+                radicalName: '石字旁',
+                radicalPinyin: 'shí zì páng',
+                radicalMeaning: '多与石头、矿物有关',
+                candidates: [
+                    { char: '少', pinyin: 'shǎo', result: { char: '砂', pinyin: 'shā', meaning: '沙子、细小的石粒', examples: '沙粒、砂石' } },
+                    { char: '见', pinyin: 'jiàn', result: { char: '砚', pinyin: 'yàn', meaning: '砚台', examples: '砚台、砚石' } },
+                    { char: '皮', pinyin: 'pí', result: { char: '破', pinyin: 'pò', meaning: '破碎、弄坏', examples: '打破、破石' } }
+                ]
+            },
+            {
+                radical: '艹',
+                radicalName: '草字头',
+                radicalPinyin: 'cǎo zì tóu',
+                radicalMeaning: '多与草木、植物有关',
+                candidates: [
+                    { char: '化', pinyin: 'huà', result: { char: '花', pinyin: 'huā', meaning: '花朵', examples: '鲜花、花儿' } },
+                    { char: '早', pinyin: 'zǎo', result: { char: '草', pinyin: 'cǎo', meaning: '草地、青草', examples: '青草、草地' } },
+                    { char: '余', pinyin: 'yú', result: { char: '茶', pinyin: 'chá', meaning: '茶叶、茶水', examples: '喝茶、茶叶' } }
+                ]
+            },
+            {
+                radical: '禾',
+                radicalName: '禾字旁',
+                radicalPinyin: 'hé zì páng',
+                radicalMeaning: '多与庄稼、谷物有关',
+                candidates: [
+                    { char: '乃', pinyin: 'nǎi', result: { char: '秀', pinyin: 'xiù', meaning: '秀美、优美', examples: '优秀、秀丽' } },
+                    { char: '火', pinyin: 'huǒ', result: { char: '秋', pinyin: 'qiū', meaning: '秋天', examples: '秋天、秋收' } },
+                    { char: '中', pinyin: 'zhōng', result: { char: '种', pinyin: 'zhǒng', meaning: '种子、品种', examples: '种子、物种' } }
+                ]
+            },
+            {
+                radical: '米',
+                radicalName: '米字旁',
+                radicalPinyin: 'mǐ zì páng',
+                radicalMeaning: '多与米、粮食、小颗粒有关',
+                candidates: [
+                    { char: '分', pinyin: 'fēn', result: { char: '粉', pinyin: 'fěn', meaning: '粉末、粉状物', examples: '面粉、粉末' } },
+                    { char: '立', pinyin: 'lì', result: { char: '粒', pinyin: 'lì', meaning: '颗粒', examples: '米粒、颗粒' } },
+                    { char: '弓', pinyin: 'gōng', result: { char: '粥', pinyin: 'zhōu', meaning: '米粥', examples: '粥饭、稀粥' } }
+                ]
+            },
+            {
+                radical: '黑',
+                radicalName: '黑字旁',
+                radicalPinyin: 'hēi zì páng',
+                radicalMeaning: '多与黑色、黑暗有关',
+                candidates: [
+                    { char: '犬', pinyin: 'quǎn', result: { char: '默', pinyin: 'mò', meaning: '沉默', examples: '沉默、默写' } },
+                    { char: '土', pinyin: 'tǔ', result: { char: '墨', pinyin: 'mò', meaning: '墨汁、墨水', examples: '墨水、墨汁' } },
+                    { char: '音', pinyin: 'yīn', result: { char: '黯', pinyin: 'àn', meaning: '昏暗、暗淡', examples: '黯淡、幽黯' } }
+                ]
+            },
+            {
+                radical: '贝',
+                radicalName: '贝字旁',
+                radicalPinyin: 'bèi zì páng',
+                radicalMeaning: '多与钱财、价值有关',
+                candidates: [
+                    { char: '才', pinyin: 'cái', result: { char: '财', pinyin: 'cái', meaning: '钱财、财富', examples: '钱财、发财' } },
+                    { char: '化', pinyin: 'huà', result: { char: '货', pinyin: 'huò', meaning: '货物、商品', examples: '货物、货车' } },
+                    { char: '勾', pinyin: 'gōu', result: { char: '购', pinyin: 'gòu', meaning: '购买、买东西', examples: '购买、购票' } }
+                ]
+            },
+            {
+                radical: '宀',
+                radicalName: '宝盖头',
+                radicalPinyin: 'mián',
+                radicalMeaning: '多与房屋、家庭、居所有关',
+                candidates: [
+                    { char: '女', pinyin: 'nǚ', result: { char: '安', pinyin: 'ān', meaning: '平安、安静', examples: '安全、安静' } },
+                    { char: '豕', pinyin: 'shǐ', result: { char: '家', pinyin: 'jiā', meaning: '家庭、家里', examples: '回家、家人' } },
+                    { char: '至', pinyin: 'zhì', result: { char: '室', pinyin: 'shì', meaning: '房间、屋子', examples: '教室、卧室' } }
+                ]
+            },
+            {
+                radical: '门',
+                radicalName: '门字旁',
+                radicalPinyin: 'mén zì páng',
+                radicalMeaning: '多与门、出入、空间有关',
+                candidates: [
+                    { char: '口', pinyin: 'kǒu', result: { char: '问', pinyin: 'wèn', meaning: '询问、发问', examples: '问题、问号' } },
+                    { char: '日', pinyin: 'rì', result: { char: '间', pinyin: 'jiān', meaning: '中间、房间', examples: '房间、时间' } },
+                    { char: '市', pinyin: 'shì', result: { char: '闹', pinyin: 'nào', meaning: '热闹、吵闹', examples: '热闹、吵闹' } }
+                ]
+            },
+            {
+                radical: '车',
+                radicalName: '车字旁',
+                radicalPinyin: 'chē zì páng',
+                radicalMeaning: '多与车辆、交通有关',
+                candidates: [
+                    { char: '九', pinyin: 'jiǔ', result: { char: '轨', pinyin: 'guǐ', meaning: '轨道、路线', examples: '铁轨、轨道' } },
+                    { char: '仑', pinyin: 'lún', result: { char: '轮', pinyin: 'lún', meaning: '车轮、轮子', examples: '车轮、轮胎' } },
+                    { char: '两', pinyin: 'liǎng', result: { char: '辆', pinyin: 'liàng', meaning: '车辆的量词', examples: '一辆车、几辆汽车' } }
+                ]
+            },
+            {
+                radical: '舟',
+                radicalName: '舟字旁',
+                radicalPinyin: 'zhōu zì páng',
+                radicalMeaning: '多与船只、航行有关',
+                candidates: [
+                    { char: '亢', pinyin: 'kàng', result: { char: '航', pinyin: 'háng', meaning: '航行、飞行', examples: '航海、航班' } },
+                    { char: '仓', pinyin: 'cāng', result: { char: '舱', pinyin: 'cāng', meaning: '船舱、机舱', examples: '船舱、机舱' } },
+                    { char: '廷', pinyin: 'tíng', result: { char: '艇', pinyin: 'tǐng', meaning: '小船、艇', examples: '小艇、快艇' } }
+                ]
+            },
+            {
+                radical: '罒',
+                radicalName: '网字旁',
+                radicalPinyin: 'wǎng zì páng',
+                radicalMeaning: '多与网、围住、罪名有关',
+                candidates: [
+                    { char: '夕', pinyin: 'xī', result: { char: '罗', pinyin: 'luó', meaning: '网罗、收集', examples: '网罗、罗网' } },
+                    { char: '非', pinyin: 'fēi', result: { char: '罪', pinyin: 'zuì', meaning: '罪行、错误', examples: '犯罪、罪名' } },
+                    { char: '直', pinyin: 'zhí', result: { char: '置', pinyin: 'zhì', meaning: '放置、设置', examples: '布置、设置' } }
+                ]
+            },
+            {
+                radical: '礻',
+                radicalName: '示字旁',
+                radicalPinyin: 'shì zì páng',
+                radicalMeaning: '多与祭祀、神灵、礼仪有关',
+                candidates: [
+                    { char: '申', pinyin: 'shēn', result: { char: '神', pinyin: 'shén', meaning: '神灵、精神', examples: '神奇、精神' } },
+                    { char: '兄', pinyin: 'xiōng', result: { char: '祝', pinyin: 'zhù', meaning: '祝福、祝愿', examples: '祝福、祝贺' } },
+                    { char: '斤', pinyin: 'jīn', result: { char: '祈', pinyin: 'qí', meaning: '祈祷、祈求', examples: '祈祷、祈福' } }
+                ]
+            },
+            {
+                radical: '疒',
+                radicalName: '病字旁',
+                radicalPinyin: 'nè',
+                radicalMeaning: '多与疾病、身体状态有关',
+                candidates: [
+                    { char: '丙', pinyin: 'bǐng', result: { char: '病', pinyin: 'bìng', meaning: '生病、疾病', examples: '看病、生病' } },
+                    { char: '冬', pinyin: 'dōng', result: { char: '疼', pinyin: 'téng', meaning: '疼痛、痛苦', examples: '头疼、心疼' } },
+                    { char: '甬', pinyin: 'yǒng', result: { char: '痛', pinyin: 'tòng', meaning: '疼痛、痛苦', examples: '心痛、剧痛' } }
+                ]
+            },
+            {
+                radical: '刂',
+                radicalName: '立刀旁',
+                radicalPinyin: 'dāo',
+                radicalMeaning: '多与刀具、切割有关',
+                candidates: [
+                    { char: '至', pinyin: 'zhì', result: { char: '到', pinyin: 'dào', meaning: '到达、来到', examples: '到达、来到' } },
+                    { char: '亥', pinyin: 'hài', result: { char: '刻', pinyin: 'kè', meaning: '刻画、时刻', examples: '雕刻、一刻' } },
+                    { char: '害', pinyin: 'hài', result: { char: '割', pinyin: 'gē', meaning: '割断、割开', examples: '割草、割断' } }
+                ]
+            },
+            {
+                radical: '力',
+                radicalName: '力字旁',
+                radicalPinyin: 'lì zì páng',
+                radicalMeaning: '多与力量、用力有关',
+                candidates: [
+                    { char: '口', pinyin: 'kǒu', result: { char: '加', pinyin: 'jiā', meaning: '增加、加法', examples: '加法、加油' } },
+                    { char: '云', pinyin: 'yún', result: { char: '动', pinyin: 'dòng', meaning: '行动、活动', examples: '运动、活动' } },
+                    { char: '且', pinyin: 'qiě', result: { char: '助', pinyin: 'zhù', meaning: '帮助、辅助', examples: '帮助、助手' } }
+                ]
+            }
+        ];
+
+        // 状态对象
+        const state = {
+            currentQuestion: null,
+            currentResult: null,
+            usedQuestions: [],
+            correctCandidate: null,
+            stats: {
+                total: 0,
+                correct: 0
+            }
+        };
+
+        // DOM元素引用
+        let radicalDisplay, radicalName, radicalPinyin, candidatesContainer, composeResult;
+        let successModal, modalChar, modalPinyin, modalMeaning, modalExamples;
+        let composeArea, libraryTbody, questionDesc, radicalMeaningEl, composeMeaningEl;
+        let statsTotalEl, statsCorrectEl, statsAccuracyEl;
+
+        // 初始化页面
+        function init() {
+            // 获取DOM元素
+            radicalDisplay = document.getElementById('radical-display');
+            radicalName = document.getElementById('radical-name');
+            radicalPinyin = document.getElementById('radical-pinyin');
+            radicalMeaningEl = document.getElementById('radical-meaning');
+            candidatesContainer = document.getElementById('candidates');
+            composeResult = document.getElementById('compose-result');
+            successModal = document.getElementById('success-modal');
+            modalChar = document.getElementById('modal-char');
+            modalPinyin = document.getElementById('modal-pinyin');
+            modalMeaning = document.getElementById('modal-meaning');
+            modalExamples = document.getElementById('modal-examples');
+            composeArea = document.getElementById('compose-area');
+            libraryTbody = document.getElementById('library-tbody');
+            questionDesc = document.getElementById('question-desc');
+            composeMeaningEl = document.getElementById('compose-meaning');
+            statsTotalEl = document.getElementById('stats-total');
+            statsCorrectEl = document.getElementById('stats-correct');
+            statsAccuracyEl = document.getElementById('stats-accuracy');
+            
+            generateNewQuestion();
+            setupEventListeners();
+            renderLibraryTable();
+            updateStatsDisplay();
+        }
+
+        // 生成新题目
+        function generateNewQuestion() {
+            // 过滤掉最近使用过的题目
+            let availableQuestions = questionBank.filter(q => !state.usedQuestions.includes(q));
+            
+            // 如果所有题目都用过了，重置
+            if (availableQuestions.length === 0) {
+                state.usedQuestions = [];
+                availableQuestions = questionBank.slice();
+            }
+            
+            // 随机选择一个题目
+            const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+            state.currentQuestion = availableQuestions[randomIndex];
+            
+            // 为本题随机确定一个目标合成字
+            const candidates = state.currentQuestion.candidates;
+            const targetIndex = Math.floor(Math.random() * candidates.length);
+            state.correctCandidate = candidates[targetIndex];
+            
+            // 更新UI
+            updateQuestionDisplay();
+        }
+
+        // 更新题目显示
+        function updateQuestionDisplay() {
+            radicalDisplay.textContent = state.currentQuestion.radical;
+            radicalName.textContent = state.currentQuestion.radicalName;
+            radicalPinyin.textContent = state.currentQuestion.radicalPinyin;
+
+            if (radicalMeaningEl) {
+                radicalMeaningEl.textContent = state.currentQuestion.radicalMeaning || '';
+            }
+
+            if (questionDesc && state.correctCandidate) {
+                const result = state.correctCandidate.result;
+                // 只给含义，不先露出汉字本身：把提示里的目标字替换成括号占位
+                let meaningForHint = result.meaning || '';
+                if (result.char) {
+                    const re = new RegExp(result.char, 'g');
+                    // 例如："神灵、精神" -> "()灵、精()"，"居住" -> "居()"
+                    meaningForHint = meaningForHint.replace(re, '()');
+                }
+                questionDesc.textContent = `目标：一个表示「${meaningForHint}」的字，它的左边带有「${state.currentQuestion.radicalName}」，多与「${state.currentQuestion.radicalMeaning || '相关含义'}」有关。`;
+            }
+            
+            renderCandidates();
+            clearComposeArea();
+        }
+
+        // 更新统计显示
+        function updateStatsDisplay() {
+            if (!statsTotalEl || !statsCorrectEl || !statsAccuracyEl) return;
+            statsTotalEl.textContent = state.stats.total;
+            statsCorrectEl.textContent = state.stats.correct;
+            const accuracy = state.stats.total > 0 ? Math.round((state.stats.correct / state.stats.total) * 100) : 0;
+            statsAccuracyEl.textContent = accuracy + '%';
+        }
+
+        // 渲染候选汉字
+        function renderCandidates() {
+            candidatesContainer.innerHTML = '';
+            
+            state.currentQuestion.candidates.forEach(candidate => {
+                const button = document.createElement('div');
+                button.className = 'candidate-btn';
+                button.textContent = candidate.char;
+                button.dataset.char = candidate.char;
+                button.dataset.pinyin = candidate.pinyin;
+                
+                // 设置拖拽事件
+                button.draggable = true;
+                button.ondragstart = handleDragStart;
+                
+                // 设置点击事件
+                button.onclick = () => handleCandidateClick(candidate);
+                
+                candidatesContainer.appendChild(button);
+            });
+        }
+
+        // 处理拖拽开始
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.dataset.char);
+        }
+
+        // 处理候选字点击
+        function handleCandidateClick(candidate) {
+            handleAnswer(candidate);
+        }
+
+        // 统一处理答题逻辑（点击或拖拽）
+        function handleAnswer(candidate) {
+            if (!state.currentQuestion || !state.correctCandidate) {
+                return;
+            }
+
+            const buttons = document.querySelectorAll('.candidate-btn');
+            buttons.forEach(button => {
+                button.classList.remove('success', 'failed');
+            });
+
+            state.stats.total++;
+
+            if (candidate.char === state.correctCandidate.char) {
+                // 回答正确
+                state.stats.correct++;
+                showResult(candidate.result, true);
+            } else {
+                // 回答错误：标记选错的按钮，并轻微提示正确答案
+                buttons.forEach(button => {
+                    if (button.dataset.char === candidate.char) {
+                        button.classList.add('failed');
+                    }
+                    if (button.dataset.char === state.correctCandidate.char) {
+                        button.classList.add('success');
+                    }
+                });
+                composeResult.textContent = '再想一想哦～';
+                composeResult.style.color = '#dc2626';
+            }
+
+            updateStatsDisplay();
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 拖拽到合成区
+            composeArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+            });
+            
+            composeArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const char = e.dataTransfer.getData('text/plain');
+                const candidate = state.currentQuestion.candidates.find(c => c.char === char);
+                
+                if (candidate) {
+                    handleAnswer(candidate);
+                }
+            });
+            
+            // 更换题目按钮
+            document.getElementById('change-btn').addEventListener('click', () => {
+                state.usedQuestions.push(state.currentQuestion);
+                generateNewQuestion();
+            });
+            
+            // 清除按钮
+            document.getElementById('clear-btn').addEventListener('click', clearComposeArea);
+            
+            // 提示按钮
+            document.getElementById('hint-btn').addEventListener('click', showHint);
+            
+            // 查看字库按钮
+            document.getElementById('library-btn').addEventListener('click', () => {
+                document.getElementById('library-modal').style.display = 'flex';
+            });
+            
+            // 发音按钮
+            document.getElementById('speak-btn').addEventListener('click', speakCurrentResult);
+            
+            // 关闭成功弹窗
+            document.getElementById('close-modal').addEventListener('click', () => {
+                successModal.style.display = 'none';
+            });
+            
+            // 关闭字库弹窗
+            document.getElementById('close-library').addEventListener('click', () => {
+                document.getElementById('library-modal').style.display = 'none';
+            });
+            
+            // 模态框发音按钮
+            document.getElementById('modal-speak-btn').addEventListener('click', () => {
+                if (modalChar.textContent && modalExamples.textContent) {
+                    // 读汉字和例句，不读拼音
+                    const charText = modalChar.textContent;
+                    const exampleText = modalExamples.textContent.replace('例：', '');
+                    const textToSpeak = charText + '，' + exampleText;
+                    speakText(textToSpeak);
+                }
+            });
+        }
+
+        // 显示结果
+        function showResult(result, isCorrect = true) {
+            state.currentResult = result;
+            const rightChar = getCharFromResult(result) || '？';
+            // 例如：口 + 少 = 吵
+            composeResult.textContent = `${state.currentQuestion.radical} + ${rightChar} = ${result.char}`;
+            composeResult.style.color = '#2e7d32';
+
+            if (composeMeaningEl) {
+                composeMeaningEl.textContent = `释义：${result.meaning}`;
+            }
+            
+            // 高亮正确的候选字
+            const buttons = document.querySelectorAll('.candidate-btn');
+            buttons.forEach(button => {
+                if (button.dataset.char === getCharFromResult(result)) {
+                    button.classList.add('success');
+                    button.classList.remove('failed');
+                } else {
+                    button.classList.remove('success');
+                }
+            });
+            
+            if (isCorrect) {
+                // 显示成功弹窗
+                modalChar.textContent = result.char;
+                modalPinyin.textContent = result.pinyin;
+                modalMeaning.textContent = result.meaning;
+                modalExamples.textContent = `例：${result.examples}`;
+                successModal.style.display = 'flex';
+            }
+        }
+
+        // 从结果中获取对应的右侧字符
+        function getCharFromResult(result) {
+            for (const candidate of state.currentQuestion.candidates) {
+                if (candidate.result.char === result.char) {
+                    return candidate.char;
+                }
+            }
+            return null;
+        }
+
+        // 清空合成区
+        function clearComposeArea() {
+            if (state.currentQuestion) {
+                composeResult.textContent = `${state.currentQuestion.radical} + ？ = ？`;
+            } else {
+                composeResult.textContent = '偏旁 + ？ = ？';
+            }
+            composeResult.style.color = '#6b7280';
+
+            if (composeMeaningEl) {
+                composeMeaningEl.textContent = '';
+            }
+            
+            // 移除所有高亮
+            const buttons = document.querySelectorAll('.candidate-btn');
+            buttons.forEach(button => {
+                button.classList.remove('success', 'failed');
+            });
+            
+            state.currentResult = null;
+        }
+
+        // 显示提示
+        function showHint() {
+            if (!state.currentQuestion || !state.correctCandidate) {
+                return;
+            }
+
+            const hintCandidate = state.correctCandidate;
+            
+            // 高亮提示的候选字
+            const buttons = document.querySelectorAll('.candidate-btn');
+            buttons.forEach(button => {
+                if (button.dataset.char === hintCandidate.char) {
+                    button.classList.add('success');
+                    button.classList.remove('failed');
+                } else {
+                    button.classList.remove('success', 'failed');
+                }
+            });
+            
+            // 在合成区显示提示文字，不直接露出目标字
+            composeResult.textContent = '提示：注意偏旁的含义，想一想哪个最符合上面的目标说明';
+            composeResult.style.color = '#f59e0b';
+
+            if (composeMeaningEl) {
+                composeMeaningEl.textContent = '';
+            }
+        }
+
+        // 朗读当前结果
+        function speakCurrentResult() {
+            if (state.currentResult) {
+                // 读汉字和例句，不读拼音
+                const textToSpeak = state.currentResult.char + '，' + state.currentResult.examples;
+                speakText(textToSpeak);
+            }
+        }
+
+        // 朗读文本
+        function speakText(text, callback) {
+            if ('speechSynthesis' in window) {
+                // 停止之前的朗读
+                speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'zh-CN';
+                utterance.rate = 0.8; // 稍微减慢语速，使发音更清晰
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+                
+                // 设置回调
+                if (callback) {
+                    utterance.onend = callback;
+                }
+                
+                speechSynthesis.speak(utterance);
+            } else {
+                alert('您的浏览器不支持语音合成功能');
+            }
+        }
+        
+        // 专门朗读拼音
+        function speakPinyin(pinyin) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance();
+                utterance.lang = 'zh-CN';
+                utterance.rate = 0.6; // 拼音读得更慢一些
+                utterance.pitch = 1.0; // 使用正常音调
+                
+                // 直接朗读拼音，不拆分字母
+                utterance.text = pinyin;
+                
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        // 渲染字库表格
+        function renderLibraryTable() {
+            libraryTbody.innerHTML = '';
+            
+            questionBank.forEach(q => {
+                q.candidates.forEach(candidate => {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td>${q.radical} (${q.radicalName})</td>
+                        <td>${candidate.char}</td>
+                        <td>${candidate.result.char}</td>
+                        <td>${candidate.result.pinyin}</td>
+                        <td>${candidate.result.meaning} (例：${candidate.result.examples})</td>
+                    `;
+                    
+                    libraryTbody.appendChild(row);
+                });
+            });
+
+        }
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+    <script src="fullscreen-btn.js"></script>
+</body>
+</html>

@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>精美敲木鱼</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            font-family: '楷体', serif;
+            color: white;
+            overflow: hidden;
+        }
+        
+        .container {
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+        }
+        
+        .muyu-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .muyu {
+            width: 200px;
+            height: auto;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        
+        .mubang {
+            position: absolute;
+            width: 80px;
+            height: auto;
+            top: 40px;
+            right: 40px;
+            transform-origin: bottom center;
+            transition: transform 0.1s;
+            z-index: 10;
+        }
+        
+        .floating-text {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'PingFang SC';
+            font-size: 1.5em;
+            color: #FFD700;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 20;
+        }
+        
+        .counter {
+            margin-top: 2rem;
+            font-size: 1.8rem;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 30px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        
+        .counter span {
+            color: #ffcc00;
+            font-weight: bold;
+            font-size: 2.2rem;
+        }
+        
+        .instructions {
+            margin-top: 1.5rem;
+            font-size: 1.2rem;
+            color: #e0e0e0;
+            max-width: 80%;
+            line-height: 1.6;
+        }
+        
+        .sound-control {
+            margin-top: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .zen-message {
+            margin-top: 1.5rem;
+            font-style: italic;
+            color: #ffcc00;
+            font-size: 1.2rem;
+            min-height: 30px;
+        }
+        
+        @keyframes floatUp {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50px);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .muyu-container {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .muyu {
+                width: 180px;
+            }
+            
+            .mubang {
+                width: 70px;
+                top: 35px;
+                right: 35px;
+            }
+        }
+
+        /* 成就按钮 */
+        .achieve-btn {
+            display: none;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1a1a2e;
+            font-weight: 600;
+        }
+
+        .achieve-btn.show {
+            display: inline-block;
+        }
+
+        /* 成就弹窗 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content h2 {
+            margin: 0 0 20px;
+            color: #fbbf24;
+            text-align: center;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: none;
+            border: none;
+            color: #9ca3af;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+        }
+
+        .achieve-progress {
+            text-align: center;
+            color: #9ca3af;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .achievement-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 12px 8px;
+            text-align: center;
+            opacity: 0.5;
+            transition: all 0.3s;
+        }
+
+        .achievement-item.unlocked {
+            opacity: 1;
+            background: rgba(251, 191, 36, 0.15);
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+        }
+
+        .achievement-item .icon {
+            font-size: 28px;
+            margin-bottom: 6px;
+        }
+
+        .achievement-item .name {
+            font-size: 11px;
+            font-weight: 600;
+            color: #e5e7eb;
+            margin-bottom: 4px;
+        }
+
+        .achievement-item .desc {
+            font-size: 9px;
+            color: #6b7280;
+        }
+
+        .achievement-item.unlocked .desc {
+            color: #fbbf24;
+        }
+
+        .clear-btn {
+            margin-top: 20px;
+            width: 100%;
+            padding: 10px;
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .clear-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        /* 成就解锁通知 */
+        .achievement-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-150px);
+            z-index: 2000;
+            opacity: 0;
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .achievement-toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 2px solid #fbbf24;
+            border-radius: 12px;
+            padding: 12px 20px;
+            box-shadow: 0 8px 32px rgba(251, 191, 36, 0.3);
+            animation: toast-glow 1.5s ease-in-out infinite;
+        }
+
+        @keyframes toast-glow {
+            0%, 100% { box-shadow: 0 8px 32px rgba(251, 191, 36, 0.3); }
+            50% { box-shadow: 0 8px 32px rgba(251, 191, 36, 0.6); }
+        }
+
+        .toast-icon {
+            font-size: 2rem;
+            animation: toast-bounce 0.6s ease-in-out;
+        }
+
+        @keyframes toast-bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+
+        .toast-info {
+            text-align: left;
+        }
+
+        .toast-title {
+            font-size: 12px;
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        .toast-name {
+            font-size: 14px;
+            color: #fff;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>精美敲木鱼</h1>
+        
+        <div class="muyu-container">
+            <img src="https://img.alicdn.com/imgextra/i3/O1CN012CO0YU1VSfNs506ZS_!!6000000002652-2-tps-284-236.png" alt="木鱼" class="muyu" id="muyu">
+            <img src="https://img.alicdn.com/imgextra/i1/O1CN01tKb5Et1aSjWRjCHK3_!!6000000003329-2-tps-119-69.png" alt="锤子" class="mubang" id="mubang">
+            <div class="floating-text" id="floatingText">功德+1</div>
+        </div>
+        
+        <div class="counter">
+            敲击次数: <span id="count">0</span>
+        </div>
+        
+        <div class="zen-message" id="zenMessage"></div>
+        
+        <div class="instructions">
+            点击或触摸木鱼进行敲击，获得内心的宁静
+        </div>
+        
+        <div class="sound-control">
+            <button id="soundToggle">静音</button>
+            <button id="resetBtn">重置计数</button>
+            <button class="achieve-btn" id="achieveBtn">🏆 成就</button>
+        </div>
+    </div>
+
+    <!-- 成就弹窗 -->
+    <div class="modal" id="achieveModal">
+        <div class="modal-content">
+            <button class="close-btn" id="closeModal">×</button>
+            <h2>🏆 功德成就</h2>
+            <p class="achieve-progress" id="achieveProgress"></p>
+            <div class="achievements-grid" id="achieveContent"></div>
+            <button class="clear-btn" id="clearDataBtn">🗑️ 清除所有记录</button>
+        </div>
+    </div>
+
+    <!-- 成就解锁通知 -->
+    <div class="achievement-toast" id="achievementToast">
+        <div class="toast-content">
+            <div class="toast-icon" id="toastIcon">🏆</div>
+            <div class="toast-info">
+                <div class="toast-title">功德圆满！</div>
+                <div class="toast-name" id="toastName"></div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="knockSound" preload="auto">
+        <source src="https://qianwen.alicdn.com/resource/qiaomuyu.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const muyu = document.getElementById('muyu');
+            const mubang = document.getElementById('mubang');
+            const countElement = document.getElementById('count');
+            const floatingText = document.getElementById('floatingText');
+            const knockSound = document.getElementById('knockSound');
+            const soundToggle = document.getElementById('soundToggle');
+            const resetBtn = document.getElementById('resetBtn');
+            const zenMessage = document.getElementById('zenMessage');
+            
+            let count = 0;
+            let soundEnabled = true;
+            let lastKnockTime = 0;
+            let sessionCount = 0; // 本次会话敲击数
+            let rapidKnocks = 0; // 快速敲击计数
+            let lastRapidTime = 0;
+
+            // 成就定义
+            const achievements = [
+                { id: 'knock_50', name: '初入佛门', desc: '敲击50次', icon: '🙏', condition: () => count >= 50 },
+                { id: 'knock_100', name: '虔诚信徒', desc: '敲击100次', icon: '📿', condition: () => count >= 100 },
+                { id: 'knock_500', name: '修行者', desc: '敲击500次', icon: '🧘', condition: () => count >= 500 },
+                { id: 'knock_1000', name: '得道高僧', desc: '敲击1000次', icon: '👳', condition: () => count >= 1000 },
+                { id: 'knock_5000', name: '超凡入圣', desc: '敲击5000次', icon: '✨', condition: () => count >= 5000 },
+                { id: 'knock_10000', name: '功德圆满', desc: '敲击10000次', icon: '🌟', condition: () => count >= 10000 },
+                { id: 'speed_20', name: '速度修行', desc: '5秒内敲20次', icon: '⚡', condition: () => false },
+                { id: 'speed_50', name: '闪电木鱼', desc: '10秒内敲50次', icon: '🚀', condition: () => false },
+                { id: 'session_500', name: '禅定大师', desc: '单次会话敲500次', icon: '🏯', condition: () => sessionCount >= 500 },
+                { id: 'day_3', name: '日行一善', desc: '累计游戏3天', icon: '☀️', condition: () => false },
+                { id: 'day_7', name: '七日修行', desc: '累计游戏7天', icon: '🌙', condition: () => false },
+                { id: 'night_owl', name: '夜间禅修', desc: '深夜敲木鱼', icon: '🦉', condition: () => { const h = new Date().getHours(); return h >= 0 && h < 5; } }
+            ];
+
+            // 加载数据
+            function loadData() {
+                const saved = localStorage.getItem('muyu_data');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    count = data.count || 0;
+                    return data;
+                }
+                return { count: 0, achievements: [], days: [] };
+            }
+
+            function saveData(data) {
+                localStorage.setItem('muyu_data', JSON.stringify(data));
+            }
+
+            let gameData = loadData();
+            count = gameData.count || 0;
+            countElement.textContent = count;
+
+            // 记录今天
+            const today = new Date().toDateString();
+            if (!gameData.days) gameData.days = [];
+            if (!gameData.days.includes(today)) {
+                gameData.days.push(today);
+                saveData(gameData);
+            }
+
+            // 成就按钮和弹窗
+            const achieveBtn = document.getElementById('achieveBtn');
+            const achieveModal = document.getElementById('achieveModal');
+            const closeModalBtn = document.getElementById('closeModal');
+
+            // 初始检查是否显示成就按钮
+            if (gameData.achievements && gameData.achievements.length > 0) {
+                achieveBtn.classList.add('show');
+            }
+
+            // 显示成就弹窗
+            function showAchievements() {
+                const unlockedCount = gameData.achievements ? gameData.achievements.length : 0;
+                document.getElementById('achieveProgress').textContent = 
+                    `已解锁: ${unlockedCount}/${achievements.length}`;
+
+                document.getElementById('achieveContent').innerHTML = achievements.map(a => {
+                    const unlocked = gameData.achievements && gameData.achievements.includes(a.id);
+                    return `
+                        <div class="achievement-item ${unlocked ? 'unlocked' : ''}">
+                            <div class="icon">${unlocked ? a.icon : '🔒'}</div>
+                            <div class="name">${a.name}</div>
+                            <div class="desc">${a.desc}</div>
+                        </div>
+                    `;
+                }).join('');
+
+                achieveModal.classList.add('show');
+            }
+
+            achieveBtn.addEventListener('click', showAchievements);
+            closeModalBtn.addEventListener('click', () => achieveModal.classList.remove('show'));
+            achieveModal.addEventListener('click', (e) => {
+                if (e.target === achieveModal) achieveModal.classList.remove('show');
+            });
+
+            // 清除数据按钮
+            document.getElementById('clearDataBtn').addEventListener('click', () => {
+                if (confirm('确定要清除所有记录吗？\n包括敲击次数、成就进度，此操作不可恢复！')) {
+                    localStorage.removeItem('muyu_data');
+                    gameData = { count: 0, achievements: [], days: [] };
+                    count = 0;
+                    sessionCount = 0;
+                    countElement.textContent = '0';
+                    achieveBtn.classList.remove('show');
+                    achieveModal.classList.remove('show');
+                    zenMessage.textContent = "记录已清除，重新开始修行";
+                    zenMessage.style.opacity = 1;
+                    setTimeout(() => {
+                        zenMessage.style.opacity = 0;
+                    }, 2000);
+                }
+            });
+
+            // 成就通知
+            let toastQueue = [];
+            let isShowingToast = false;
+
+            function showAchievementToast(achievement) {
+                toastQueue.push(achievement);
+                processToastQueue();
+            }
+
+            function processToastQueue() {
+                if (isShowingToast || toastQueue.length === 0) return;
+                
+                isShowingToast = true;
+                const achievement = toastQueue.shift();
+                const toast = document.getElementById('achievementToast');
+                
+                document.getElementById('toastIcon').textContent = achievement.icon;
+                document.getElementById('toastName').textContent = achievement.name;
+                
+                toast.classList.add('show');
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => {
+                        isShowingToast = false;
+                        processToastQueue();
+                    }, 500);
+                }, 3000);
+            }
+
+            // 检查成就
+            function checkAchievements() {
+                if (!gameData.achievements) gameData.achievements = [];
+                
+                // 检查天数成就
+                const dayCount = gameData.days ? gameData.days.length : 0;
+                
+                achievements.forEach(a => {
+                    if (gameData.achievements.includes(a.id)) return;
+                    
+                    let unlocked = false;
+                    
+                    if (a.id === 'day_3' && dayCount >= 3) unlocked = true;
+                    else if (a.id === 'day_7' && dayCount >= 7) unlocked = true;
+                    else if (a.condition && a.condition()) unlocked = true;
+                    
+                    if (unlocked) {
+                        gameData.achievements.push(a.id);
+                        saveData(gameData);
+                        showAchievementToast(a);
+                        
+                        // 第一个成就解锁时显示按钮
+                        if (!achieveBtn.classList.contains('show')) {
+                            achieveBtn.classList.add('show');
+                        }
+                    }
+                });
+            }
+
+            // 快速敲击追踪
+            let rapidStart = 0;
+            let rapidCount = 0;
+            
+            // 播放敲击声
+            function playSound() {
+                if (soundEnabled) {
+                    knockSound.currentTime = 0;
+                    knockSound.play().catch(e => console.log("音频播放失败:", e));
+                }
+            }
+            
+            // 显示禅意信息
+            function showZenMessage() {
+                const messages = [
+                    "心如止水，波澜不惊",
+                    "一敲一念，渐入空门",
+                    "放下执着，自在随缘",
+                    "静心凝神，万物皆空",
+                    "敲木鱼，静心神",
+                    "一念清净，万缘皆空",
+                    "心无挂碍，无有恐怖",
+                    "宁静致远，淡泊明志",
+                    "心平气和，自然得道",
+                    "禅心静，万物轻"
+                ];
+                
+                const now = Date.now();
+                if (now - lastKnockTime < 300) return;
+                
+                lastKnockTime = now;
+                const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                zenMessage.textContent = randomMessage;
+                
+                zenMessage.style.opacity = 0;
+                setTimeout(() => {
+                    zenMessage.style.transition = 'opacity 0.5s';
+                    zenMessage.style.opacity = 1;
+                }, 10);
+                
+                setTimeout(() => {
+                    zenMessage.style.opacity = 0;
+                }, 2500);
+            }
+            
+            // 木鱼敲击事件
+            muyu.addEventListener('click', () => {
+                // 播放声音
+                playSound();
+                
+                // 更新计数
+                count++;
+                sessionCount++;
+                countElement.textContent = count;
+                
+                // 保存数据
+                gameData.count = count;
+                saveData(gameData);
+
+                // 快速敲击检测
+                const now = Date.now();
+                if (now - rapidStart > 10000) {
+                    rapidStart = now;
+                    rapidCount = 1;
+                } else {
+                    rapidCount++;
+                    // 检查速度成就
+                    if (rapidCount >= 20 && now - rapidStart <= 5000 && !gameData.achievements.includes('speed_20')) {
+                        gameData.achievements.push('speed_20');
+                        saveData(gameData);
+                        showAchievementToast(achievements.find(a => a.id === 'speed_20'));
+                        if (!achieveBtn.classList.contains('show')) achieveBtn.classList.add('show');
+                    }
+                    if (rapidCount >= 50 && now - rapidStart <= 10000 && !gameData.achievements.includes('speed_50')) {
+                        gameData.achievements.push('speed_50');
+                        saveData(gameData);
+                        showAchievementToast(achievements.find(a => a.id === 'speed_50'));
+                        if (!achieveBtn.classList.contains('show')) achieveBtn.classList.add('show');
+                    }
+                }
+
+                // 检查其他成就
+                checkAchievements();
+                
+                // 木鱼放大动画
+                muyu.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    muyu.style.transform = 'scale(1)';
+                }, 100);
+                
+                // 锤子旋转动画
+                mubang.style.transform = 'rotate(-25deg)';
+                setTimeout(() => {
+                    mubang.style.transform = 'rotate(0deg)';
+                }, 100);
+                
+                // 显示漂浮文字
+                floatingText.style.opacity = '1';
+                floatingText.style.animation = 'none';
+                void floatingText.offsetWidth; // 触发重排
+                floatingText.style.animation = 'floatUp 0.4s forwards';
+                
+                // 显示禅意信息
+                showZenMessage();
+                
+                // 重置漂浮文字状态
+                setTimeout(() => {
+                    floatingText.style.opacity = '0';
+                }, 400);
+            });
+            
+            // 触摸事件支持
+            muyu.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const clickEvent = new MouseEvent('click');
+                muyu.dispatchEvent(clickEvent);
+            });
+            
+            // 静音切换
+            soundToggle.addEventListener('click', () => {
+                soundEnabled = !soundEnabled;
+                soundToggle.textContent = soundEnabled ? '静音' : '声音';
+            });
+            
+            // 重置计数（只重置显示，不重置成就进度）
+            resetBtn.addEventListener('click', () => {
+                if (confirm('确定要重置计数吗？\n（成就进度不会丢失）')) {
+                    count = 0;
+                    sessionCount = 0;
+                    gameData.count = 0;
+                    saveData(gameData);
+                    countElement.textContent = count;
+                    zenMessage.textContent = "计数已重置，功德仍在";
+                    zenMessage.style.opacity = 1;
+                    setTimeout(() => {
+                        zenMessage.style.opacity = 0;
+                    }, 2000);
+                }
+            });
+            
+            // 键盘支持 (空格键敲击)
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    // 触发木鱼点击事件
+                    const clickEvent = new MouseEvent('click');
+                    muyu.dispatchEvent(clickEvent);
+                }
+            });
+        });
+    </script>
+    <script src="fullscreen-btn.js"></script>
+</body>
+</html>

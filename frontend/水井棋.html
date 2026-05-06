@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>水井棋</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F5F5F5; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 24px; transition: background 0.3s; }
+        body.dark-mode { background: #1a1a1a; }
+        .page { display: none; width: 100%; max-width: 400px; flex-direction: column; align-items: center; }
+        .page.active { display: flex; }
+        .title { font-size: 36px; font-weight: bold; color: #333; }
+        .subtitle { font-size: 16px; color: #999; margin-top: 6px; }
+        body.dark-mode .title { color: #fff; }
+        .menu-btn { width: 80%; height: 56px; border: none; border-radius: 28px; font-size: 18px; color: white; cursor: pointer; margin-bottom: 16px; }
+        .btn-local { background: #4CAF50; }
+        .btn-ai { background: #FF9800; }
+        .btn-challenge { background: #2196F3; }
+        .btn-stats { background: #9C27B0; }
+        .btn-online { background: linear-gradient(135deg, #E91E63, #9C27B0); }
+        .btn-theme { background: #455A64; }
+        .btn-theme.light { background: #E0E0E0; color: #333; }
+        .rules-card { width: 85%; margin-top: 40px; padding: 20px; background: white; border-radius: 16px; text-align: left; }
+        body.dark-mode .rules-card { background: #2a2a2a; }
+        .rules-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 12px; }
+        .rules-text { font-size: 14px; color: #666; margin-bottom: 6px; }
+        body.dark-mode .rules-title { color: #fff; }
+        body.dark-mode .rules-text { color: #aaa; }
+        .game-title { font-size: 24px; font-weight: bold; color: #333; }
+        .game-subtitle { font-size: 14px; color: #999; margin-top: 4px; }
+        body.dark-mode .game-title { color: #fff; }
+        .score-card { width: 80%; padding: 16px; background: white; border-radius: 12px; margin: 16px 0 12px; display: flex; align-items: center; justify-content: space-around; }
+        body.dark-mode .score-card { background: #2a2a2a; }
+        .score-item { text-align: center; flex: 1; }
+        .score-label { font-size: 14px; color: #666; }
+        .score-value { font-size: 28px; font-weight: bold; }
+        .score-p1 { color: #FF9800; }
+        .score-p2 { color: #2196F3; }
+        .vs-text { font-size: 20px; color: #999; font-weight: bold; }
+        .status-text { font-size: 14px; color: #666; margin-bottom: 12px; }
+        .status-text.gameover { color: #E53935; font-weight: bold; }
+        .board-container { padding: 12px; background: white; border-radius: 16px; }
+        body.dark-mode .board-container { background: #2a2a2a; }
+        .board { display: grid; gap: 0; justify-content: center; align-items: center; }
+        .dot { width: 20px; height: 20px; min-width: 20px; min-height: 20px; background: #78909C; border-radius: 50%; cursor: pointer; }
+        .dot.selected { background: #4CAF50; }
+        .h-line-cell { display: flex; align-items: center; justify-content: center; width: 40px; height: 20px; min-width: 40px; min-height: 20px; }
+        .v-line-cell { display: flex; align-items: center; justify-content: center; width: 20px; height: 40px; min-width: 20px; min-height: 40px; }
+        .h-line { width: 40px; height: 6px; border-radius: 3px; background: transparent; }
+        .v-line { width: 6px; height: 40px; border-radius: 3px; background: transparent; }
+        .line-p1 { background: #FF9800 !important; }
+        .line-p2 { background: #2196F3 !important; }
+        .line-hint { background: #E1BEE7 !important; }
+        .square-cell { width: 40px; height: 40px; min-width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; }
+        .square { width: 40px; height: 40px; border-radius: 6px; background: transparent; }
+        .square-p1 { background: #FFE4B5 !important; }
+        .square-p2 { background: #ADD8E6 !important; }
+        /* 手机端适配 */
+        @media (max-width: 480px) {
+            .dot { width: 16px; height: 16px; min-width: 16px; min-height: 16px; }
+            .h-line-cell { width: 32px; height: 16px; min-width: 32px; min-height: 16px; }
+            .v-line-cell { width: 16px; height: 32px; min-width: 16px; min-height: 32px; }
+            .h-line { width: 32px; height: 5px; }
+            .v-line { width: 5px; height: 32px; }
+            .square-cell { width: 32px; height: 32px; min-width: 32px; min-height: 32px; }
+            .square { width: 32px; height: 32px; border-radius: 4px; }
+        }
+        .func-btn { height: 40px; padding: 0 16px; border: none; border-radius: 20px; font-size: 13px; color: white; cursor: pointer; margin: 0 4px; }
+        .func-btn:disabled { opacity: 0.5; }
+        .btn-hint { background: #9C27B0; }
+        .btn-undo { background: #795548; }
+        .btn-restart { background: #607D8B; }
+        .btn-back { background: #E0E0E0; color: #666; width: 140px; height: 44px; margin-top: 12px; border-radius: 22px; font-size: 14px; }
+        .difficulty-row { margin-top: 12px; display: flex; align-items: center; }
+        .difficulty-btn { height: 32px; padding: 0 16px; border: none; border-radius: 16px; font-size: 12px; color: white; cursor: pointer; margin-left: 8px; }
+        .diff-easy { background: #4CAF50; }
+        .diff-medium { background: #FF9800; }
+        .diff-hard { background: #F44336; }
+        .score-popup { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 48px; font-weight: bold; color: #4CAF50; opacity: 0; pointer-events: none; }
+        .score-popup.show { opacity: 1; }
+        .achievement-toast { position: fixed; top: 20%; left: 50%; transform: translateX(-50%); padding: 12px 20px; background: #FF9800; color: white; border-radius: 24px; font-size: 16px; font-weight: bold; opacity: 0; pointer-events: none; }
+        .achievement-toast.show { opacity: 1; }
+        .level-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; padding: 20px; background: #E8E8E8; border-radius: 16px; }
+        .level-btn { width: 50px; height: 50px; border: none; border-radius: 12px; font-size: 20px; font-weight: bold; cursor: pointer; }
+        .level-btn.unlocked { background: white; color: #333; }
+        .level-btn.locked { background: #ccc; color: white; cursor: not-allowed; }
+        .next-level-btn { width: 160px; height: 48px; border: none; border-radius: 24px; background: #4CAF50; color: white; font-size: 16px; cursor: pointer; margin-top: 16px; display: none; }
+        .stats-section { width: 100%; margin-bottom: 20px; }
+        .stats-title { font-size: 16px; font-weight: bold; color: #333; text-align: left; margin-bottom: 8px; }
+        body.dark-mode .stats-title { color: #fff; }
+        .stats-row { display: flex; justify-content: space-between; gap: 8px; }
+        .stat-card { flex: 1; padding: 12px; background: white; border-radius: 12px; text-align: center; }
+        body.dark-mode .stat-card { background: #2a2a2a; }
+        .stat-value { font-size: 24px; font-weight: bold; color: #333; }
+        .stat-label { font-size: 13px; color: #666; margin-top: 4px; }
+        body.dark-mode .stat-value { color: #fff; }
+        .tab-row { display: flex; margin-bottom: 16px; }
+        .tab-btn { padding: 10px 20px; border: none; border-radius: 20px; font-size: 15px; cursor: pointer; margin-right: 12px; background: transparent; color: #666; }
+        .tab-btn.active-stats { background: #E3F2FD; color: #2196F3; font-weight: bold; }
+        .tab-btn.active-achieve { background: #FFF3E0; color: #FF9800; font-weight: bold; }
+        .achievement-list { width: 100%; max-height: 400px; overflow-y: auto; }
+        .achievement-item { display: flex; align-items: center; padding: 12px; background: white; border-radius: 12px; margin-bottom: 8px; }
+        body.dark-mode .achievement-item { background: #2a2a2a; }
+        .achievement-item.locked { background: #F5F5F5; }
+        .achievement-icon { font-size: 32px; width: 50px; text-align: center; }
+        .achievement-info { flex: 1; text-align: left; margin-left: 8px; }
+        .achievement-name { font-size: 16px; font-weight: bold; color: #333; }
+        .achievement-desc { font-size: 13px; color: #666; margin-top: 2px; }
+        .achievement-item.locked .achievement-name { color: #999; }
+        .achievement-item.locked .achievement-desc { color: #bbb; }
+        body.dark-mode .achievement-name { color: #fff; }
+        /* 远程对战样式 */
+        .online-card { width: 85%; padding: 24px; background: white; border-radius: 16px; text-align: center; margin-bottom: 16px; }
+        body.dark-mode .online-card { background: #2a2a2a; }
+        .room-input { width: 100%; height: 50px; border: 2px solid #ddd; border-radius: 12px; font-size: 24px; text-align: center; letter-spacing: 8px; text-transform: uppercase; margin: 12px 0; }
+        body.dark-mode .room-input { background: #333; border-color: #555; color: #fff; }
+        .room-display { font-size: 36px; font-weight: bold; color: #E91E63; letter-spacing: 8px; margin: 16px 0; }
+        .online-status { font-size: 14px; color: #666; margin: 12px 0; }
+        .online-status.connected { color: #4CAF50; }
+        .online-status.error { color: #f44336; }
+        .copy-btn { background: #9C27B0; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div id="menuPage" class="page active">
+        <div style="margin-bottom: 40px; text-align: center;"><div class="title">水井棋</div><div class="subtitle">wellchess</div></div>
+        <button class="menu-btn btn-local" onclick="startGame('local')">本地双人对战</button>
+        <button class="menu-btn btn-ai" onclick="startGame('ai')">AI 对战</button>
+        <button class="menu-btn btn-online" onclick="showOnlineLobby()">🌐 远程对战</button>
+        <button class="menu-btn btn-challenge" onclick="showChallenge()">闯关模式</button>
+        <button class="menu-btn btn-stats" onclick="showStats()">📊 游戏数据</button>
+        <button id="themeBtn" class="menu-btn btn-theme" onclick="toggleTheme()">🌙 深色模式</button>
+        <div class="rules-card"><div class="rules-title">📖 游戏规则</div><div class="rules-text"><b>🎯 目标：</b>尽可能多地占领格子，最终得分高者获胜</div><div class="rules-text"><b>🎮 操作：</b>依次点击两个<b>相邻</b>的圆点，在它们之间画一条线</div><div class="rules-text"><b>📦 占格：</b>当你画出一个格子的<b>第四条边</b>使其封闭时，该格子归你，得1分</div><div class="rules-text"><b>🔥 连续：</b>占格成功后可继续画线，直到所画的线未能封闭新格子为止</div><div class="rules-text"><b>🏆 胜负：</b>棋盘所有格子被占满时，得分多者获胜；相同则平局</div><div class="rules-text" style="color:#9C27B0; margin-top:8px;">💡 新手建议先体验「闯关模式」快速上手！</div></div>
+    </div>
+    <div id="localPage" class="page">
+        <div style="text-align: center;"><div class="game-title">本地双人对战</div><div class="game-subtitle" id="localTimer">⏱️ 00:00</div></div>
+        <div class="score-card"><div class="score-item"><div class="score-label">玩家1</div><div class="score-value score-p1" id="localScore1">0</div></div><div class="vs-text">VS</div><div class="score-item"><div class="score-label">玩家2</div><div class="score-value score-p2" id="localScore2">0</div></div></div>
+        <div class="status-text" id="localStatus">玩家1 先手，点击圆点开始</div>
+        <div class="board-container"><div class="board" id="localBoard"></div></div>
+        <div style="margin-top: 12px;"><button class="func-btn btn-undo" id="localUndoBtn" onclick="undoMove('local')">↩ 悔棋</button><button class="func-btn btn-restart" onclick="restartGame('local')">🔄 重开</button></div>
+        <button class="func-btn btn-back" onclick="backToMenu()">返回菜单</button>
+    </div>
+    <div id="aiPage" class="page">
+        <div style="text-align: center;"><div class="game-title">AI 对战</div><div class="game-subtitle" id="aiTimer">⏱️ 00:00</div></div>
+        <div class="score-card"><div class="score-item"><div class="score-label">你</div><div class="score-value score-p1" id="aiScore1">0</div></div><div class="vs-text">VS</div><div class="score-item"><div class="score-label">AI</div><div class="score-value score-p2" id="aiScore2">0</div></div></div>
+        <div class="status-text" id="aiStatus">你先手，点击圆点开始</div>
+        <div class="board-container"><div class="board" id="aiBoard"></div></div>
+        <div class="difficulty-row"><span style="font-size:14px;color:#666;">AI难度:</span><button id="difficultyBtn" class="difficulty-btn diff-medium" onclick="cycleDifficulty()">中等</button></div>
+        <div style="margin-top: 12px;"><button class="func-btn btn-hint" onclick="showHint()">💡 提示</button><button class="func-btn btn-undo" id="aiUndoBtn" onclick="undoMove('ai')">↩ 悔棋</button><button class="func-btn btn-restart" onclick="restartGame('ai')">🔄 重开</button></div>
+        <button class="func-btn btn-back" onclick="backToMenu()">返回菜单</button>
+    </div>
+    <div id="challengePage" class="page">
+        <div id="levelSelectView"><div style="text-align: center; margin-bottom: 30px;"><div class="game-title">闯关模式</div><div class="game-subtitle">选择关卡</div></div><div class="level-grid" id="levelGrid"></div><div style="font-size:14px;color:#999;margin-top:20px;" id="levelProgress">已解锁: 1 / 10 关</div><button class="func-btn btn-back" onclick="backToMenu()">返回主菜单</button></div>
+        <div id="challengeGameView" style="display: none; width: 100%; flex-direction: column; align-items: center;">
+            <div style="text-align: center;"><div class="game-title">闯关模式</div><div class="game-subtitle"><span style="color:#2196F3;" id="challengeLevelName">第1关</span><span id="challengeTimer">  ⏱️ 00:00</span></div></div>
+            <div class="score-card"><div class="score-item"><div class="score-label">你</div><div class="score-value score-p1" id="challengeScore1">0</div></div><div class="vs-text">VS</div><div class="score-item"><div class="score-label">AI</div><div class="score-value score-p2" id="challengeScore2">0</div></div></div>
+            <div class="status-text" id="challengeStatus">击败 AI 进入下一关！</div>
+            <div class="board-container"><div class="board" id="challengeBoard"></div></div>
+            <button class="next-level-btn" id="nextLevelBtn" onclick="nextLevel()">进入下一关</button>
+            <div style="margin-top: 12px;"><button class="func-btn btn-hint" onclick="showHint()">💡 提示</button><button class="func-btn btn-undo" id="challengeUndoBtn" onclick="undoMove('challenge')">↩ 悔棋</button><button class="func-btn btn-restart" onclick="restartGame('challenge')">🔄 重开</button></div>
+            <button class="func-btn btn-back" onclick="showLevelSelect()">选择关卡</button>
+        </div>
+    </div>
+    <div id="statsPage" class="page">
+        <div style="display: flex; align-items: center; margin-bottom: 16px;"><span style="font-size: 24px;">📊</span><span class="game-title" style="margin-left: 8px;">游戏数据</span></div>
+        <div class="tab-row"><button class="tab-btn active-stats" id="tabStats" onclick="switchTab(0)">战绩统计</button><button class="tab-btn" id="tabAchieve" onclick="switchTab(1)">成就</button></div>
+        <div id="statsContent" style="width: 100%; overflow-y: auto; max-height: 500px;">
+            <div class="stats-section"><div class="stats-title">总战绩</div><div class="stats-row"><div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">总场次</div></div><div class="stat-card"><div class="stat-value" id="statWinRate">0%</div><div class="stat-label">胜率</div></div><div class="stat-card"><div class="stat-value" id="statStreak">0</div><div class="stat-label">最高连胜</div></div></div></div>
+            <div class="stats-section"><div class="stats-title">AI对战</div><div class="stats-row"><div class="stat-card"><div class="stat-value" id="statAiGames">0</div><div class="stat-label">场次</div></div><div class="stat-card"><div class="stat-value" id="statAiWins">0</div><div class="stat-label">胜场</div></div></div></div>
+            <div class="stats-section"><div class="stats-title">闯关模式</div><div class="stats-row"><div class="stat-card"><div class="stat-value" id="statChallengeGames">0</div><div class="stat-label">挑战次数</div></div><div class="stat-card"><div class="stat-value" id="statMaxLevel">--</div><div class="stat-label">最高关卡</div></div></div></div>
+            <div class="stats-section"><div class="stats-title">游戏时长</div><div class="stats-row"><div class="stat-card"><div class="stat-value" id="statTime">0分</div><div class="stat-label">总用时</div></div></div></div>
+        </div>
+        <div id="achieveContent" style="display: none; width: 100%;"><div style="margin-bottom: 12px;"><span style="font-size: 14px; color: #666;">🏅 已解锁: </span><span style="font-size: 16px; font-weight: bold; color: #FF9800;" id="achieveCount">0 / 11</span></div><div class="achievement-list" id="achievementList"></div></div>
+        <button class="func-btn btn-back" onclick="backToMenu()">返回主菜单</button>
+    </div>
+    <!-- 远程对战大厅 -->
+    <div id="onlineLobbyPage" class="page">
+        <div style="text-align: center; margin-bottom: 30px;"><div class="game-title">🌐 远程对战</div><div class="game-subtitle">与好友实时对战</div></div>
+        <div class="online-status" id="wsStatus">⚪ 未连接服务器</div>
+        <div class="online-card">
+            <div style="font-size: 16px; font-weight: bold; margin-bottom: 12px;">创建房间</div>
+            <button class="menu-btn btn-online" style="width:100%" onclick="createRoom()">创建新房间</button>
+        </div>
+        <div class="online-card">
+            <div style="font-size: 16px; font-weight: bold; margin-bottom: 12px;">加入房间</div>
+            <input type="text" class="room-input" id="joinRoomInput" placeholder="输入房间号" maxlength="6">
+            <button class="menu-btn btn-ai" style="width:100%" onclick="joinRoom()">加入房间</button>
+        </div>
+        <div class="online-card" style="background: #FFF3E0;">
+            <div style="font-size: 14px; color: #E65100;">⚠️ 本地测试说明</div>
+            <div style="font-size: 12px; color: #666; margin-top: 8px; text-align: left;">
+                1. 打开终端，进入 水井棋 文件夹<br>
+                2. 运行 <code>npm install</code> 安装依赖<br>
+                3. 运行 <code>npm start</code> 启动服务器<br>
+                4. 在同一网络下的设备即可连接
+            </div>
+        </div>
+        <button class="func-btn btn-back" onclick="backToMenu()">返回主菜单</button>
+    </div>
+    <!-- 远程对战等待房间 -->
+    <div id="onlineWaitPage" class="page">
+        <div style="text-align: center; margin-bottom: 30px;"><div class="game-title">等待对手</div><div class="game-subtitle">分享房间号给好友</div></div>
+        <div class="online-card">
+            <div style="font-size: 14px; color: #666;">房间号</div>
+            <div class="room-display" id="roomIdDisplay">------</div>
+            <button class="copy-btn" onclick="copyRoomId()">📋 复制房间号</button>
+        </div>
+        <div class="online-status" id="waitStatus">等待对手加入...</div>
+        <button class="func-btn btn-back" onclick="leaveRoom()">取消并返回</button>
+    </div>
+    <!-- 远程对战游戏页面 -->
+    <div id="onlinePage" class="page">
+        <div style="text-align: center;"><div class="game-title">远程对战</div><div class="game-subtitle" id="onlineTimer">⏱️ 00:00</div></div>
+        <div class="score-card"><div class="score-item"><div class="score-label" id="onlineLabel1">你</div><div class="score-value score-p1" id="onlineScore1">0</div></div><div class="vs-text">VS</div><div class="score-item"><div class="score-label" id="onlineLabel2">对手</div><div class="score-value score-p2" id="onlineScore2">0</div></div></div>
+        <div class="status-text" id="onlineStatus">等待开始...</div>
+        <div class="board-container"><div class="board" id="onlineBoard"></div></div>
+        <div style="margin-top: 12px;"><button class="func-btn btn-restart" onclick="requestRestart()">🔄 请求重开</button></div>
+        <button class="func-btn btn-back" onclick="leaveRoom()">离开房间</button>
+    </div>
+    <div class="score-popup" id="scorePopup"></div>
+    <div class="achievement-toast" id="achievementToast"></div>
+    <!-- 远程对战脚本 -->
+    <script>
+    // WebSocket连接
+    let ws = null;
+    let currentRoomId = null;
+    let myPlayerNum = 0;
+    let onlineGameState = null;
+    
+    // 服务器地址 - Cloudflare Tunnel 公网地址
+    const WS_SERVER = 'wss://offices-prev-footwear-elections.trycloudflare.com';
+    
+    function showOnlineLobby() {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('onlineLobbyPage').classList.add('active');
+        connectWebSocket();
+    }
+    
+    function connectWebSocket() {
+        if (ws && ws.readyState === WebSocket.OPEN) return;
+        
+        const statusEl = document.getElementById('wsStatus');
+        statusEl.textContent = '🟡 正在连接服务器...';
+        statusEl.className = 'online-status';
+        
+        try {
+            ws = new WebSocket(WS_SERVER);
+            
+            ws.onopen = () => {
+                statusEl.textContent = '🟢 已连接服务器';
+                statusEl.className = 'online-status connected';
+            };
+            
+            ws.onclose = () => {
+                statusEl.textContent = '🔴 服务器已断开';
+                statusEl.className = 'online-status error';
+                ws = null;
+            };
+            
+            ws.onerror = () => {
+                statusEl.textContent = '🔴 连接失败，请确保服务器已启动';
+                statusEl.className = 'online-status error';
+            };
+            
+            ws.onmessage = (event) => {
+                const msg = JSON.parse(event.data);
+                handleServerMessage(msg);
+            };
+        } catch (e) {
+            statusEl.textContent = '🔴 连接失败';
+            statusEl.className = 'online-status error';
+        }
+    }
+    
+    function handleServerMessage(msg) {
+        switch (msg.type) {
+            case 'created':
+                currentRoomId = msg.roomId;
+                myPlayerNum = msg.playerNum;
+                document.getElementById('roomIdDisplay').textContent = msg.roomId;
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                document.getElementById('onlineWaitPage').classList.add('active');
+                break;
+                
+            case 'joined':
+                currentRoomId = msg.roomId;
+                myPlayerNum = msg.playerNum;
+                break;
+                
+            case 'start':
+                startOnlineGame();
+                break;
+                
+            case 'move':
+                applyOnlineMove(msg.move);
+                break;
+                
+            case 'sync':
+                syncOnlineState(msg.gameState);
+                break;
+                
+            case 'restart':
+                startOnlineGame();
+                break;
+                
+            case 'opponent_left':
+                alert('对手已离开房间');
+                backToMenu();
+                break;
+                
+            case 'error':
+                alert(msg.message);
+                break;
+        }
+    }
+    
+    function createRoom() {
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+            alert('请等待连接服务器');
+            return;
+        }
+        ws.send(JSON.stringify({ type: 'create' }));
+    }
+    
+    function joinRoom() {
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+            alert('请等待连接服务器');
+            return;
+        }
+        const roomId = document.getElementById('joinRoomInput').value.toUpperCase().trim();
+        if (roomId.length !== 6) {
+            alert('请输入6位房间号');
+            return;
+        }
+        ws.send(JSON.stringify({ type: 'join', roomId: roomId }));
+    }
+    
+    function copyRoomId() {
+        navigator.clipboard.writeText(currentRoomId).then(() => {
+            alert('房间号已复制: ' + currentRoomId);
+        });
+    }
+    
+    function leaveRoom() {
+        if (ws) ws.close();
+        ws = null;
+        currentRoomId = null;
+        backToMenu();
+    }
+    
+    function startOnlineGame() {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('onlinePage').classList.add('active');
+        
+        // 初始化远程游戏状态
+        if (typeof initOnlineGame === 'function') {
+            initOnlineGame(myPlayerNum);
+        }
+        
+        // 更新标签
+        if (myPlayerNum === 1) {
+            document.getElementById('onlineLabel1').textContent = '你';
+            document.getElementById('onlineLabel2').textContent = '对手';
+        } else {
+            document.getElementById('onlineLabel1').textContent = '对手';
+            document.getElementById('onlineLabel2').textContent = '你';
+        }
+        
+        document.getElementById('onlineStatus').textContent = myPlayerNum === 1 ? '你先手，点击圆点开始' : '等待对手操作...';
+    }
+    
+    function sendMove(move) {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'move', move: move }));
+        }
+    }
+    
+    function requestRestart() {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'restart' }));
+        }
+    }
+    
+    // 这些函数需要在wellchess-game.js中实现
+    function applyOnlineMove(move) {
+        if (typeof handleOnlineMove === 'function') {
+            handleOnlineMove(move);
+        }
+    }
+    
+    function syncOnlineState(state) {
+        if (typeof syncOnlineGameState === 'function') {
+            syncOnlineGameState(state);
+        }
+    }
+    </script>
+    <script src="wellchess-game.js"></script>
+    <script src="fullscreen-btn.js"></script>
+</body>
+</html>

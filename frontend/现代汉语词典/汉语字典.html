@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>汉语字典 · 现代汉语词典(第7版)</title>
+    <link rel="icon" href="../images/LOG.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Noto Sans SC', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #e5dfcf;
+            background-image:
+                repeating-linear-gradient(
+                    90deg,
+                    rgba(148,163,184,0.16) 0,
+                    rgba(148,163,184,0.16) 1px,
+                    transparent 1px,
+                    transparent 36px
+                ),
+                linear-gradient(180deg,#fdf7e9 0,#f7f0df 40%,#f3ebda 100%);
+            color: #111827;
+            min-height: 100vh;
+        }
+        header {
+            padding: 0.9rem 1.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1f2937;
+            color: #e5e7eb;
+            border-bottom: 3px solid #9a7b4f;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 999px;
+            background: linear-gradient(135deg,#38bdf8,#6366f1);
+            display: grid;
+            place-items: center;
+            color: #0f172a;
+            font-weight: 700;
+        }
+        .brand h1 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+        .brand small {
+            display: block;
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+        main {
+            max-width: 960px;
+            margin: 1.8rem auto 2.5rem;
+            padding: 0 1rem;
+        }
+
+        /* 扉页：先展示一本词典的扉页，再进入查询 */
+        .cover-page {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at top, #fdf7e9 0, #f3ebda 60%, #e5dfcf 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+            z-index: 100;
+        }
+
+        .cover-inner {
+            max-width: 720px;
+            width: 100%;
+            background: #fdf7e9;
+            border: 1px solid #d0b692;
+            box-shadow: 0 26px 80px rgba(15,23,42,0.45);
+            padding: 2.4rem 2.2rem;
+            font-family: 'Songti SC', 'SimSun', 'Noto Sans SC', serif;
+            text-align: center;
+        }
+
+        .cover-main-title {
+            font-size: 1.4rem;
+            letter-spacing: 0.12em;
+            margin-bottom: 0.6rem;
+        }
+
+        .cover-sub-title {
+            font-size: 0.98rem;
+            margin-bottom: 1.3rem;
+        }
+
+        .cover-meta {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 1.2rem;
+        }
+
+        .cover-awards {
+            font-size: 0.82rem;
+            line-height: 1.4;
+            margin: 1rem 0 1.5rem;
+        }
+
+        .cover-note {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-bottom: 1.8rem;
+        }
+
+        .cover-btn-enter {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 2.2rem;
+            border-radius: 999px;
+            border: 1px solid #9a7b4f;
+            background: #1f2937;
+            color: #f9fafb;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .search-card {
+            background: #fdf7e9;
+            border-radius: 0;
+            padding: 1.6rem 2.2rem 1.8rem;
+            box-shadow: 0 20px 55px rgba(15,23,42,0.26);
+            border: 1px solid #d0b692;
+            position: relative;
+        }
+        .search-columns {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.2rem;
+        }
+        @media (min-width: 860px) {
+            .search-columns {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        .search-panel {
+            background: rgba(255,255,255,0.7);
+            border: 1px dashed #c7b18a;
+            padding: 1rem 1.2rem 1.2rem;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+        }
+        .panel-heading {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+        .panel-title {
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            color: #1f2937;
+        }
+        .panel-subtitle {
+            font-size: 0.82rem;
+            color: #6b7280;
+        }
+        .search-panel input {
+            width: 100%;
+            padding: 0.65rem 0.9rem;
+            border-radius: 10px;
+            border: 1px solid #cbd5f5;
+            font-size: 0.96rem;
+            background: rgba(255,255,255,0.9);
+        }
+        .panel-hint {
+            font-size: 0.78rem;
+            color: #64748b;
+        }
+        .panel-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .panel-btn {
+            border-radius: 999px;
+            border: none;
+            padding: 0.55rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: linear-gradient(120deg,#38bdf8,#6366f1);
+            color: #f8fafc;
+            box-shadow: 0 6px 18px rgba(99,102,241,0.28);
+        }
+        .panel-btn.secondary {
+            background: transparent;
+            color: #475569;
+            border: 1px solid rgba(71,85,105,0.4);
+            box-shadow: none;
+        }
+        .pinyin-pad {
+            border-top: 1px dashed rgba(148,163,184,0.5);
+            padding-top: 0.6rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.55rem;
+        }
+        .pad-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+        .pad-title {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            letter-spacing: 0.08em;
+        }
+        .pad-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
+            gap: 0.3rem;
+        }
+        .pad-grid button {
+            border: 1px solid rgba(148,163,184,0.5);
+            border-radius: 8px;
+            padding: 0.35rem 0.2rem;
+            background: #fffaf0;
+            font-size: 0.85rem;
+            color: #1f2937;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .pad-grid button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(15,23,42,0.12);
+        }
+        .pad-grid button:active {
+            transform: translateY(0);
+        }
+        .result-summary {
+            margin-top: 1.2rem;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+        .entries {
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            font-family: 'Noto Sans SC', 'Songti SC', 'SimSun', serif;
+            font-size: 0.95rem;
+        }
+        .entry {
+            padding: 0.3rem 0;
+            border-bottom: 1px solid rgba(148,163,184,0.45);
+            white-space: pre-wrap;
+        }
+        .entry-head {
+            font-weight: 600;
+            color: #0f172a;
+        }
+        .entry-body {
+            margin-top: 0.25rem;
+        }
+        .loading-text {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        .error-text {
+            font-size: 0.9rem;
+            color: #b91c1c;
+        }
+        footer {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+        }
+        @media (max-width: 600px) {
+            .search-card { padding: 1.2rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="cover-page" id="coverPage">
+        <div class="cover-inner">
+            <div class="cover-main-title">《现代汉语词典》（第7版）</div>
+            <div class="cover-sub-title">中国社会科学院语言研究所词典编辑室编 · 商务印书馆 · 2016 · 北京</div>
+            <div class="cover-meta">
+                1993年首届中国社会科学院优秀科研成果奖<br>
+                1994年第一届国家图书奖<br>
+                1997年第二届国家辞书奖一等奖<br>
+                2002年第四届吴玉章人文社会科学奖一等奖<br>
+                2007年第一届中国出版政府奖图书奖<br>
+                2013年第三届中国出版政府奖图书奖
+            </div>
+            <div class="cover-note">本页面基于 XDHYCD7th 文本制作，仅供个人学习与查阅使用。</div>
+            <button class="cover-btn-enter" id="enterDictBtn">开始查词</button>
+        </div>
+    </div>
+
+    <header>
+        <div class="brand">
+            <div class="brand-logo">字</div>
+            <div>
+                <h1>汉语字典</h1>
+                <small>基于《现代汉语词典》第7版文本</small>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="search-card">
+            <div class="search-columns">
+                <div class="search-panel">
+                    <div class="panel-heading">
+                        <div class="panel-title">按读音查字</div>
+                        <div class="panel-subtitle">知道读音但不会写，可通过拼音快速定位</div>
+                    </div>
+                    <input id="pinyinInput" type="text" inputmode="latin" placeholder="请输入或点击下方拼音，例如：ai、zhong1" autocomplete="off">
+                    <div class="panel-hint">仅可输入英文字母、空格、声调数字 1-4 或使用下方拼音表点击录入。</div>
+                    <div class="pinyin-pad" id="pinyinPad"></div>
+                    <div class="panel-actions">
+                        <button class="panel-btn" id="pinyinSearchBtn">按读音查询</button>
+                        <button class="panel-btn secondary" id="clearPinyinBtn">清空拼音</button>
+                    </div>
+                </div>
+                <div class="search-panel">
+                    <div class="panel-heading">
+                        <div class="panel-title">按汉字查义</div>
+                        <div class="panel-subtitle">知道字形但不清楚读音，可输入汉字查义</div>
+                    </div>
+                    <input id="hanziInput" type="text" inputmode="text" placeholder="请输入汉字或词语，例如：爱、安静" autocomplete="off">
+                    <div class="panel-hint">仅可输入汉字（包含常用汉字及部分扩展字）。</div>
+                    <div class="panel-actions">
+                        <button class="panel-btn" id="hanziSearchBtn">按汉字查询</button>
+                        <button class="panel-btn secondary" id="clearHanziBtn">清空汉字</button>
+                    </div>
+                </div>
+            </div>
+            <div id="status" class="result-summary loading-text">正在加载词典数据...</div>
+            <div id="entries" class="entries"></div>
+        </section>
+
+        <footer>
+            数据来源：XDHYCD7th 项目 · 本页面仅供个人学习使用
+        </footer>
+    </main>
+
+    <script>
+        const statusEl = document.getElementById('status');
+        const entriesEl = document.getElementById('entries');
+        const pinyinInput = document.getElementById('pinyinInput');
+        const hanziInput = document.getElementById('hanziInput');
+        const pinyinSearchBtn = document.getElementById('pinyinSearchBtn');
+        const hanziSearchBtn = document.getElementById('hanziSearchBtn');
+        const clearPinyinBtn = document.getElementById('clearPinyinBtn');
+        const clearHanziBtn = document.getElementById('clearHanziBtn');
+        const pinyinPadEl = document.getElementById('pinyinPad');
+
+        let rawText = '';
+        let entries = [];
+
+        const toneStripMap = {
+            'ā': 'a','á': 'a','ǎ': 'a','à': 'a','Ā': 'a','Á': 'a','Ǎ': 'a','À': 'a',
+            'ō': 'o','ó': 'o','ǒ': 'o','ò': 'o','Ō': 'o','Ó': 'o','Ǒ': 'o','Ò': 'o',
+            'ē': 'e','é': 'e','ě': 'e','è': 'e','Ē': 'e','É': 'e','Ě': 'e','È': 'e',
+            'ī': 'i','í': 'i','ǐ': 'i','ì': 'i','Ī': 'i','Í': 'i','Ǐ': 'i','Ì': 'i',
+            'ū': 'u','ú': 'u','ǔ': 'u','ù': 'u','Ū': 'u','Ú': 'u','Ǔ': 'u','Ù': 'u',
+            'ü': 'v','ǖ': 'v','ǘ': 'v','ǚ': 'v','ǜ': 'v','Ü': 'v','Ǖ': 'v','Ǘ': 'v','Ǚ': 'v','Ǜ': 'v',
+            'ê': 'e','Ê': 'e'
+        };
+
+        const toneApplyMap = {
+            'a': ['ā','á','ǎ','à'],
+            'e': ['ē','é','ě','è'],
+            'i': ['ī','í','ǐ','ì'],
+            'o': ['ō','ó','ǒ','ò'],
+            'u': ['ū','ú','ǔ','ù'],
+            'ü': ['ǖ','ǘ','ǚ','ǜ']
+        };
+
+        async function loadDictionary() {
+            try {
+                const [respMain, respLatin] = await Promise.all([
+                    fetch('XDHYCD7th.txt'),
+                    fetch('西文字母开头的词语.txt')
+                ]);
+
+                if (!respMain.ok) throw new Error('主词典文件访问错误');
+
+                const mainText = await respMain.text();
+                let latinText = '';
+                if (respLatin.ok) {
+                    latinText = '\n' + (await respLatin.text());
+                }
+
+                rawText = mainText + latinText;
+                parseEntries();
+                statusEl.textContent = '词典数据已加载，可开始查询。';
+                statusEl.className = 'result-summary';
+            } catch (e) {
+                console.error(e);
+                statusEl.textContent = '词典数据加载失败，请检查相关 txt 文件是否与本页面在同一文件夹。';
+                statusEl.className = 'error-text';
+            }
+        }
+
+        function normalizePinyinForSearch(str) {
+            if (!str) return '';
+            let out = '';
+            for (const ch of str.toLowerCase()) {
+                if (toneStripMap[ch]) {
+                    out += toneStripMap[ch];
+                } else if (/[a-z0-9]/.test(ch)) {
+                    out += ch;
+                } else if (ch === ' ' || ch === '\'' || ch === '’') {
+                    out += ' ';
+                }
+            }
+            return out.replace(/\s+/g, ' ').trim();
+        }
+
+        function parseEntries() {
+            const lines = rawText.split(/\r?\n/);
+            let currentHead = null;
+            let currentBody = [];
+            let currentPinyin = '';
+
+            const pushCurrent = () => {
+                if (currentHead) {
+                    entries.push({
+                        head: currentHead,
+                        body: currentBody.join('\n').trim(),
+                        pinyin: currentPinyin,
+                        pinyinNorm: normalizePinyinForSearch(currentPinyin)
+                    });
+                }
+            };
+
+            for (const line of lines) {
+                if (line.startsWith('【') && line.includes('】')) {
+                    pushCurrent();
+                    const idx = line.indexOf('】');
+                    currentHead = line.slice(1, idx);
+                    const def = line.slice(idx + 1).trim();
+                    let p = '';
+                    for (const ch of def) {
+                        if (ch === ' ' || ch === '〈' || ch === '（' || ch === '(' || ch === '。' || ch === '，') break;
+                        p += ch;
+                    }
+                    currentPinyin = p.trim();
+                    currentBody = [def];
+                } else {
+                    if (currentHead) currentBody.push(line);
+                }
+            }
+            pushCurrent();
+        }
+
+        function renderResults(list, query) {
+            entriesEl.innerHTML = '';
+            if (!query) {
+                statusEl.textContent = '请输入要查询的汉字或词语。';
+                statusEl.className = 'result-summary';
+                return;
+            }
+            if (!list.length) {
+                statusEl.textContent = '未找到相关词条。可以尝试简化查询，例如只输入单个汉字。';
+                statusEl.className = 'result-summary';
+                return;
+            }
+            statusEl.textContent = `找到 ${list.length} 条相关词条：`;
+            statusEl.className = 'result-summary';
+
+            list.slice(0, 50).forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'entry';
+                const headDiv = document.createElement('div');
+                headDiv.className = 'entry-head';
+                headDiv.textContent = `【${item.head}】` + (item.pinyin ? ` ${item.pinyin}` : '');
+
+                const bodyDiv = document.createElement('div');
+                bodyDiv.className = 'entry-body';
+                bodyDiv.textContent = item.body || '';
+
+                div.appendChild(headDiv);
+                div.appendChild(bodyDiv);
+                entriesEl.appendChild(div);
+            });
+        }
+
+        function searchByPinyin() {
+            const q = pinyinInput.value.trim();
+            if (!q) {
+                renderResults([], q);
+                return;
+            }
+            if (!entries.length) {
+                statusEl.textContent = '词典正在加载或解析中，请稍候再试。';
+                statusEl.className = 'loading-text';
+                return;
+            }
+            const norm = normalizePinyinForSearch(q);
+            if (!norm) {
+                statusEl.textContent = '请输入有效的拼音（字母、空格或声调数字 1-4）。';
+                statusEl.className = 'result-summary';
+                return;
+            }
+            const result = entries.filter(e => e.pinyinNorm && e.pinyinNorm.includes(norm));
+            renderResults(result, q);
+        }
+
+        function searchByHanzi() {
+            const q = hanziInput.value.trim();
+            if (!q) {
+                renderResults([], q);
+                return;
+            }
+            if (!entries.length) {
+                statusEl.textContent = '词典正在加载或解析中，请稍候再试。';
+                statusEl.className = 'loading-text';
+                return;
+            }
+
+            let result = entries.filter(e => e.head === q || `【${e.head}】` === q);
+            if (!result.length) {
+                result = entries.filter(e => e.head.includes(q));
+            }
+            if (!result.length) {
+                result = entries.filter(e => (e.head + e.body).includes(q));
+            }
+            renderResults(result, q);
+        }
+
+        function sanitizePinyinInput(value) {
+            return value
+                .replace(/[^a-zA-Z\s1-4'’üÜāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜê]/g, '')
+                .replace(/’/g, "'");
+        }
+
+        function sanitizeHanziInput(value) {
+            return value.replace(/[^\u3400-\u9fff]/g, '');
+        }
+
+        function stripToneMarks(str) {
+            return str.split('').map(ch => {
+                if (/[1-4]/.test(ch)) return '';
+                const base = toneStripMap[ch] ?? toneStripMap[ch.toLowerCase()];
+                if (!base) {
+                    if (ch === 'v') return 'ü';
+                    return ch;
+                }
+                return base === 'v' ? 'ü' : base;
+            }).join('');
+        }
+
+        function findToneTargetIndex(lowerStr) {
+            if (lowerStr.includes('a')) return lowerStr.indexOf('a');
+            if (lowerStr.includes('e')) return lowerStr.indexOf('e');
+            if (lowerStr.includes('ou')) return lowerStr.indexOf('o');
+            for (let i = lowerStr.length - 1; i >= 0; i--) {
+                if ('oiuüv'.includes(lowerStr[i])) return i;
+            }
+            return -1;
+        }
+
+        function attachToneToSyllable(syllable, toneNumber) {
+            if (!syllable) return syllable;
+            const cleaned = stripToneMarks(syllable.replace(/[1-4]/g, ''));
+            const lower = cleaned.toLowerCase();
+            const targetIndex = findToneTargetIndex(lower);
+            if (targetIndex === -1) return cleaned;
+            const chars = cleaned.split('');
+            const baseChar = lower[targetIndex] === 'v' ? 'ü' : lower[targetIndex];
+            const toneChars = toneApplyMap[baseChar];
+            if (!toneChars) return cleaned;
+            chars[targetIndex] = toneChars[toneNumber - 1] || chars[targetIndex];
+            return chars.join('');
+        }
+
+        function setPinyinValue(val) {
+            const sanitized = sanitizePinyinInput(val).toLowerCase();
+            pinyinInput.value = sanitized;
+        }
+
+        function applyToneToLastSyllable(toneNumber) {
+            if (!pinyinInput) return;
+            const toneIdx = parseInt(toneNumber, 10);
+            if (!(toneIdx >= 1 && toneIdx <= 4)) return;
+            const current = pinyinInput.value;
+            if (!current.trim()) return;
+            const trailingSpacesMatch = current.match(/\s+$/);
+            const trailingSpaces = trailingSpacesMatch ? trailingSpacesMatch[0] : '';
+            const trimmed = current.trimEnd();
+            const lastSpaceIndex = trimmed.lastIndexOf(' ');
+            let prefix = '';
+            let target = trimmed;
+            if (lastSpaceIndex !== -1) {
+                prefix = trimmed.slice(0, lastSpaceIndex + 1);
+                target = trimmed.slice(lastSpaceIndex + 1);
+            }
+            if (!target) return;
+            const toned = attachToneToSyllable(target, toneIdx) || target;
+            const newValue = prefix + toned + trailingSpaces;
+            setPinyinValue(newValue);
+            pinyinInput.focus();
+        }
+
+        function buildPinyinPad() {
+            if (!pinyinPadEl) return;
+            const sections = [
+                { title: '声母', keys: ['b','p','m','f','d','t','n','l','g','k','h','j','q','x','zh','ch','sh','r','z','c','s','y','w'] },
+                { title: '韵母', keys: ['a','o','e','i','u','ü','ai','ei','ui','ao','ou','iu','ie','üe','er','an','en','in','un','ang','eng','ing','ong'] },
+                { title: '声调数字', keys: ['1','2','3','4'] }
+            ];
+
+            sections.forEach(section => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'pad-section';
+                const title = document.createElement('div');
+                title.className = 'pad-title';
+                title.textContent = section.title;
+                const grid = document.createElement('div');
+                grid.className = 'pad-grid';
+                section.keys.forEach(key => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.textContent = key;
+                    btn.addEventListener('click', () => {
+                        if (section.title === '声调数字') {
+                            applyToneToLastSyllable(key);
+                        } else {
+                            setPinyinValue(pinyinInput.value + key);
+                            pinyinInput.focus();
+                        }
+                    });
+                    grid.appendChild(btn);
+                });
+                wrapper.appendChild(title);
+                wrapper.appendChild(grid);
+                pinyinPadEl.appendChild(wrapper);
+            });
+        }
+
+        buildPinyinPad();
+
+        if (pinyinInput) {
+            pinyinInput.addEventListener('input', () => {
+                const sanitized = sanitizePinyinInput(pinyinInput.value).toLowerCase();
+                if (sanitized !== pinyinInput.value) {
+                    pinyinInput.value = sanitized;
+                }
+            });
+            pinyinInput.addEventListener('keydown', e => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    searchByPinyin();
+                }
+            });
+        }
+
+        if (hanziInput) {
+            hanziInput.addEventListener('input', () => {
+                const sanitized = sanitizeHanziInput(hanziInput.value);
+                if (sanitized !== hanziInput.value) {
+                    hanziInput.value = sanitized;
+                }
+            });
+            hanziInput.addEventListener('keydown', e => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    searchByHanzi();
+                }
+            });
+        }
+
+        pinyinSearchBtn?.addEventListener('click', searchByPinyin);
+        hanziSearchBtn?.addEventListener('click', searchByHanzi);
+        clearPinyinBtn?.addEventListener('click', () => {
+            pinyinInput.value = '';
+            pinyinInput.focus();
+        });
+        clearHanziBtn?.addEventListener('click', () => {
+            hanziInput.value = '';
+            hanziInput.focus();
+        });
+
+        loadDictionary();
+
+        // 扉页逻辑：点击按钮后关闭扉页，聚焦查询框
+        const coverPage = document.getElementById('coverPage');
+        const enterBtn = document.getElementById('enterDictBtn');
+        if (coverPage && enterBtn) {
+            enterBtn.addEventListener('click', () => {
+                coverPage.style.display = 'none';
+                if (hanziInput) {
+                    hanziInput.focus();
+                }
+            });
+        }
+    </script>
+    <script src="../fullscreen-btn.js"></script>
+</body>
+</html>

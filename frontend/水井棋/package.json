@@ -1,0 +1,12 @@
+{
+  "name": "wellchess-server",
+  "version": "1.0.0",
+  "description": "水井棋远程对战服务器",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.14.0"
+  }
+}

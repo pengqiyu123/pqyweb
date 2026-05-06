@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>水管棋 | 对局房间 {{ game.name }}</title>
+
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/jquery-ui-1.12.1/jquery-ui.min.css" rel="stylesheet">
+
+    <style>
+      .row{
+        margin: 0;
+      }
+      .main{
+        width: 95%;
+      }
+      @media (min-width: 400px) {
+          .main {
+              width: 380px;
+              left: 50%;
+              margin-left: -190px;
+              position: absolute;
+          }
+      }
+    </style>
+
+</head>
+
+<body>
+
+<div style="display: none;">
+    <span class="player"></span>
+    <span class="glyphicon-pencil"></span>
+    <span class="glyphicon-thumbs-up"></span>
+</div>
+
+<div class="main" id="main">
+
+    {# 3 * 5 #}
+    <div id="board" style="width: 270px; height: 450px; padding: 30px; position: relative; float: left; margin-left: 50px">
+
+        <div id="panel" style="position: relative; width: 100%; height: 100%">
+
+            {% for x in '012'|make_list %}
+                {% for y in '01234'|make_list %}
+                    <div id="f{{ x }}{{ y }}" class="flag"
+                         style="
+                                 left: {% widthratio x 3 100 %}%;
+                                 top: {% widthratio y 5 100 %}%;
+                                 width: 33%;
+                                 height: 20%;
+                                 position: absolute;
+                                 cursor: pointer;
+                         "
+                    ></div>
+                {% endfor %}
+            {% endfor %}
+
+            {% for x in '012'|make_list %}
+                {% for y in '012345'|make_list %}
+                    <div id="h{{ x }}{{ y }}" class="hpipe"
+                         style="
+                                 left: {% widthratio x 3 100 %}%;
+                                 top: {% widthratio y 5 100 %}%;
+                                 margin-top: -10px;
+                                 width: 33%;
+                                 height: 20px;
+                                 background: lightgray;
+                                 position: absolute;
+                                 cursor: pointer;
+                                 display: none;
+                         "
+                    ></div>
+                {% endfor %}
+            {% endfor %}
+
+            {% for x in '0123'|make_list %}
+                {% for y in '01234'|make_list %}
+                    <div id="v{{ x }}{{ y }}" class="vpipe"
+                         style="
+                                 left: {% widthratio x 3 100 %}%;
+                                 top: {% widthratio y 5 100 %}%;
+                                 margin-left: -10px;
+                                 width: 20px;
+                                 height: 20%;
+                                 background: lightgray;
+                                 position: absolute;
+                                 cursor: pointer;
+                                 display: none;
+                         "
+                    ></div>
+                {% endfor %}
+            {% endfor %}
+
+            {% for x in '0123'|make_list %}
+                {% for y in '012345'|make_list %}
+                    <div id="sd{{ x }}{{ y }}" class="static-dot"
+                         style="
+                                 left: {% widthratio x 3 100 %}%;
+                                 top: {% widthratio y 5 100 %}%;
+                                 margin-left: -10px;
+                                 margin-top: -10px;
+                                 width: 20px;
+                                 height: 20px;
+                                 border-radius: 50%;
+                                 background: gray;
+                                 position: absolute;
+                         "
+                    ></div>
+                    <div id="d{{ x }}{{ y }}" class="dot"
+                         style="
+                                 left: {% widthratio x 3 100 %}%;
+                                 top: {% widthratio y 5 100 %}%;
+                                 margin-left: -25px;
+                                 margin-top: -25px;
+                                 width: 50px;
+                                 height: 50px;
+                                 border-radius: 50%;
+                                 background: lightgray;
+                                 opacity: 0.1;
+                                 position: absolute;
+                                 cursor: pointer;
+                         "
+                    ></div>
+                {% endfor %}
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    <div class="row">
+
+        <div class="col-xs-9" style="padding-top: 5px; padding-left: 5%; padding-right: 2px; ">
+            <ul class="list-group" style="margin-bottom: 0">
+                <li class="list-group-item list-group-item-warning" style="min-height: 42px">
+                    <span class="glyphicon glyphicon-pencil"></span>
+                    <span class="glyphicon glyphicon-thumbs-up"></span>
+                    <span id="player1" class="player">{{ game.player1.username }}</span>
+                    {% if user == game.player1 %}
+                        <span class="glyphicon glyphicon-user"></span>
+                    {% elif user == game.player2 %}
+                        （对手）
+                    {% endif %}
+                </li>
+                <li class="list-group-item list-group-item-info" style="min-height: 42px">
+                    <span class="glyphicon glyphicon-pencil"></span>
+                    <span class="glyphicon glyphicon-thumbs-up"></span>
+                    {% if game.player2 %}
+                        <span id="player2" class="player">
+                            {{ game.player2.username }}
+                        </span>
+                        {% if user == game.player2 %}
+                            <span class="glyphicon glyphicon-user"></span>
+                        {% elif user == game.player1 %}
+                            （对手）
+                        {% endif %}
+                    {% else %}
+                        房间[{{ game.name }}] 等待其他玩家进入..
+                        <br>
+                        或分享此房间邀请好友对弈
+                    {% endif %}
+                </li>
+            </ul>
+        </div>
+
+        <div class="col-xs-3" style="padding-top: 5px; padding-left: 10px; padding-right: 0; white-space: nowrap">
+            <div class="row" style="padding-top: 9px; padding-bottom: 9px">
+                <a href="#" id="help" data-toggle="modal" data-target="#helpModal">
+                  <span class="glyphicon glyphicon-question-sign" style="font-size: 20px"></span>
+                  <span style="font-weight: bold; margin: 2px; position: absolute">玩法规则</span>
+                </a>
+            </div>
+            <div class="row" style="padding-top: 9px; padding-bottom: 9px;">
+                <a href="#" id="options" data-toggle="modal" data-target="#optionsModal">
+                  <span class="glyphicon glyphicon-cog" style="font-size: 20px"></span>
+                  <span style="font-weight: bold; margin: 2px; position: absolute">水管棋</span>
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- optionsModal -->
+<div class="modal fade" id="optionsModal" tabindex="-1" role="dialog" aria-labelledby="optionsModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="optionsModalLabel">
+          {% if user == game.player1 or user == game.player2 %}
+              当前房间:
+          {% else %}
+              围观对局:
+          {% endif %}
+          {{ game.name }}
+        </h4>
+      </div>
+      <div class="modal-body" style="padding: 0">
+          <div class="list-group" style="margin: 0">
+              <a href="/match/" class="list-group-item list-group-item-warning">匹配对局</a>
+              <a href="/new/" class="list-group-item list-group-item-info">创建房间</a>
+              <a href="#" class="list-group-item list-group-item-success" id="join" data-dismiss="modal">进入指定房间</a>
+              <a href="/new/?ai=1" class="list-group-item list-group-item-danger">新建 AI 对局</a>
+              <a href="#" class="list-group-item list-group-item"></a>
+              <a href="https://github.com/taojy123/PipeChess" class="list-group-item list-group-item-info">项目地址：http://github.com/taojy123/PipeChess</a>
+              <a href="#" class="list-group-item list-group-item-info">联系邮箱：taojy123@163.com</a>
+          </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- helpModal -->
+<div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="helpModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="helpModalLabel">水管棋 玩法规则</h4>
+      </div>
+      <div class="modal-body">
+        <p>本游戏无须注册无须登录，打开网页即可参与。</p>
+        <p>每次打开游戏，系统会为您自动生成一个拥有个性名称的用户，并在浏览器缓存中记录一段时间。</p>
+        <p>新创建的房间，您是第一位玩家，请耐心等待其他玩家加入后开始游戏，或分享此房间邀请好友对弈。</p>
+        <p>匹配对局，会寻找和匹配当前只有一位玩家的房间，自动进入开始游戏，若当前无合适的房间，则会新建房间，等待其他玩家进入。</p>
+        <hr>
+        <p>小时候，不认真听课，和同学玩起 “水管棋”。1 张纸，2 支笔，2 个人就玩上了一整节课。</p>
+        <br>
+        <p>先画个棋盘你，简简单单 24 个墨点</p>
+        <p><img src="/static/img/t01.gif" width="100%"></p>
+        <br>
+        <p>双方交替落笔，每次均为横向或纵向连接两点</p>
+        <p><img src="/static/img/t02.gif" width="100%"></p>
+        <br>
+        <p>当落笔后正好将 4 条水管正好围起一个方格时，做上标记，吃掉这个格子；</p>
+        <p>吃掉格子后，该玩家可以（且必须）继续落 1 笔</p>
+        <p><img src="/static/img/t03.gif" width="100%"></p>
+        <br>
+        <p>如果算计得好，可一连吃掉好多格子，对方只能在旁看着干着急</p>
+        <p><img src="/static/img/t04.gif" width="100%"></p>
+        <br>
+        <p>所有格子都被吃完，最后数数谁的格子多，谁就是赢家</p>
+        <p><img src="/static/img/t05.gif" width="100%"></p>
+        <br>
+        <p>快召集好友来一局回忆童年的水管棋吧！</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">继续游戏</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="/static/js/jquery.min.js"></script>
+<script src="/static/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+<script src="/static/js/jquery.ui.touch-punch.js"></script>
+<script src="/static/js/bootstrap.min.js"></script>
+<script src="/static/js/bootbox.min.js"></script>
+
+<script type="text/javascript">
+
+    var i, j;
+
+    function update_status(game) {
+        var x, y, tid;
+        var board = game['board'];
+        var turn = game['turn'];
+        var winner = game['winner'];
+        var player1 = game['player1'];
+        var player2 = game['player2'];
+        var last_pipe = game['last_pipe'];
+        var init = game['init'];
+
+        $('.glyphicon-pencil').hide();
+        $('.glyphicon-thumbs-up').hide();
+
+        if(winner){
+            $('.glyphicon-thumbs-up:eq(' + winner + ')').show();
+            var winplayer = $('.player:eq(' + winner + ')').html();
+            if(!init){
+                if(winplayer === '{{ user.username }}'){
+                    bootbox.alert('恭喜你 获得胜利！')
+                } else {
+                    bootbox.alert(winplayer + ' 获胜')
+                }
+            }
+        } else {
+            $('.glyphicon-pencil:eq(' + turn + ')').show();
+        }
+
+        if(player1){
+            $('#player1').html(player1);
+        }
+
+        if(player2){
+            $('#player2').html(player2);
+        }
+
+        for (i = 0; i < board.length; i++) {
+            for (j = 0; j < board[i].length; j++) {
+                var item = board[i][j];
+                if (item === '-') {
+                    x = (j - 1) / 2;
+                    y = i / 2;
+                    tid = 'h' + x + y;
+                    $('#' + tid).show();
+                    $('#' + tid).css('background', 'lightgray');
+                }
+                if (item === '|') {
+                    x = j / 2;
+                    y = (i - 1) / 2;
+                    tid = 'v' + x + y;
+                    $('#' + tid).show();
+                    $('#' + tid).css('background', 'lightgray');
+                }
+                if (last_pipe[0]===i && last_pipe[1]===j){
+                    $('#' + tid).css('background', '#999999');
+                }
+                if (item === '1') {
+                    x = (j - 1) / 2;
+                    y = (i - 1) / 2;
+                    tid = 'f' + x + y;
+                    $('#' + tid).css('background', '#faf2cc');
+                }
+                if (item === '2') {
+                    x = (j - 1) / 2;
+                    y = (i - 1) / 2;
+                    tid = 'f' + x + y;
+                    $('#' + tid).css('background', '#c4e3f3');
+                }
+            }
+        }
+    }
+
+    function try_to_draw(game_id, from_id, to_id) {
+        $.ajax({
+            type: 'post',
+            url: '/try_to_draw/',
+            data: {
+                game_id: game_id,
+                from_id: from_id,
+                to_id: to_id
+            },
+            success: function (result) {
+                console.log(result);
+                if(result['success']){
+                    game = result['game']
+                    update_status(result['game']);
+                } else {
+                    bootbox.alert(result['detail']);
+                }
+            },
+            error: function () {
+                bootbox.alert('遇到错误');
+            }
+        })
+    }
+
+    $('.dot').draggable({
+{#        snap: '.dot',#}
+        revert: true,
+        drag: function (event, ui) {
+
+            var left = ui['position']['left'];
+            var top = ui['position']['top'];
+            var originalLeft = ui['originalPosition']['left'];
+            var originalTop = ui['originalPosition']['top'];
+            var deltaLeft = left - originalLeft;
+            var deltaTop = top - originalTop;
+
+            var color = 'gray';
+            {% if user == game.player1 %}
+                color = '#faf2cc';
+            {% elif user == game.player2 %}
+                color = '#c4e3f3';
+            {% endif %}
+
+{#            var point = $('<div class="point" style="left: ' + left + 'px; top: ' + top + 'px; width: 10px; height: 10px; border-radius: 50%; background: ' + color + '; position: absolute;"></div>');#}
+{#            $('#panel').append(point);#}
+
+            $('.point').remove();
+
+            if(Math.abs(deltaLeft) > Math.abs(deltaTop)){
+                if(deltaLeft > 0){
+                    for(i=1;i<deltaLeft;i++){
+                         j =  i * deltaTop / deltaLeft;
+                        left = originalLeft + i - 5;
+                        top = originalTop + j - 5;
+                        point = $('<div class="point" style="left: ' + left + 'px; top: ' + top + 'px; width: 10px; height: 10px; border-radius: 50%; background: ' + color + '; position: absolute;"></div>');
+                        $('#panel').append(point);
+                    }
+                } else {
+                    for(i=-1;i>deltaLeft;i--){
+                         j =  i * deltaTop / deltaLeft;
+                        left = originalLeft + i - 5;
+                        top = originalTop + j - 5;
+                        point = $('<div class="point" style="left: ' + left + 'px; top: ' + top + 'px; width: 10px; height: 10px; border-radius: 50%; background: ' + color + '; position: absolute;"></div>');
+                        $('#panel').append(point);
+                    }
+                }
+            } else {
+                if(deltaTop > 0){
+                    for(i=1;i<deltaTop;i++){
+                         j =  i * deltaLeft / deltaTop;
+                        top = originalTop + i - 5;
+                        left = originalLeft + j - 5;
+                        point = $('<div class="point" style="left: ' + left + 'px; top: ' + top + 'px; width: 10px; height: 10px; border-radius: 50%; background: ' + color + '; position: absolute;"></div>');
+                        $('#panel').append(point);
+                    }
+                } else {
+                    for(i=-1;i>deltaTop;i--){
+                         j =  i * deltaLeft / deltaTop;
+                        top = originalTop + i - 5;
+                        left = originalLeft + j - 5;
+                        point = $('<div class="point" style="left: ' + left + 'px; top: ' + top + 'px; width: 10px; height: 10px; border-radius: 50%; background: ' + color + '; position: absolute;"></div>');
+                        $('#panel').append(point);
+                    }
+                }
+            }
+
+        },
+        stop: function (event, ui) {
+            $('.point').remove()
+        }
+    });
+
+
+    $('.dot').droppable({
+        drop: function (event, ui) {
+            var game_id = {{ game.id }};
+            var from_id = ui.draggable[0].id;
+            var to_id = event.target.id;
+            try_to_draw(game_id, from_id, to_id);
+        }
+    });
+
+    $('#join').click(function () {
+        bootbox.prompt({
+            title: '输入房间编号',
+            value: '{{ game.name }}',
+            callback: function (name) {
+                if(name){
+                    top.location = '/game/' + name + '/';
+                }
+            }
+        });
+    });
+
+    var board = [
+        {% for line in game.board %}
+            {% if forloop.counter0 %},{% endif %}
+            [
+                {% for item in line %}
+                    {% if forloop.counter0 %},{% endif %}
+                    '{{ item }}'
+                {% endfor %}
+            ]
+        {% endfor %}
+    ];
+
+    var game = {
+        board: board,
+        turn: {{ game.turn }},
+        winner: {{ game.winner }},
+        player1: '{{ game.player1.username }}',
+        player2: '{{ game.player2.username }}',
+        last_pipe: [],
+        init: true
+    };
+
+    update_status(game);
+
+    setInterval(function () {
+        if(game.winner){
+            return
+        }
+        $.ajax({
+            type: 'get',
+            url: '/game/{{ game.name }}/status/',
+            success: function (result) {
+                console.log(result);
+                game = result['game'];
+                update_status(game);
+            }
+        })
+    }, 2000);
+
+    // https://www.cnblogs.com/ecmasea/p/9040814.html
+    document.getElementById('main').addEventListener('touchmove', function (e) {
+      e.preventDefault(); //阻止默认的处理方式(阻止下拉滑动的效果)
+    }, {passive: false});
+
+</script>
+
+
+
+</body>
+</html>

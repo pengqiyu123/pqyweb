@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>井字棋</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            padding: 16px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.6em;
+            margin-bottom: 6px;
+        }
+
+        .header-actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .achieve-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1f2937;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .game-area {
+            padding: 20px;
+        }
+
+        /* 模式选择 */
+        .mode-select {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.pvp {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .mode-btn.ai {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .mode-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* AI难度选择 */
+        .difficulty-select {
+            display: none;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .difficulty-select.show {
+            display: flex;
+        }
+
+        .diff-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            background: white;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .diff-btn.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f0f4ff, #e8f4fd);
+            color: #667eea;
+        }
+
+        /* 游戏状态 */
+        .game-status {
+            text-align: center;
+            padding: 16px;
+            background: linear-gradient(135deg, #f0f4ff, #e8f4fd);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            border: 2px solid #c7d2fe;
+        }
+
+        .status-text {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+
+        .score-display {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+        }
+
+        .player-score {
+            text-align: center;
+        }
+
+        .player-score .name {
+            font-size: 0.85em;
+            color: #6b7280;
+        }
+
+        .player-score .score {
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+
+        .player-score.x .score { color: #dc2626; }
+        .player-score.o .score { color: #2563eb; }
+
+        /* 棋盘 */
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            max-width: 300px;
+            margin: 0 auto 20px;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border: 3px solid #e2e8f0;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .cell:hover:not(.taken) {
+            background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+            border-color: #667eea;
+        }
+
+        .cell.x {
+            color: #dc2626;
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            border-color: #fca5a5;
+        }
+
+        .cell.o {
+            color: #2563eb;
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border-color: #93c5fd;
+        }
+
+        .cell.win {
+            animation: pulse 0.5s ease infinite alternate;
+        }
+
+        .cell.fading {
+            opacity: 0.4;
+            border-style: dashed;
+            animation: fade-hint 1s ease infinite;
+        }
+
+        .cell.preview {
+            opacity: 0.5;
+            border-style: dashed;
+            border-width: 3px;
+            animation: preview-pulse 0.8s ease infinite;
+        }
+
+        @keyframes preview-pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.02); opacity: 0.7; }
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+
+        @keyframes fade-hint {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.7; }
+        }
+
+        /* 控制按钮 */
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        /* 成就弹窗 */
+        .achievement-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .achievement-modal.show {
+            display: flex;
+        }
+
+        .achievement-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow: hidden;
+        }
+
+        .achievement-header {
+            padding: 18px 24px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1f2937;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .achievement-header h2 {
+            margin: 0;
+            font-size: 1.2em;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #1f2937;
+        }
+
+        .achievement-list {
+            padding: 16px;
+            overflow-y: auto;
+            max-height: 60vh;
+        }
+
+        .achievement-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+        }
+
+        .achievement-item.unlocked {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            border-color: #22c55e;
+        }
+
+        .achievement-item.locked {
+            opacity: 0.5;
+        }
+
+        .achievement-icon {
+            font-size: 1.8em;
+        }
+
+        .achievement-info {
+            flex: 1;
+        }
+
+        .achievement-name {
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .achievement-desc {
+            font-size: 0.85em;
+            color: #6b7280;
+        }
+
+        .achievement-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1f2937;
+            padding: 14px 28px;
+            border-radius: 30px;
+            box-shadow: 0 8px 30px rgba(251, 191, 36, 0.5);
+            z-index: 2000;
+            animation: toastIn 0.3s ease;
+            font-weight: 600;
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* 游戏结果弹窗 */
+        .result-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 900;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .result-modal.show {
+            display: flex;
+        }
+
+        .result-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            max-width: 300px;
+        }
+
+        .result-icon {
+            font-size: 4em;
+            margin-bottom: 10px;
+        }
+
+        .result-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 20px;
+        }
+
+        .result-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .result-buttons .btn {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⭕❌ 井字棋</h1>
+            <p>三子连线获胜 · 每方最多4子</p>
+            <div class="header-actions">
+                <button class="achieve-btn" onclick="showAchievements()">🏆 成就</button>
+            </div>
+        </div>
+
+        <div class="game-area">
+            <!-- 模式选择 -->
+            <div class="mode-select" id="modeSelect">
+                <button class="mode-btn pvp" onclick="startGame('pvp')">👥 本地双人对战</button>
+                <button class="mode-btn ai" onclick="showDifficulty()">🤖 AI 对战</button>
+            </div>
+
+            <!-- AI难度选择 -->
+            <div class="difficulty-select" id="difficultySelect">
+                <button class="diff-btn" onclick="startGame('ai', 0)">简单</button>
+                <button class="diff-btn active" onclick="startGame('ai', 1)">中等</button>
+                <button class="diff-btn" onclick="startGame('ai', 2)">困难</button>
+            </div>
+
+            <!-- 游戏状态 -->
+            <div class="game-status" id="gameStatus" style="display: none;">
+                <div class="status-text" id="statusText">X 先手</div>
+                <div class="score-display">
+                    <div class="player-score x">
+                        <div class="name" id="player1Name">玩家1 (X)</div>
+                        <div class="score" id="score1">0</div>
+                    </div>
+                    <div class="player-score o">
+                        <div class="name" id="player2Name">玩家2 (O)</div>
+                        <div class="score" id="score2">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 棋盘 -->
+            <div class="board" id="board" style="display: none;"></div>
+
+            <!-- 控制按钮 -->
+            <div class="controls" id="controls" style="display: none;">
+                <button class="btn btn-primary" onclick="resetGame()">🔄 再来一局</button>
+                <button class="btn btn-secondary" onclick="backToMenu()">🏠 返回菜单</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏结果弹窗 -->
+    <div class="result-modal" id="resultModal">
+        <div class="result-content">
+            <div class="result-icon" id="resultIcon">🎉</div>
+            <div class="result-title" id="resultTitle">游戏结束</div>
+            <div class="result-buttons">
+                <button class="btn btn-secondary" onclick="backToMenu()">菜单</button>
+                <button class="btn btn-primary" onclick="resetGame()">再来</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成就弹窗 -->
+    <div class="achievement-modal" id="achievementModal">
+        <div class="achievement-content">
+            <div class="achievement-header">
+                <h2>🏆 游戏成就</h2>
+                <button class="close-btn" onclick="closeAchievements()">×</button>
+            </div>
+            <div class="achievement-list" id="achievementList"></div>
+        </div>
+    </div>
+
+    <script>
+        // 成就定义
+        const achievements = [
+            { id: 'first_win', name: '初出茅庐', desc: '赢得第一场胜利', icon: '🏆' },
+            { id: 'win_3', name: '小试牛刀', desc: '累计获胜3次', icon: '🔥' },
+            { id: 'win_10', name: '势如破竹', desc: '累计获胜10次', icon: '⚡' },
+            { id: 'beat_ai_easy', name: 'AI新手', desc: '击败简单AI', icon: '🤖' },
+            { id: 'beat_ai_medium', name: 'AI挑战者', desc: '击败中等AI', icon: '🎯' },
+            { id: 'beat_ai_hard', name: 'AI终结者', desc: '击败困难AI', icon: '👑' },
+            { id: 'perfect_win', name: '完美胜利', desc: '不让对手落子就获胜', icon: '💯' },
+            { id: 'pvp_5', name: '社交达人', desc: '进行5场双人对战', icon: '🤝' },
+            { id: 'streak_3', name: '三连胜', desc: '连续获胜3场', icon: '🌟' },
+            { id: 'games_20', name: '资深玩家', desc: '游玩20局游戏', icon: '🎮' }
+        ];
+
+        // 游戏状态
+        let board = Array(9).fill('');
+        let currentPlayer = 'X';
+        let gameMode = '';
+        let aiDifficulty = 1;
+        let gameOver = false;
+        let scores = { X: 0, O: 0 };
+        
+        // 落子历史（每方最多4子）
+        const MAX_PIECES = 4;
+        let moveHistory = { X: [], O: [] };
+        let fadingCell = null; // 即将消失的棋子
+        let previewCell = null; // 预览位置（点击确认落子）
+        
+        // 统计数据
+        let gameData = {
+            unlocked: [],
+            totalWins: 0,
+            totalGames: 0,
+            pvpGames: 0,
+            currentStreak: 0,
+            aiWins: { 0: 0, 1: 0, 2: 0 }
+        };
+
+        // 胜利组合
+        const winPatterns = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // 横
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // 竖
+            [0, 4, 8], [2, 4, 6]              // 斜
+        ];
+
+        function init() {
+            loadGameData();
+            renderBoard();
+        }
+
+        function loadGameData() {
+            try {
+                const saved = localStorage.getItem('tictactoe_data');
+                if (saved) gameData = JSON.parse(saved);
+            } catch(e) {}
+        }
+
+        function saveGameData() {
+            try {
+                localStorage.setItem('tictactoe_data', JSON.stringify(gameData));
+            } catch(e) {}
+        }
+
+        function showDifficulty() {
+            document.getElementById('difficultySelect').classList.add('show');
+        }
+
+        function startGame(mode, difficulty = 1) {
+            gameMode = mode;
+            aiDifficulty = difficulty;
+            
+            document.getElementById('modeSelect').style.display = 'none';
+            document.getElementById('difficultySelect').classList.remove('show');
+            document.getElementById('gameStatus').style.display = 'block';
+            document.getElementById('board').style.display = 'grid';
+            document.getElementById('controls').style.display = 'flex';
+
+            if (mode === 'pvp') {
+                document.getElementById('player1Name').textContent = '玩家1 (X)';
+                document.getElementById('player2Name').textContent = '玩家2 (O)';
+            } else {
+                document.getElementById('player1Name').textContent = '你 (X)';
+                document.getElementById('player2Name').textContent = 'AI (O)';
+            }
+
+            resetGame();
+        }
+
+        function resetGame() {
+            board = Array(9).fill('');
+            currentPlayer = 'X';
+            gameOver = false;
+            moveHistory = { X: [], O: [] };
+            fadingCell = null;
+            previewCell = null;
+            document.getElementById('resultModal').classList.remove('show');
+            updateStatus();
+            renderBoard();
+        }
+
+        function backToMenu() {
+            document.getElementById('modeSelect').style.display = 'flex';
+            document.getElementById('difficultySelect').classList.remove('show');
+            document.getElementById('gameStatus').style.display = 'none';
+            document.getElementById('board').style.display = 'none';
+            document.getElementById('controls').style.display = 'none';
+            document.getElementById('resultModal').classList.remove('show');
+            scores = { X: 0, O: 0 };
+            updateScores();
+        }
+
+        function renderBoard() {
+            const boardEl = document.getElementById('board');
+            boardEl.innerHTML = '';
+            
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                let classes = 'cell';
+                if (board[i]) {
+                    classes += ` ${board[i].toLowerCase()} taken`;
+                    // 标记即将消失的棋子
+                    if (i === fadingCell) {
+                        classes += ' fading';
+                    }
+                } else if (i === previewCell) {
+                    // 显示预览棋子
+                    classes += ` ${currentPlayer.toLowerCase()} preview`;
+                }
+                cell.className = classes;
+                cell.textContent = board[i] || (i === previewCell ? currentPlayer : '');
+                cell.onclick = () => handleCellClick(i);
+                boardEl.appendChild(cell);
+            }
+        }
+
+        function handleCellClick(index) {
+            if (gameOver) return;
+            if (gameMode === 'ai' && currentPlayer === 'O') return;
+            if (board[index]) return; // 已有棋子
+            
+            if (previewCell === index) {
+                // 点击预览位置，确认落子
+                previewCell = null;
+                makeMove(index);
+            } else {
+                // 显示新的预览位置
+                previewCell = index;
+                renderBoard();
+            }
+        }
+
+        function makeMove(index) {
+            // 检查是否需要移除最早的棋子
+            if (moveHistory[currentPlayer].length >= MAX_PIECES) {
+                const oldestMove = moveHistory[currentPlayer].shift();
+                board[oldestMove] = '';
+            }
+            
+            board[index] = currentPlayer;
+            moveHistory[currentPlayer].push(index);
+            
+            // 更新即将消失的棋子提示
+            const nextPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            fadingCell = moveHistory[nextPlayer].length >= MAX_PIECES ? moveHistory[nextPlayer][0] : null;
+            
+            renderBoard();
+
+            const winner = checkWinner();
+            if (winner) {
+                endGame(winner);
+                return;
+            }
+
+            currentPlayer = nextPlayer;
+            updateStatus();
+
+            if (gameMode === 'ai' && currentPlayer === 'O') {
+                setTimeout(aiMove, 500);
+            }
+        }
+
+        function aiMove() {
+            if (gameOver) return;
+
+            let move;
+            if (aiDifficulty === 0) {
+                move = getRandomMove();
+            } else if (aiDifficulty === 1) {
+                move = Math.random() > 0.3 ? getSmartMove() : getRandomMove();
+            } else {
+                move = getSmartMove();
+            }
+
+            if (move !== -1) {
+                // 检查是否需要移除最早的棋子
+                if (moveHistory['O'].length >= MAX_PIECES) {
+                    const oldestMove = moveHistory['O'].shift();
+                    board[oldestMove] = '';
+                }
+                
+                board[move] = 'O';
+                moveHistory['O'].push(move);
+                
+                // 更新即将消失的棋子提示
+                fadingCell = moveHistory['X'].length >= MAX_PIECES ? moveHistory['X'][0] : null;
+                
+                renderBoard();
+
+                const winner = checkWinner();
+                if (winner) {
+                    endGame(winner);
+                    return;
+                }
+
+                currentPlayer = 'X';
+                updateStatus();
+            }
+        }
+
+        function getRandomMove() {
+            const empty = board.map((cell, i) => cell ? -1 : i).filter(i => i !== -1);
+            return empty.length ? empty[Math.floor(Math.random() * empty.length)] : -1;
+        }
+
+        // 智能AI（适应新规则）
+        function getSmartMove() {
+            let bestScore = -Infinity;
+            let bestMove = -1;
+            
+            // 模拟AI落子后的棋盘状态
+            let simBoard = [...board];
+            let simHistory = { X: [...moveHistory.X], O: [...moveHistory.O] };
+            
+            // 如果AI落子后超过4子，先模拟移除
+            if (simHistory.O.length >= MAX_PIECES) {
+                simBoard[simHistory.O[0]] = '';
+            }
+
+            for (let i = 0; i < 9; i++) {
+                if (!simBoard[i]) {
+                    let score = evaluateMove(simBoard, i, 'O');
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMove = i;
+                    }
+                }
+            }
+            return bestMove;
+        }
+        
+        function evaluateMove(simBoard, index, player) {
+            simBoard[index] = player;
+            let score = 0;
+            
+            // 检查是否能赢
+            for (const pattern of winPatterns) {
+                const [a, b, c] = pattern;
+                if (simBoard[a] === player && simBoard[b] === player && simBoard[c] === player) {
+                    score += 100;
+                }
+            }
+            
+            // 检查是否能堵住对手
+            const opponent = player === 'O' ? 'X' : 'O';
+            simBoard[index] = opponent;
+            for (const pattern of winPatterns) {
+                const [a, b, c] = pattern;
+                if (simBoard[a] === opponent && simBoard[b] === opponent && simBoard[c] === opponent) {
+                    score += 50;
+                }
+            }
+            
+            // 中心优势
+            if (index === 4) score += 3;
+            if ([0, 2, 6, 8].includes(index)) score += 2;
+            
+            simBoard[index] = '';
+            return score;
+        }
+
+        function checkWinner() {
+            for (const pattern of winPatterns) {
+                const [a, b, c] = pattern;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    highlightWin(pattern);
+                    return board[a];
+                }
+            }
+            return null;
+        }
+
+        function highlightWin(pattern) {
+            const cells = document.querySelectorAll('.cell');
+            pattern.forEach(i => cells[i].classList.add('win'));
+        }
+
+        function endGame(result) {
+            gameOver = true;
+            gameData.totalGames++;
+            if (gameMode === 'pvp') gameData.pvpGames++;
+
+            let icon, title;
+            if (result === 'draw') {
+                icon = '🤝';
+                title = '平局！';
+                gameData.currentStreak = 0;
+            } else if (result === 'X') {
+                scores.X++;
+                if (gameMode === 'pvp') {
+                    icon = '🎉';
+                    title = '玩家1 (X) 获胜！';
+                } else {
+                    icon = '🎉';
+                    title = '你赢了！';
+                    gameData.totalWins++;
+                    gameData.currentStreak++;
+                    gameData.aiWins[aiDifficulty]++;
+                    
+                    // 检查完美胜利
+                    if (board.filter(c => c === 'O').length === 0) {
+                        unlockAchievement('perfect_win');
+                    }
+                    
+                    // AI难度成就
+                    if (aiDifficulty === 0) unlockAchievement('beat_ai_easy');
+                    if (aiDifficulty === 1) unlockAchievement('beat_ai_medium');
+                    if (aiDifficulty === 2) unlockAchievement('beat_ai_hard');
+                }
+                unlockAchievement('first_win');
+            } else {
+                scores.O++;
+                if (gameMode === 'pvp') {
+                    icon = '🎉';
+                    title = '玩家2 (O) 获胜！';
+                } else {
+                    icon = '😢';
+                    title = 'AI 获胜';
+                    gameData.currentStreak = 0;
+                }
+            }
+
+            // 检查成就
+            if (gameData.totalWins >= 3) unlockAchievement('win_3');
+            if (gameData.totalWins >= 10) unlockAchievement('win_10');
+            if (gameData.pvpGames >= 5) unlockAchievement('pvp_5');
+            if (gameData.currentStreak >= 3) unlockAchievement('streak_3');
+            if (gameData.totalGames >= 20) unlockAchievement('games_20');
+
+            saveGameData();
+            updateScores();
+
+            document.getElementById('resultIcon').textContent = icon;
+            document.getElementById('resultTitle').textContent = title;
+            document.getElementById('resultModal').classList.add('show');
+        }
+
+        function updateStatus() {
+            const text = gameMode === 'ai' 
+                ? (currentPlayer === 'X' ? '轮到你了' : 'AI 思考中...')
+                : `轮到 ${currentPlayer === 'X' ? '玩家1' : '玩家2'} (${currentPlayer})`;
+            document.getElementById('statusText').textContent = text;
+        }
+
+        function updateScores() {
+            document.getElementById('score1').textContent = scores.X;
+            document.getElementById('score2').textContent = scores.O;
+        }
+
+        // 成就系统
+        function unlockAchievement(id) {
+            if (gameData.unlocked.includes(id)) return;
+            gameData.unlocked.push(id);
+            saveGameData();
+            const ach = achievements.find(a => a.id === id);
+            if (ach) showAchievementToast(ach);
+        }
+
+        function showAchievementToast(ach) {
+            const toast = document.createElement('div');
+            toast.className = 'achievement-toast';
+            toast.innerHTML = `${ach.icon} 成就解锁：${ach.name}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function showAchievements() {
+            renderAchievementList();
+            document.getElementById('achievementModal').classList.add('show');
+        }
+
+        function closeAchievements() {
+            document.getElementById('achievementModal').classList.remove('show');
+        }
+
+        function renderAchievementList() {
+            const list = document.getElementById('achievementList');
+            list.innerHTML = achievements.map(ach => {
+                const unlocked = gameData.unlocked.includes(ach.id);
+                return `
+                    <div class="achievement-item ${unlocked ? 'unlocked' : 'locked'}">
+                        <div class="achievement-icon">${ach.icon}</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">${ach.name}</div>
+                            <div class="achievement-desc">${ach.desc}</div>
+                        </div>
+                        ${unlocked ? '<span style="color:#22c55e">✓</span>' : '<span style="color:#9ca3af">🔒</span>'}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        init();
+    </script>
+    <script src="fullscreen-btn.js"></script>
+</body>
+</html>

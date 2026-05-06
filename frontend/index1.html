@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星际奇妙站 · Index1</title>
+    <link rel="icon" href="images/LOG.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Poppins:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-gradient: radial-gradient(circle at top, #a4b9ff 0%, #6c7dff 35%, #3c2cb7 65%, #12073a 100%);
+            --card-glow: rgba(255, 255, 255, 0.2);
+            --text-primary: #fefcff;
+            --text-muted: rgba(255, 255, 255, 0.75);
+            --accent-1: #ffd166;
+            --accent-2: #70e4ff;
+            --accent-3: #ff8bd2;
+            --panel-bg: rgba(17, 14, 58, 0.6);
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --white: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', 'Noto Sans SC', 'Segoe UI', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .starfield {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.8), transparent),
+                radial-gradient(1px 1px at 40px 60px, rgba(255, 255, 255, 0.4), transparent),
+                radial-gradient(1px 1px at 130px 90px, rgba(255, 255, 255, 0.6), transparent),
+                radial-gradient(2px 2px at 200px 150px, rgba(255, 255, 255, 0.9), transparent);
+            animation: twinkle 12s linear infinite;
+            z-index: 0;
+            opacity: 0.35;
+        }
+
+        @keyframes twinkle {
+            0% {
+                transform: translateY(0);
+            }
+
+            50% {
+                opacity: 0.55;
+            }
+
+            100% {
+                transform: translateY(-200px);
+            }
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem clamp(1.5rem, 4vw, 5rem);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: linear-gradient(180deg, rgba(5, 5, 29, 0.9), rgba(5, 5, 29, 0.1));
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(14px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .brand-logo {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            background: var(--glass-bg);
+            display: grid;
+            place-items: center;
+            font-size: 1.6rem;
+            color: var(--accent-2);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+        }
+
+        .brand-copy h1 {
+            margin: 0;
+            font-size: clamp(1.2rem, 2vw, 1.6rem);
+        }
+
+        .brand-copy span {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-primary);
+            padding: 0.6rem 1.2rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            font-size: 0.9rem;
+            transition: transform 0.25s ease, background 0.25s ease;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .style-switch-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.7rem clamp(1.5rem, 4vw, 5rem);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .style-switch-left {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .style-link-main {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 999px;
+            background: rgba(5, 5, 29, 0.85);
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+
+        .style-link-main i {
+            font-size: 0.9rem;
+        }
+
+        .style-switch-right {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            flex-wrap: wrap;
+        }
+
+        .style-switch-right span {
+            opacity: 0.85;
+        }
+
+        .style-pill {
+            padding: 0.25rem 0.7rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(148, 163, 184, 0.9);
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 0.8rem;
+        }
+
+        main {
+            position: relative;
+            z-index: 1;
+            padding: 2rem clamp(1.5rem, 4vw, 5rem) 4rem;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: clamp(2rem, 4vw, 4rem);
+            align-items: center;
+            padding: clamp(2rem, 4vw, 4rem);
+            border-radius: 32px;
+            background: var(--panel-bg);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 25px 80px rgba(10, 4, 37, 0.6);
+            perspective: 1000px;
+            /* Added for 3D */
+        }
+
+        .hero h2 {
+            font-size: clamp(2.1rem, 4vw, 3.2rem);
+            margin: 0 0 1rem;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .btn-primary {
+            border: none;
+            border-radius: 999px;
+            padding: 0.85rem 1.8rem;
+            font-weight: 600;
+            color: #1c1247;
+            background: linear-gradient(120deg, #ffde6a, #ff9b6a);
+            box-shadow: 0 15px 40px rgba(255, 191, 90, 0.35);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .btn-ghost {
+            border-radius: 999px;
+            padding: 0.85rem 1.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            background: transparent;
+            color: var(--white);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .btn-primary:hover,
+        .btn-ghost:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--white);
+        }
+
+        /* Interactive Orbit UI */
+        .orbit-illustration {
+            position: relative;
+            aspect-ratio: 1 / 1;
+            max-width: 400px;
+            margin-inline: auto;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
+            will-change: transform;
+        }
+
+        .orbit-core {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #a3ddff, #ffffff);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) translateZ(40px);
+            box-shadow: 0 25px 60px rgba(102, 225, 255, 0.45);
+            transition: transform 0.3s ease;
+        }
+
+        /* 交互 hover 暂时关闭，专注展示环绕动画
+        .orbit-illustration:hover .orbit-core {
+            transform: translate(-50%, -50%) translateZ(60px) scale(1.05);
+        }
+        */
+
+        .orbit-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) translateZ(0);
+            border-radius: 50%;
+            border: 1px dashed rgba(255, 255, 255, 0.4);
+            animation: orbit-spin 12s linear infinite;
+            transform-style: preserve-3d;
+        }
+
+        .orbit-ring:nth-child(2) {
+            width: 280px;
+            height: 280px;
+            animation-duration: 18s;
+        }
+
+        .orbit-ring:nth-child(3) {
+            width: 360px;
+            height: 360px;
+            animation-duration: 24s;
+            border-style: solid;
+            opacity: 0.4;
+        }
+
+        .orbit-planet {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff9ad7, #ff63b3);
+            position: absolute;
+            top: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 10px 30px rgba(255, 99, 179, 0.45);
+            transition: transform 0.3s ease;
+        }
+
+        /*
+        .orbit-illustration:hover .orbit-planet {
+            transform: translateX(-50%) scale(1.2);
+        }
+        */
+
+        @keyframes orbit-spin {
+            from {
+                transform: translate(-50%, -50%) rotate(0deg) translateZ(0);
+            }
+
+            to {
+                transform: translate(-50%, -50%) rotate(360deg) translateZ(0);
+            }
+        }
+
+        .section {
+            margin-top: clamp(2.5rem, 5vw, 4rem);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-header h3 {
+            margin: 0;
+            font-size: 1.6rem;
+        }
+
+        .section-header span {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1.1rem;
+        }
+
+        .tool-card {
+            padding: 0.85rem;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-decoration: none;
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        .tool-card:hover::before {
+            opacity: 1;
+        }
+
+        .tool-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            font-size: 1.1rem;
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--accent-1);
+        }
+
+        .tool-card p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            line-height: 1.4;
+        }
+
+        .mini-badges {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+
+        .mini-badges span {
+            padding: 0.2rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .playground {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1.05rem;
+        }
+
+        .mini-card {
+            padding: 0.9rem;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 0.7rem;
+            align-items: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mini-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .mini-card i {
+            font-size: 1.8rem;
+            color: var(--accent-2);
+        }
+
+        .mini-card h4 {
+            margin: 0 0 0.2rem;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+        }
+
+        .mini-card p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+        }
+
+        .more-card {
+            cursor: pointer;
+            justify-content: center;
+        }
+
+        footer {
+            margin-top: 4rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* 大屏幕：flex一行布局，自适应缩放 */
+        @media (min-width: 1100px) {
+            .card-grid {
+                grid-template-columns: repeat(6, minmax(0, 1fr));
+                gap: 1rem;
+            }
+
+            #playground .playground,
+            #learning .playground {
+                grid-template-columns: repeat(5, minmax(0, 1fr));
+            }
+
+            .playground {
+                gap: 0.9rem;
+            }
+
+            .tool-card {
+                padding: 0.8rem;
+            }
+
+            .tool-icon {
+                width: 44px;
+                height: 44px;
+                border-radius: 12px;
+                font-size: 1rem;
+            }
+
+            .tool-card h4 {
+                font-size: 0.85rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .tool-card p {
+                font-size: 0.75rem;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+
+            .mini-badges span {
+                padding: 0.15rem 0.55rem;
+                font-size: 0.65rem;
+            }
+
+            .mini-card {
+                padding: 0.8rem;
+                border-radius: 12px;
+                gap: 0.6rem;
+            }
+
+            .mini-card i {
+                font-size: 1.2rem;
+                flex-shrink: 0;
+            }
+
+            .mini-card h4 {
+                font-size: 0.85rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .mini-card p {
+                font-size: 0.72rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+
+        @media (max-width: 720px) {
+            header {
+                flex-direction: column;
+                gap: 1rem;
+                position: static;
+            }
+
+            .nav-links {
+                justify-content: center;
+            }
+
+            .hero {
+                padding: 1.6rem;
+            }
+
+            /* 工具银河：三列紧凑 */
+            .card-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+            }
+
+            .tool-card {
+                padding: 0.75rem;
+                border-radius: 14px;
+                gap: 0.4rem;
+            }
+
+            .tool-icon {
+                width: 32px;
+                height: 32px;
+                border-radius: 10px;
+                font-size: 0.95rem;
+            }
+
+            .tool-card h4 {
+                font-size: 0.8rem;
+            }
+
+            .tool-card p {
+                font-size: 0.65rem;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+
+            .mini-badges span {
+                padding: 0.1rem 0.4rem;
+                font-size: 0.6rem;
+            }
+
+            /* 趣味星球/学习星河：三列紧凑 */
+            .playground {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.6rem;
+            }
+
+            .mini-card {
+                padding: 0.7rem;
+                border-radius: 12px;
+                gap: 0.6rem;
+            }
+
+            .mini-card i {
+                font-size: 1.2rem;
+            }
+
+            .mini-card h4 {
+                font-size: 0.8rem;
+            }
+
+            .mini-card p {
+                font-size: 0.65rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .modal-grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 0.5rem;
+                max-height: 68vh;
+                padding-right: 0.1rem;
+                overflow-x: hidden;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="starfield" aria-hidden="true"></div>
+    <header><a href="#hero" class="brand">
+            <div class="brand-logo">🚀</div>
+            <div class="brand-copy">
+                <h1>煜的工具站</h1><span>Cartoon · Texture · Tech</span>
+            </div>
+        </a>
+        <nav class="nav-links"><a href="#hero">首页</a><a href="#tools">工具银河</a><a href="#playground">趣味星球</a><a
+                href="#learning">学习星河</a><a href="#ai">AI 星云</a><a href="#about">关于站点</a></nav>
+    </header>
+    <div class="style-switch-bar">
+        <div class="style-switch-left"><a href="index.html" class="style-link-main"><i
+                    class="fas fa-arrow-left"></i><span>返回首页风格选择</span></a></div>
+        <div class="style-switch-right"><span>其他首页：</span><a class="style-pill" href="index2.html">奇思妙想 · 霓虹</a><a
+                class="style-pill" href="index3.html">学习小宇宙 · 面板</a></div>
+    </div>
+    <main>
+        <section class="hero" id="hero">
+            <div>
+                <h2>登上奇妙飞船，启航奇思妙想</h2>
+                <p>我们将卡通的想象力、质感设计与科技力量融合，用一个页面串联你的全部灵感工具。跟随星轨探索，从学习到创作，均可一键起飞。</p>
+                <div class="cta-group"><a class="btn-ghost" href="#tools">立即巡航</a></div>
+                <div class="mini-badges" style="margin-top:1.2rem;"><span>🌌 星空渐变</span><span>🪐 轻盈动效</span><span>✨
+                        玻璃质感</span></div>
+            </div>
+            <div class="orbit-illustration" aria-hidden="true">
+                <div class="orbit-core"></div>
+                <div class="orbit-ring">
+                    <div class="orbit-planet" style="background: linear-gradient(135deg,#8fffd2,#5ad1ff);"></div>
+                </div>
+                <div class="orbit-ring">
+                    <div class="orbit-planet"
+                        style="top:auto;bottom:-24px;background: linear-gradient(135deg,#ffd36a,#ff9e59);"></div>
+                </div>
+                <div class="orbit-ring">
+                    <div class="orbit-planet"
+                        style="left:auto;right:-24px;background: linear-gradient(135deg,#ff96f5,#ff5bd0);"></div>
+                </div>
+            </div>
+        </section>
+        <section class="section" id="tools">
+            <div class="section-header">
+                <h3>工具银河</h3><span>精选常用学习 / 创意工具 · 持续补给中</span>
+            </div>
+            <div class="card-grid"><a class="tool-card" href="um-web.legacy.v1.10.8/index.html" target="_blank">
+                    <div class="tool-icon" style="color:#ff9bd9;"><i class="fas fa-music"></i></div>
+                    <h4>音乐解码器</h4>
+                    <p>轻松处理音乐文件格式，卡通面板内置操作提示，适配多平台。</p>
+                    <div class="mini-badges"><span>音频</span><span>提取</span></div>
+                </a><a class="tool-card" href="suffix_converter.html">
+                    <div class="tool-icon" style="color:#92f3ff;"><i class="fas fa-exchange-alt"></i></div>
+                    <h4>后缀批量转换</h4>
+                    <p>快速转换文件类型，搭配科技感提示灯，确保批量操作安全。</p>
+                    <div class="mini-badges"><span>批量</span><span>文件</span></div>
+                </a><a class="tool-card" href="https://gallery.timeline.ink/latest" target="_blank">
+                    <div class="tool-icon" style="color:#ffe18d;"><i class="fas fa-image"></i></div>
+                    <h4>拾光壁纸库</h4>
+                    <p>银河质感壁纸一键收藏，背景与本站的星轨风格相呼应。</p>
+                    <div class="mini-badges"><span>壁纸</span><span>灵感</span></div>
+                </a><a class="tool-card" href="https://www.datatool.vip/" target="_blank">
+                    <div class="tool-icon" style="color:#8bf3b6;"><i class="fas fa-video"></i></div>
+                    <h4>无水印视频下载</h4>
+                    <p>支持抖音 / 快手等平台。</p>
+                    <div class="mini-badges"><span>视频</span><span>采集</span></div>
+                </a><a class="tool-card" href="https://obsproject.com/" target="_blank">
+                    <div class="tool-icon" style="color:#7fd0ff;"><i class="fas fa-desktop"></i></div>
+                    <h4>OBS 录制与直播</h4>
+                    <p>开源屏幕录制与直播推流软件，适合课堂演示与录屏。</p>
+                    <div class="mini-badges"><span>录屏</span><span>直播</span></div>
+                </a><a class="tool-card" href="https://ezgame.cc/tools/gamepadviewer.com/#" target="_blank">
+                    <div class="tool-icon" style="color:#b7ff9b;"><i class="fas fa-gamepad"></i></div>
+                    <h4>手柄按键可视化</h4>
+                    <p>在线展示手柄按键输入状态，适合录制教学或直播演示。</p>
+                    <div class="mini-badges"><span>手柄</span><span>可视化</span></div>
+                </a><a class="tool-card" href="https://www.xjlz365.com/" target="_blank">
+                    <div class="tool-icon" style="color:#ffb8a1;"><i class="fas fa-link"></i></div>
+                    <h4>乡间郎中</h4>
+                    <p>跳转到乡间郎中站点。</p>
+                    <div class="mini-badges"><span>网站</span></div>
+                </a><a class="tool-card" href="https://store.steampowered.com/" target="_blank">
+                    <div class="tool-icon" style="color:#66a6ff;"><i class="fab fa-steam"></i></div>
+                    <h4>Steam 官网</h4>
+                    <p>游戏下载与社区，获取最新 PC 游戏资讯。</p>
+                    <div class="mini-badges"><span>游戏</span></div>
+                </a><a class="tool-card" href="https://github.com/btjawa/BiliTools" target="_blank">
+                    <div class="tool-icon" style="color:#9dd9ff;"><i class="fas fa-wrench"></i></div>
+                    <h4>BiliTools</h4>
+                    <p>开源哔哩哔哩工具集合，支持多种辅助操作。</p>
+                    <div class="mini-badges"><span>开源</span><span>工具</span></div>
+                </a><a class="tool-card" href="https://github.com/zhaoolee/ChineseBQB?tab=readme-ov-file" target="_blank">
+                    <div class="tool-icon" style="color:#ffcf70;"><i class="fas fa-smile"></i></div>
+                    <h4>中文表情包仓库</h4>
+                    <p>丰富的中文表情包资源，直接下载使用。</p>
+                    <div class="mini-badges"><span>表情</span></div>
+                </a><a class="tool-card" href="https://github.com/TapXWorld/ChinaTextbook?tab=readme-ov-file" target="_blank">
+                    <div class="tool-icon" style="color:#b6ffae;"><i class="fas fa-book"></i></div>
+                    <h4>所有年级教材下载</h4>
+                    <p>收录各年级教材电子版，便于查阅与备课。</p>
+                    <div class="mini-badges"><span>教材</span></div>
+                </a><a class="tool-card" href="https://pan.baidu.com/s/5RSjHfAHWqwdnz2MTQFzRQw" target="_blank">
+                    <div class="tool-icon" style="color:#ffc1c1;"><i class="fas fa-print"></i></div>
+                    <h4>打印机（百度网盘）</h4>
+                    <p>网盘资源链接，包含打印机相关文件。</p>
+                    <div class="mini-badges"><span>资源</span></div>
+                </a><a class="tool-card" href="https://mineru.net/OpenSourceTools/Extractor" target="_blank">
+                    <div class="tool-icon" style="color:#ff9fa6;"><i class="fas fa-file-pdf"></i></div>
+                    <h4>ExtractorPDF</h4>
+                    <p>PDF 提取工具，便捷获取文档内容。</p>
+                    <div class="mini-badges"><span>PDF</span><span>提取</span></div>
+                </a><a class="tool-card" href="https://abra.js.org/" target="_blank">
+                    <div class="tool-icon" style="color:#c4b5ff;"><i class="fas fa-lock"></i></div>
+                    <h4>Abra.js 文本加密</h4>
+                    <p>简洁的前端文本加解密工具。</p>
+                    <div class="mini-badges"><span>加密</span></div>
+                </a><a class="tool-card" href="https://pakeplus.pages.dev/zh/" target="_blank">
+                    <div class="tool-icon" style="color:#ffd4a8;"><i class="fas fa-box"></i></div>
+                    <h4>PakePlus 网页打包</h4>
+                    <p>将网页快速打包为桌面应用的简便工具。</p>
+                    <div class="mini-badges"><span>打包</span><span>桌面</span></div>
+                </a><a class="tool-card" href="https://www.aishort.top/en/" target="_blank">
+                    <div class="tool-icon" style="color:#a78bfa;"><i class="fas fa-magic"></i></div>
+                    <h4>aishort</h4>
+                    <p>精选 AI 提示词库，涵盖写作、编程、教育等多领域，提升对话效率。</p>
+                    <div class="mini-badges"><span>AI</span><span>提示词</span></div>
+                </a><a class="tool-card" href="表格转Excel.html">
+                    <div class="tool-icon" style="color:#7dd3fc;"><i class="fas fa-table"></i></div>
+                    <h4>图片转Excel表格</h4>
+                    <p>上传图片到AI识别表格，自动生成Excel并支持下载。</p>
+                    <div class="mini-badges"><span>表格</span><span>AI</span><span>Excel</span></div>
+                </a></div>
+        </section>
+        <section class="section" id="playground">
+            <div class="section-header">
+                <h3>趣味星球</h3><span>趣味互动小游戏 · 适合课间与课堂放松</span>
+            </div>
+            <div class="playground"><a class="mini-card" href="敲木鱼.html"><i class="fas fa-drum"></i>
+                    <div>
+                        <h4>敲木鱼</h4>
+                        <p>节奏敲击放松身心</p>
+                    </div>
+                </a><a class="mini-card" href="3D地球模型.html"><i class="fas fa-globe"></i>
+                    <div>
+                        <h4>3D地球模型</h4>
+                        <p>旋转地球，认识家园</p>
+                    </div>
+                </a><a class="mini-card" href="太阳系.html"><i class="fas fa-sun"></i>
+                    <div>
+                        <h4>太阳系模型</h4>
+                        <p>浏览行星轨道与距离</p>
+                    </div>
+                </a><a class="mini-card" href="2048.html"><i class="fas fa-th"></i>
+                    <div>
+                        <h4>2048</h4>
+                        <p>经典数字合成小游戏</p>
+                    </div>
+                </a><a class="mini-card" href="俄罗斯方块.html"><i class="fas fa-cubes"></i>
+                    <div>
+                        <h4>俄罗斯方块</h4>
+                        <p>方块消除，训练思维</p>
+                    </div>
+                </a><a class="mini-card" href="扫雷.html"><i class="fas fa-bomb"></i>
+                    <div>
+                        <h4>扫雷</h4>
+                        <p>经典雷区挑战</p>
+                    </div>
+                </a><a class="mini-card" href="华容道.html"><i class="fas fa-puzzle-piece"></i>
+                    <div>
+                        <h4>华容道</h4>
+                        <p>滑块移动，解锁出口</p>
+                    </div>
+                </a><a class="mini-card" href="贪吃蛇.html"><i class="fas fa-dragon"></i>
+                    <div>
+                        <h4>贪吃蛇</h4>
+                        <p>灵活走位，吃到更多</p>
+                    </div>
+                </a><a class="mini-card" href="particles.html"><i class="fas fa-braille"></i>
+                    <div>
+                        <h4>粒子幻境</h4>
+                        <p>手势交互的 3D 粒子体验</p>
+                    </div>
+                </a><a class="mini-card" href="数独.html"><i class="fas fa-table-cells"></i>
+                    <div>
+                        <h4>数独</h4>
+                        <p>数字逻辑挑战</p>
+                    </div>
+                </a><a class="mini-card" href="记忆翻牌.html"><i class="fas fa-clone"></i>
+                    <div>
+                        <h4>记忆翻牌</h4>
+                        <p>训练记忆配对</p>
+                    </div>
+                </a><a class="mini-card" href="井字棋.html"><i class="fas fa-hashtag"></i>
+                    <div>
+                        <h4>井字棋</h4>
+                        <p>三子连线对决</p>
+                    </div>
+                </a><a class="mini-card" href="五子棋.html"><i class="fas fa-circle"></i>
+                    <div>
+                        <h4>五子棋</h4>
+                        <p>经典对弈练习</p>
+                    </div>
+                </a><a class="mini-card" href="弹球消砖.html"><i class="fas fa-table-tennis-paddle-ball"></i>
+                    <div>
+                        <h4>弹球消砖</h4>
+                        <p>反弹击碎方块</p>
+                    </div>
+                </a><a class="mini-card" href="迷宫逃脱.html"><i class="fas fa-route"></i>
+                    <div>
+                        <h4>迷宫逃脱</h4>
+                        <p>寻找出口，脱离迷宫</p>
+                    </div>
+                </a><a class="mini-card" href="音乐钢琴键.html"><i class="fas fa-music"></i>
+                    <div>
+                        <h4>音乐钢琴键</h4>
+                        <p>键盘触控演奏钢琴</p>
+                    </div>
+                </a><a class="mini-card" href="水井棋.html"><i class="fas fa-border-all"></i>
+                    <div>
+                        <h4>水井棋</h4>
+                        <p>策略棋类小游戏</p>
+                    </div>
+                </a><a class="mini-card" href="虚空切水果.html"><i class="fas fa-lemon"></i>
+                    <div>
+                        <h4>虚空切水果</h4>
+                        <p>挥刀切水果，反应训练</p>
+                    </div>
+                </a>
+            </div>
+        </section>
+        <section class="section" id="learning">
+            <div class="section-header">
+                <h3>学习星河</h3><span>学科互动 / 知识练习 · 在探索中学习</span>
+            </div>
+            <div class="playground"><a class="mini-card" href="成语学习.html"><i class="fas fa-book-open"></i>
+                    <div>
+                        <h4>成语学习</h4>
+                        <p>卡片翻翻记成语，提升语文积累</p>
+                    </div>
+                </a><a class="mini-card" href="二次方程学习.html"><i class="fas fa-chart-line"></i>
+                    <div>
+                        <h4>二次方程学习</h4>
+                        <p>配图讲解抛物线与方程解法</p>
+                    </div>
+                </a><a class="mini-card" href="分数大小比较.html"><i class="fas fa-percent"></i>
+                    <div>
+                        <h4>分数大小比较</h4>
+                        <p>拖拽操作练习分数大小判断</p>
+                    </div>
+                </a><a class="mini-card" href="古诗排序.html"><i class="fas fa-book"></i>
+                    <div>
+                        <h4>古诗排序</h4>
+                        <p>拖动句子，按顺序拼出完整古诗</p>
+                    </div>
+                </a><a class="mini-card" href="现代汉语词典/汉语字典.html" target="_blank" rel="noopener"><i
+                        class="fas fa-book-reader"></i>
+                    <div>
+                        <h4>汉语字典</h4>
+                        <p>查询汉字释义与用法</p>
+                    </div>
+                </a><a class="mini-card" href="偏旁部首拼汉字.html"><i class="fas fa-language"></i>
+                    <div>
+                        <h4>偏旁部首拼汉字</h4>
+                        <p>拼合部首完成汉字练习</p>
+                    </div>
+                </a><a class="mini-card" href="三视图教学.html"><i class="fas fa-cube"></i>
+                    <div>
+                        <h4>三视图教学</h4>
+                        <p>立体图形与投影的学习</p>
+                    </div>
+                </a><a class="mini-card" href="食物链学习.html"><i class="fas fa-fish"></i>
+                    <div>
+                        <h4>食物链学习</h4>
+                        <p>理解生态系统中的能量传递</p>
+                    </div>
+                </a><a class="mini-card" href="速算技巧.html"><i class="fas fa-lightbulb"></i>
+                    <div>
+                        <h4>速算技巧</h4>
+                        <p>掌握常用的心算快捷方法</p>
+                    </div>
+                </a><a class="mini-card" href="速算.html"><i class="fas fa-calculator"></i>
+                    <div>
+                        <h4>速算练习</h4>
+                        <p>通过练习巩固速算技巧</p>
+                    </div>
+                </a><a class="mini-card" href="一次方程学习.html"><i class="fas fa-equals"></i>
+                    <div>
+                        <h4>一次方程学习</h4>
+                        <p>认识一次方程与基础解法</p>
+                    </div>
+                </a>
+            </div>
+        </section>
+        <section class="section" id="ai">
+            <div class="section-header">
+                <h3>AI 智能星云</h3><span>聚合主流大模型助手 · 一键开启 AI 对话</span>
+            </div>
+            <div class="playground"><a class="mini-card" href="https://www.qianwen.com/chat" target="_blank"><i
+                        class="fas fa-robot"></i>
+                    <div>
+                        <h4>通义千问</h4>
+                        <p>阿里巴巴大模型助手</p>
+                    </div>
+                </a><a class="mini-card" href="https://www.doubao.com/chat" target="_blank"><i
+                        class="fas fa-comment-dots"></i>
+                    <div>
+                        <h4>豆包 AI</h4>
+                        <p>字节跳动智能助手</p>
+                    </div>
+                </a><a class="mini-card" href="https://chat.deepseek.com/" target="_blank"><i class="fas fa-meteor"></i>
+                    <div>
+                        <h4>DeepSeek</h4>
+                        <p>国产大模型探索站</p>
+                    </div>
+                </a><a class="mini-card" href="https://www.kimi.com/" target="_blank"><i class="fas fa-star"></i>
+                    <div>
+                        <h4>Kimi</h4>
+                        <p>长文档理解与创作助手</p>
+                    </div>
+                </a><a class="mini-card" href="https://chatgpt.com/" target="_blank"><i class="fas fa-infinity"></i>
+                    <div>
+                        <h4>ChatGPT</h4>
+                        <p>多场景通用型 AI 聊天助手</p>
+                    </div>
+                </a><a class="mini-card" href="https://gemini.google.com/app" target="_blank"><i class="fas fa-gem"></i>
+                    <div>
+                        <h4>Gemini</h4>
+                        <p>Google 智能助手</p>
+                    </div>
+                </a></div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 煜的工具站. All rights reserved.</p>
+    </footer>
+            <script> // Orbit Interaction Logic（暂时注释保留，改用纯 CSS 环绕动画）
+                /*
+                        document.addEventListener('DOMContentLoaded', () => {
+                            const heroSection = document.querySelector('.hero');
+                            const orbit = document.querySelector('.orbit-illustration');
+                
+                            if (heroSection && orbit) {
+                                let autoAngle = 0;
+                                let autoFrameId = null;
+                                let lastInteractionTime = Date.now();
+                                const idleDelay = 3000;
+                                const autoMaxRotate = 8;
+                
+                                function startAutoOrbit() {
+                                    if (autoFrameId) return;
+                                    function step() {
+                                        const now = Date.now();
+                                        if (now - lastInteractionTime < idleDelay) {
+                                            autoFrameId = requestAnimationFrame(step);
+                                            return;
+                                        }
+                                        autoAngle += 0.02;
+                                        const rotateX = Math.sin(autoAngle) * autoMaxRotate;
+                                        const rotateY = Math.cos(autoAngle) * autoMaxRotate;
+                                        orbit.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                                        autoFrameId = requestAnimationFrame(step);
+                                    }
+                                    autoFrameId = requestAnimationFrame(step);
+                                }
+                
+                                document.addEventListener('visibilitychange', () => {
+                                    if (document.hidden) {
+                                        if (autoFrameId) {
+                                            cancelAnimationFrame(autoFrameId);
+                                            autoFrameId = null;
+                                        }
+                                    } else {
+                                        lastInteractionTime = Date.now();
+                                        startAutoOrbit();
+                                    }
+                                });
+                
+                                heroSection.addEventListener('mousemove', (e) => {
+                                    const rect = heroSection.getBoundingClientRect();
+                                    const x = e.clientX - rect.left;
+                                    const y = e.clientY - rect.top;
+                
+                                    // Calculate percentage from center (-1 to 1)
+                                    const xPct = (x / rect.width - 0.5) * 2;
+                                    const yPct = (y / rect.height - 0.5) * 2;
+                
+                                    // Max rotation degrees
+                                    const maxRotate = 15;
+                
+                                    // Invert Y for natural tilt feel
+                                    const rotateX = -yPct * maxRotate;
+                                    const rotateY = xPct * maxRotate;
+                
+                                    lastInteractionTime = Date.now();
+                                    orbit.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                                });
+                
+                                heroSection.addEventListener('mouseleave', () => {
+                                    lastInteractionTime = Date.now();
+                                    orbit.style.transform = 'rotateX(0) rotateY(0)';
+                                });
+                
+                                startAutoOrbit();
+                            }
+                        });
+                        */
+            </script>
+            <script src="fullscreen-btn.js"></script>
+</body>
+
+</html>

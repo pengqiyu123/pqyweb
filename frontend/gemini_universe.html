@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gemini 多模态星环宇宙</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at 20% 0%, #1b4bff 0, #050716 45%, #000000 100%);
+      color: #e9f3ff;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    canvas#universe {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: transparent;
+    }
+    .overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .title {
+      font-size: clamp(28px, 5vw, 42px);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 12px;
+      color: #f5fbff;
+      text-shadow: 0 0 22px rgba(80, 200, 255, 0.8), 0 0 45px rgba(120, 120, 255, 0.9);
+    }
+    .subtitle {
+      font-size: clamp(14px, 2.2vw, 16px);
+      max-width: 600px;
+      text-align: center;
+      color: rgba(215, 228, 255, 0.8);
+    }
+    .badge-row {
+      margin-top: 18px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .badge {
+      pointer-events: auto;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(120, 180, 255, 0.65);
+      background: linear-gradient(135deg, rgba(15, 42, 95, 0.78), rgba(31, 87, 171, 0.3));
+      box-shadow: 0 0 14px rgba(70, 170, 255, 0.55);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: rgba(235, 244, 255, 0.9);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .hint {
+      position: fixed;
+      left: 50%;
+      bottom: 32px;
+      transform: translateX(-50%);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(209, 224, 255, 0.76);
+      background: rgba(4, 12, 40, 0.78);
+      border: 1px solid rgba(97, 157, 255, 0.6);
+      box-shadow: 0 0 16px rgba(40, 120, 255, 0.7);
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="universe"></canvas>
+  <script>
+    (function () {
+      const canvas = document.getElementById('universe');
+      const ctx = canvas.getContext('2d');
+
+      let width = window.innerWidth;
+      let height = window.innerHeight;
+      let cx = width / 2;
+      let cy = height / 2;
+
+      let particles = [];
+      let backgroundStars = [];
+      let hoverParticleIndex = -1;
+      let startTime = null;
+      const CYCLE = 12000;
+
+      const rings = [
+        { radius: 120, count: 180, speed: 0.00045, size: [1.2, 2.2], color: [120, 200, 255] },
+        { radius: 190, count: 200, speed: 0.00032, size: [1.0, 2.4], color: [180, 135, 255] },
+        { radius: 260, count: 220, speed: 0.00024, size: [0.9, 2.0], color: [255, 190, 140] }
+      ];
+
+      const mouse = {
+        x: 0.5,
+        y: 0.5,
+        screenX: width / 2,
+        screenY: height / 2,
+        active: false
+      };
+
+      function resize() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        cx = width / 2;
+        cy = height / 2;
+        canvas.width = width * window.devicePixelRatio;
+        canvas.height = height * window.devicePixelRatio;
+        ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
+      }
+
+      function rand(min, max) {
+        return min + Math.random() * (max - min);
+      }
+
+      function easeInOutCubic(t) {
+        return t < 0.5
+          ? 4 * t * t * t
+          : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      }
+
+      function easeOutBounce(t) {
+        const n1 = 7.5625;
+        const d1 = 2.75;
+        if (t < 1 / d1) {
+          return n1 * t * t;
+        } else if (t < 2 / d1) {
+          t -= 1.5 / d1;
+          return n1 * t * t + 0.75;
+        } else if (t < 2.5 / d1) {
+          t -= 2.25 / d1;
+          return n1 * t * t + 0.9375;
+        } else {
+          t -= 2.625 / d1;
+          return n1 * t * t + 0.984375;
+        }
+      }
+
+      function createBackgroundStars() {
+        backgroundStars = [];
+        const count = Math.floor((width * height) / 2800);
+        for (let i = 0; i < count; i++) {
+          backgroundStars.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            r: Math.random() * 1.1 + 0.2,
+            alpha: Math.random() * 0.55 + 0.15,
+            twinkleSpeed: Math.random() * 0.002 + 0.0004,
+            seed: Math.random() * Math.PI * 2
+          });
+        }
+      }
+
+      function createParticles() {
+        particles = [];
+        const heartCount = 2200;
+        const baseScale = Math.min(width, height) * 0.03;
+        const orbitInner = baseScale * 7.5;
+        const orbitOuter = baseScale * 13.5;
+
+        for (let i = 0; i < heartCount; i++) {
+          const t = Math.random() * Math.PI * 2;
+          const s = 0.7 + 0.3 * Math.random();
+          const xh = 16 * Math.pow(Math.sin(t), 3);
+          const yh = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+
+          const hx = xh * s * baseScale;
+          const hy = -yh * s * baseScale;
+
+          const orbitRadius = rand(orbitInner, orbitOuter);
+          const orbitAngle = Math.random() * Math.PI * 2;
+
+          const depth = Math.random();
+          const size = 1.2 + 2.4 * depth;
+          const baseAlpha = 0.35 + 0.65 * depth;
+
+          particles.push({
+            hx,
+            hy,
+            orbitRadius,
+            orbitAngle,
+            orbitSpeed: 0.0008 + Math.random() * 0.0016,
+            size,
+            baseAlpha,
+            depth,
+            delay: Math.random() * 0.4,
+            flickerOffset: Math.random() * Math.PI * 2,
+            colorShift: Math.random()
+          });
+        }
+      }
+
+      function drawBackgroundStars(time) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+        for (const s of backgroundStars) {
+          const tw = 0.45 + 0.55 * Math.sin(time * s.twinkleSpeed + s.seed);
+          const alpha = s.alpha * (0.6 + 0.4 * tw);
+          ctx.globalAlpha = alpha;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r * (0.7 + 0.6 * tw), 0, Math.PI * 2);
+          const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r * 2.5);
+          g.addColorStop(0, 'rgba(255, 255, 255, 1)');
+          g.addColorStop(1, 'rgba(130, 170, 255, 0)');
+          ctx.fillStyle = g;
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      function drawCore(time) {
+        const baseRadius = Math.min(width, height) * 0.12;
+        const pulse = 1 + 0.06 * Math.sin(time * 0.0025);
+        const r = baseRadius * pulse;
+
+        ctx.save();
+        ctx.translate(cx, cy);
+
+        const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 2.3);
+        glow.addColorStop(0, 'rgba(160, 220, 255, 0.18)');
+        glow.addColorStop(0.45, 'rgba(80, 140, 255, 0.10)');
+        glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = 'screen';
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 2.3, 0, Math.PI * 2);
+        ctx.fill();
+
+        const core = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
+        core.addColorStop(0, 'rgba(255, 255, 255, 1)');
+        core.addColorStop(0.35, 'rgba(170, 225, 255, 0.95)');
+        core.addColorStop(0.7, 'rgba(80, 150, 255, 0.4)');
+        core.addColorStop(1, 'rgba(10, 20, 60, 0.0)');
+        ctx.fillStyle = core;
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.fill();
+
+        const lines = 8;
+        for (let i = 0; i < lines; i++) {
+          const a = (i / lines) * Math.PI * 2 + time * 0.0003;
+          const inner = r * 0.45;
+          const outer = r * (1.1 + 0.12 * Math.sin(time * 0.0015 + i));
+          const x1 = Math.cos(a) * inner;
+          const y1 = Math.sin(a) * inner;
+          const x2 = Math.cos(a) * outer;
+          const y2 = Math.sin(a) * outer;
+          const grad = ctx.createLinearGradient(x1, y1, x2, y2);
+          grad.addColorStop(0, 'rgba(255, 255, 255, 0.0)');
+          grad.addColorStop(0.25, 'rgba(210, 240, 255, 0.9)');
+          grad.addColorStop(1, 'rgba(110, 180, 255, 0.0)');
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = 1.1;
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+        }
+
+        ctx.restore();
+      }
+
+      function drawRings(time) {
+        const now = time || 0;
+        if (startTime === null) {
+          startTime = now;
+        }
+
+        const elapsed = now - startTime;
+        const local = elapsed % CYCLE;
+        const phase = local / CYCLE;
+
+        const gatherStart = 0.05;
+        const gatherEnd = 0.55;
+        const dropStart = 0.55;
+        const dropEnd = 0.9;
+
+        const groundY = height * 0.82;
+        let centerOffsetY = 0;
+        let globalFade = 1;
+
+        if (phase >= dropStart) {
+          const kRaw = (phase - dropStart) / (dropEnd - dropStart);
+          const k = Math.max(0, Math.min(1, kRaw));
+          const eased = easeOutBounce(k);
+          centerOffsetY = eased * (groundY - cy);
+        }
+
+        if (phase > dropEnd) {
+          const fadeK = Math.min(1, (phase - dropEnd) / (1 - dropEnd));
+          globalFade = 1 - fadeK;
+        }
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+
+          const orbitTheta = p.orbitAngle + elapsed * p.orbitSpeed;
+          const orbitX = Math.cos(orbitTheta) * p.orbitRadius;
+          const orbitY = Math.sin(orbitTheta) * p.orbitRadius;
+
+          let gatherProgress = 0;
+          const effectivePhase = phase - p.delay * 0.8;
+
+          if (effectivePhase <= gatherStart) {
+            gatherProgress = 0;
+          } else if (effectivePhase >= gatherEnd) {
+            gatherProgress = 1;
+          } else {
+            const tNorm = (effectivePhase - gatherStart) / (gatherEnd - gatherStart);
+            gatherProgress = easeInOutCubic(tNorm);
+          }
+
+          const xLocal = orbitX * (1 - gatherProgress) + p.hx * gatherProgress;
+          const yLocal = orbitY * (1 - gatherProgress) + p.hy * gatherProgress;
+
+          const sx = cx + xLocal;
+          const sy = cy + centerOffsetY + yLocal;
+
+          const flicker = 0.7 + 0.6 * Math.sin(now * (0.0035 + p.depth * 0.0015) + p.flickerOffset);
+
+          let size = p.size * (0.85 + 0.35 * gatherProgress) * flicker;
+          let alpha = p.baseAlpha * (0.4 + 0.6 * gatherProgress) * flicker * globalFade;
+
+          const mix = 0.35 + 0.65 * p.colorShift;
+          const r = 255;
+          const g = 80 + 120 * mix;
+          const b = 160 + 70 * (1 - mix);
+
+          const grd = ctx.createRadialGradient(sx, sy, 0, sx, sy, size * 3.4);
+          grd.addColorStop(0, `rgba(${r}, ${g}, ${b}, 1)`);
+          grd.addColorStop(0.2, `rgba(${r}, ${g}, ${b}, 0.9)`);
+          grd.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = grd;
+          ctx.beginPath();
+          ctx.arc(sx, sy, size * 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.restore();
+
+        if (phase >= dropStart) {
+          const kRaw = Math.min(1, (phase - dropStart) / (dropEnd - dropStart));
+          const glowAlpha = 0.3 * easeOutBounce(kRaw) * globalFade;
+          const gy = groundY + 6;
+          const gw = Math.min(width * 0.55, Math.min(width, height) * 0.9);
+          const gh = 28;
+          const grad = ctx.createRadialGradient(cx, gy, 0, cx, gy, gw);
+          grad.addColorStop(0, 'rgba(255, 120, 160, 1)');
+          grad.addColorStop(0.3, 'rgba(255, 80, 140, 0.7)');
+          grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+          ctx.save();
+          ctx.globalCompositeOperation = 'screen';
+          ctx.globalAlpha = glowAlpha;
+          ctx.fillStyle = grad;
+          ctx.fillRect(cx - gw, gy - gh, gw * 2, gh * 2);
+          ctx.restore();
+        }
+      }
+
+      function render(time) {
+        requestAnimationFrame(render);
+
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = 'rgba(2, 4, 16, 0.68)';
+        ctx.fillRect(0, 0, width, height);
+
+        drawBackgroundStars(time || 0);
+        drawCore(time || 0);
+        drawRings(time || 0);
+      }
+
+      function handleMouseMove(e) {
+        mouse.active = true;
+        mouse.screenX = e.clientX;
+        mouse.screenY = e.clientY;
+        mouse.x = e.clientX / width;
+        mouse.y = e.clientY / height;
+      }
+
+      function handleMouseLeave() {
+        mouse.active = false;
+      }
+
+      window.addEventListener('resize', () => {
+        resize();
+        createBackgroundStars();
+        createParticles();
+      });
+
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseleave', handleMouseLeave);
+      window.addEventListener('blur', handleMouseLeave);
+
+      resize();
+      createBackgroundStars();
+      createParticles();
+      requestAnimationFrame(render);
+    })();
+  </script>
+    <script src="fullscreen-btn.js"></script>
+</body>
+</html>

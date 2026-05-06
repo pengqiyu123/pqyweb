@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>速算技巧</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #ddd6fe 50%, #fef9c3 100%);
+            min-height: 100vh;
+            padding: 20px 16px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .header {
+            text-align: center;
+            background: white;
+            border-radius: 20px;
+            padding: 24px 20px;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.1);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .intro {
+            background: linear-gradient(135deg, #eff6ff, #f0fdf4);
+            border-left: 4px solid #3b82f6;
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-size: 0.9rem;
+            color: #1e293b;
+            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.1);
+        }
+
+        .intro ul {
+            margin-left: 18px;
+            margin-top: 6px;
+        }
+
+        .intro li {
+            margin-bottom: 4px;
+            line-height: 1.5;
+        }
+
+        /* 模块卡片 */
+        .module-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+        }
+
+        .game-setup {
+            background: linear-gradient(135deg, #fef3c7, #fef9c3);
+            padding: 16px 18px;
+            border-bottom: 1px solid #fde68a;
+        }
+
+        .game-setup h3 {
+            text-align: center;
+            color: #92400e;
+            margin-bottom: 12px;
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        .setup-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px 20px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .setup-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: #78350f;
+        }
+
+        .setup-group label {
+            font-weight: 600;
+        }
+
+        .toggle-btn-group {
+            display: inline-flex;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.8);
+            padding: 3px;
+            border: 1px solid #fed7aa;
+        }
+
+        .toggle-btn {
+            border: none;
+            background: transparent;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            color: #92400e;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .toggle-btn:hover {
+            background: rgba(249, 115, 22, 0.1);
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(135deg, #f97316, #fb923c);
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+        }
+
+        .game-area {
+            padding: 20px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            font-size: 0.9rem;
+            color: #4b5563;
+            padding: 10px 16px;
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+
+        .status-item span.value {
+            font-weight: 700;
+            color: #2563eb;
+        }
+
+        .vertical-question {
+            display: flex;
+            justify-content: center;
+        }
+
+        .vertical-box {
+            font-family: 'SF Mono', ui-monospace, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+            font-size: 1.6rem;
+            background-color: #fefefe;
+            background-image:
+                linear-gradient(to right, rgba(148, 163, 184, 0.35) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(148, 163, 184, 0.25) 1px, transparent 1px);
+            background-size: 1ch 2.0em;
+            border-radius: 14px;
+            padding: 14px 26px 16px;
+            min-width: 180px;
+            box-shadow: 0 6px 20px rgba(15, 23, 42, 0.1);
+            border: 2px solid #e2e8f0;
+        }
+
+        .carry-row {
+            font-size: 0.9rem;
+            color: #9ca3af;
+            min-height: 1.1em;
+        }
+
+        .vertical-line {
+            border-top: 2px solid #111827;
+            margin-top: 4px;
+            margin-bottom: 4px;
+        }
+
+        .align-right {
+            text-align: right;
+            /* 保留前导空格，使各位对齐到百位/十位/个位 */
+            white-space: pre;
+        }
+
+        .answer-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        #answerInput, #bmAnswerInput, #segAnswerInput {
+            padding: 10px 14px;
+            font-size: 1rem;
+            border-radius: 10px;
+            border: 2px solid #4f46e5;
+            min-width: 120px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        #answerInput:focus, #bmAnswerInput:focus, #segAnswerInput:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 999px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            color: #1e293b;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+            box-shadow: none;
+        }
+
+        .feedback {
+            min-height: 28px;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .feedback.correct {
+            color: #16a34a;
+            background: rgba(22, 163, 74, 0.1);
+        }
+
+        .feedback.incorrect {
+            color: #dc2626;
+            background: rgba(220, 38, 38, 0.1);
+        }
+
+        .steps-box {
+            background: linear-gradient(135deg, #eef2ff, #f0f9ff);
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-size: 0.9rem;
+            color: #1e293b;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e0e7ff;
+        }
+
+        /* 百分数对照表 */
+        .percent-table {
+            max-width: 350px;
+            margin: 0 auto;
+            padding: 16px 20px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #fefce8, #fef9c3);
+            border: 1px solid #fde047;
+            font-size: 0.9rem;
+            color: #111827;
+        }
+
+        .percent-table h3 {
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+            color: #854d0e;
+            font-weight: 700;
+        }
+
+        .percent-table ul {
+            margin: 0;
+            padding-left: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px 16px;
+        }
+
+        .percent-table li {
+            margin-bottom: 2px;
+            font-family: 'SF Mono', ui-monospace, monospace;
+        }
+
+        /* 基准值法减法的居中计算面板 */
+        .bm-panel {
+            max-width: 260px;
+            margin: 6px auto 0;
+            text-align: left;
+            font-family: 'SF Mono', ui-monospace, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+        }
+
+        .bm-panel ul {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .bm-panel li {
+            white-space: pre;
+        }
+
+        .bm-step-animate {
+            opacity: 0;
+            transform: translateX(-8px);
+            animation: bmStepShow 0.3s ease-out forwards;
+        }
+
+        @keyframes bmStepShow {
+            from {
+                opacity: 0;
+                transform: translateX(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .steps-box h3 {
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+            color: #4338ca;
+        }
+
+        .steps-box ul {
+            margin-left: 18px;
+        }
+
+        .steps-box li {
+            margin-bottom: 2px;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 12px 10px;
+            }
+
+            .container {
+                gap: 16px;
+            }
+
+            .header {
+                padding: 18px 16px;
+                border-radius: 16px;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .game-setup {
+                padding: 14px 12px;
+            }
+
+            .game-area {
+                padding: 16px 12px;
+            }
+
+            .vertical-box {
+                font-size: 1.4rem;
+                padding: 12px 18px 14px;
+                min-width: 150px;
+            }
+
+            .setup-row {
+                gap: 10px 12px;
+            }
+
+            .toggle-btn {
+                padding: 5px 10px;
+                font-size: 0.8rem;
+            }
+
+            .btn {
+                padding: 8px 14px;
+                font-size: 0.85rem;
+            }
+
+            .status-row {
+                gap: 12px;
+                padding: 8px 12px;
+            }
+
+            .percent-table ul {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧮 速算技巧学习</h1>
+            <p>练习速算思维。</p>
+        </div>
+
+        <div class="intro">
+            <div>小提示：</div>
+            <ul>
+                <li>低位叠加：从<span style="font-weight:600;">个位开始</span>逐位往左相加，遇到满十向高位进1（标准竖式）。</li>
+                <li>高位叠加：从<span style="font-weight:600;">最高位开始</span>向右相加，先感知大概是多少，再精确到个位（适合心算）。</li>
+            </ul>
+        </div>
+
+        <!-- 模块1: 叠加法学习 -->
+        <div class="module-card">
+            <div class="game-setup">
+                <h3>🎮 叠加法学习（加法）</h3>
+                <div class="setup-row">
+                    <div class="setup-group">
+                        <label>计算方式:</label>
+                        <div class="toggle-btn-group">
+                            <button class="toggle-btn active" id="methodLowBtn" data-method="low">低位叠加</button>
+                            <button class="toggle-btn" id="methodHighBtn" data-method="high">高位叠加</button>
+                        </div>
+                    </div>
+                    <div class="setup-group">
+                        <label>位数:</label>
+                        <div class="toggle-btn-group">
+                            <button class="toggle-btn active" id="digits2Btn" data-digits="2">两位数</button>
+                            <button class="toggle-btn" id="digits3Btn" data-digits="3">三位数</button>
+                        </div>
+                    </div>
+                    <div class="setup-group">
+                        <button class="btn btn-secondary" id="newQuestionBtn">🎲 出一道题</button>
+                    </div>
+                </div>
+            </div>
+            <div class="game-area">
+                <div class="status-row">
+                    <div class="status-item">当前方式：<span class="value" id="methodText">低位叠加</span></div>
+                    <div class="status-item">题目统计：<span class="value" id="statsText">0 / 0</span></div>
+                </div>
+                <div class="vertical-question">
+                    <div class="vertical-box">
+                        <div class="align-right" id="numberTop">---</div>
+                        <div class="align-right" id="numberBottom">+ ---</div>
+                        <div class="align-right carry-row" id="carryRow">&nbsp;</div>
+                        <div class="vertical-line"></div>
+                        <div class="align-right" id="partialRow1"></div>
+                        <div class="align-right" id="partialRow2"></div>
+                        <div class="align-right" id="partialRow3"></div>
+                        <div class="vertical-line"></div>
+                        <div class="align-right" id="resultPreview">?</div>
+                    </div>
+                </div>
+                <div class="answer-row">
+                    <input type="number" id="answerInput" placeholder="请输入结果" autocomplete="off">
+                    <button class="btn btn-primary" id="checkAnswerBtn">✓ 检查答案</button>
+                </div>
+                <div class="feedback" id="feedback"></div>
+                <div class="steps-box" id="stepsBox">
+                    <h3>📌 步骤讲解</h3>
+                    <ul id="stepsList">
+                        <li>点击「出一道题」，先按你熟悉的方式在草稿纸上算一算，再在上方输入结果。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 模块2: 基准值法 -->
+        <div class="module-card">
+            <div class="game-setup" id="bmSetup">
+                <h3>📘 基准值法学习（减法）</h3>
+                <div class="setup-row">
+                    <div class="setup-group">
+                        <span>公式：被减数 − 减数 = <strong>(被减数 − 基准数) + (基准数 − 减数)</strong></span>
+                    </div>
+                    <div class="setup-group">
+                        <button class="btn btn-secondary" id="bmNewQuestionBtn">🎲 出一道减法题</button>
+                    </div>
+                </div>
+            </div>
+            <div class="game-area" id="bmArea">
+                <div class="status-row">
+                    <div class="status-item">题目：<span class="value" id="bmQuestionText">请点击「出一道减法题」</span></div>
+                </div>
+                <div class="steps-box bm-panel" id="bmStepsBox">
+                    <h3>📌 基准值法过程</h3>
+                    <ul id="bmStepsList"></ul>
+                </div>
+                <div class="answer-row">
+                    <input type="number" id="bmAnswerInput" placeholder="请输入结果" autocomplete="off">
+                    <button class="btn btn-primary" id="bmCheckBtn">✓ 检查答案</button>
+                </div>
+                <div class="feedback" id="bmFeedback"></div>
+            </div>
+        </div>
+
+        <!-- 模块3: 分段法 -->
+        <div class="module-card">
+            <div class="game-setup" id="segSetup">
+                <h3>🌟 分段法减法（三位数）</h3>
+                <div class="setup-row">
+                    <div class="setup-group">
+                        <span>思路：把数拆成"前一段 | 后一段"，分别相减再拼起来。</span>
+                    </div>
+                    <div class="setup-group">
+                        <button class="btn btn-secondary" id="segNewQuestionBtn">🎲 出一道减法题</button>
+                    </div>
+                </div>
+            </div>
+            <div class="game-area" id="segArea">
+                <div class="status-row">
+                    <div class="status-item">题目：<span class="value" id="segQuestionText">请点击「出一道减法题」</span></div>
+                    <div class="status-item">分段方式：<span class="value" id="segModeText">—</span></div>
+                </div>
+                <div class="steps-box bm-panel" id="segStepsBox">
+                    <h3>📌 分段法过程</h3>
+                    <ul id="segStepsList"></ul>
+                </div>
+                <div class="answer-row">
+                    <input type="number" id="segAnswerInput" placeholder="请输入结果" autocomplete="off">
+                    <button class="btn btn-primary" id="segCheckBtn">✓ 检查答案</button>
+                </div>
+                <div class="feedback" id="segFeedback"></div>
+            </div>
+        </div>
+
+        <!-- 模块4: 小分互换 -->
+        <div class="module-card">
+            <div class="game-setup" id="percentSetup">
+                <h3>✴️ 乘法：小分互换</h3>
+                <div class="setup-row">
+                    <div class="setup-group">
+                        <span>口诀：把百分数换成简单分数，再把分母"挪到"整数那一边做除法。</span>
+                    </div>
+                </div>
+            </div>
+            <div class="game-area" id="percentArea">
+                <div class="percent-table">
+                    <h3>📌 常用百分数 ↔ 分数 对照表</h3>
+                    <ul>
+                        <li>50% = 1/2</li>
+                        <li>33.3% ≈ 1/3</li>
+                        <li>25% = 1/4</li>
+                        <li>20% = 1/5</li>
+                        <li>16.7% ≈ 1/6</li>
+                        <li>14.3% ≈ 1/7</li>
+                        <li>12.5% = 1/8</li>
+                        <li>11.1% ≈ 1/9</li>
+                        <li>10% = 1/10</li>
+                        <li>9.09% ≈ 1/11</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const methodLowBtn = document.getElementById('methodLowBtn');
+        const methodHighBtn = document.getElementById('methodHighBtn');
+        const digits2Btn = document.getElementById('digits2Btn');
+        const digits3Btn = document.getElementById('digits3Btn');
+        const newQuestionBtn = document.getElementById('newQuestionBtn');
+        const methodText = document.getElementById('methodText');
+        const statsText = document.getElementById('statsText');
+        const numberTopEl = document.getElementById('numberTop');
+        const numberBottomEl = document.getElementById('numberBottom');
+        const carryRowEl = document.getElementById('carryRow');
+        const partialRow1El = document.getElementById('partialRow1');
+        const partialRow2El = document.getElementById('partialRow2');
+        const partialRow3El = document.getElementById('partialRow3');
+        const resultPreviewEl = document.getElementById('resultPreview');
+        const answerInput = document.getElementById('answerInput');
+        const checkAnswerBtn = document.getElementById('checkAnswerBtn');
+        const feedbackEl = document.getElementById('feedback');
+        const stepsList = document.getElementById('stepsList');
+        const bmNewQuestionBtn = document.getElementById('bmNewQuestionBtn');
+        const bmAnswerInput = document.getElementById('bmAnswerInput');
+        const bmCheckBtn = document.getElementById('bmCheckBtn');
+        const bmQuestionText = document.getElementById('bmQuestionText');
+        const bmFeedback = document.getElementById('bmFeedback');
+        const bmStepsList = document.getElementById('bmStepsList');
+        const bmStepsBox = document.getElementById('bmStepsBox');
+        const segNewQuestionBtn = document.getElementById('segNewQuestionBtn');
+        const segQuestionText = document.getElementById('segQuestionText');
+        const segModeText = document.getElementById('segModeText');
+        const segAnswerInput = document.getElementById('segAnswerInput');
+        const segCheckBtn = document.getElementById('segCheckBtn');
+        const segFeedback = document.getElementById('segFeedback');
+        const segStepsBox = document.getElementById('segStepsBox');
+        const segStepsList = document.getElementById('segStepsList');
+
+        const gameState = {
+            method: 'low', // low / high
+            digits: 2,     // 2 / 3
+            a: null,
+            b: null,
+            total: 0,
+            correct: 0
+        };
+
+        const benchmarkState = {
+            base: 100,
+            minuend: null,
+            subtrahend: null
+        };
+
+        const segmentState = {
+            type: null,
+            minuend: null,
+            subtrahend: null
+        };
+
+        function setMethod(method) {
+            gameState.method = method;
+            methodLowBtn.classList.toggle('active', method === 'low');
+            methodHighBtn.classList.toggle('active', method === 'high');
+            methodText.textContent = method === 'low' ? '低位叠加' : '高位叠加';
+            if (gameState.a !== null) {
+                showSteps();
+            }
+        }
+
+        function setDigits(d) {
+            gameState.digits = d;
+            digits2Btn.classList.toggle('active', d === 2);
+            digits3Btn.classList.toggle('active', d === 3);
+            resetQuestionDisplay();
+        }
+
+        function randomNumber(d) {
+            const min = d === 2 ? 10 : 100;
+            const max = d === 2 ? 99 : 999;
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function resetQuestionDisplay() {
+            numberTopEl.textContent = '---';
+            numberBottomEl.textContent = '+ ---';
+            resultPreviewEl.textContent = '?';
+            carryRowEl.textContent = '';
+            partialRow1El.textContent = '';
+            partialRow2El.textContent = '';
+            partialRow3El.textContent = '';
+            feedbackEl.textContent = '';
+            feedbackEl.className = 'feedback';
+            stepsList.innerHTML = '<li>点击「出一道题」，先按你熟悉的方式在草稿纸上算一算，再在上方输入结果。</li>';
+            answerInput.value = '';
+        }
+
+        function updateStats(isCorrect) {
+            gameState.total++;
+            if (isCorrect) gameState.correct++;
+            statsText.textContent = `${gameState.correct} / ${gameState.total}`;
+        }
+
+        function generateQuestion() {
+            const a = randomNumber(gameState.digits);
+            const b = randomNumber(gameState.digits);
+            gameState.a = a;
+            gameState.b = b;
+
+            const maxLen = Math.max(String(a).length, String(b).length);
+            const aCore = String(a).padStart(maxLen, ' '); // 纯数字部分
+            const bCore = String(b).padStart(maxLen, ' ');
+
+            // 统一宽度为 maxLen+1，最左一列作为符号列
+            const topLine = ' ' + aCore;   // 顶部：空格 + 被加数
+            const bottomLine = '+' + bCore; // 底部：加号 + 加数
+
+            numberTopEl.textContent = topLine;
+            numberBottomEl.textContent = bottomLine;
+            resultPreviewEl.textContent = '?';
+            carryRowEl.textContent = '';
+            partialRow1El.textContent = '';
+            partialRow2El.textContent = '';
+            partialRow3El.textContent = '';
+
+            answerInput.value = '';
+            answerInput.focus();
+            answerInput.select();
+
+            feedbackEl.textContent = '';
+            feedbackEl.className = 'feedback';
+            showSteps();
+        }
+
+        function showSteps() {
+            if (gameState.a === null || gameState.b === null) return;
+            const a = gameState.a;
+            const b = gameState.b;
+
+            stepsList.innerHTML = '';
+            const steps = gameState.method === 'low' ? buildLowSteps(a, b) : buildHighSteps(a, b);
+            steps.forEach(text => {
+                const li = document.createElement('li');
+                li.textContent = text;
+                stepsList.appendChild(li);
+            });
+        }
+
+        function buildLowSteps(a, b) {
+            const steps = [];
+            const result = a + b;
+            const aStr = String(a);
+            const bStr = String(b);
+            const maxLen = Math.max(aStr.length, bStr.length);
+            const aDigits = aStr.padStart(maxLen, '0').split('').map(Number);
+            const bDigits = bStr.padStart(maxLen, '0').split('').map(Number);
+
+            let carry = 0;
+            let pos = 1;
+            for (let i = maxLen - 1; i >= 0; i--, pos++) {
+                const sum = aDigits[i] + bDigits[i] + carry;
+                const placeName = i === maxLen - 1 ? '个位' : (i === maxLen - 2 ? '十位' : '百位');
+                const digit = sum % 10;
+                const newCarry = Math.floor(sum / 10);
+                if (newCarry > 0) {
+                    steps.push(`${placeName}：${aDigits[i]} + ${bDigits[i]} 再加上进位 ${carry} = ${sum}，写下 ${digit}，向前进 ${newCarry}。`);
+                } else if (carry > 0) {
+                    steps.push(`${placeName}：${aDigits[i]} + ${bDigits[i]} 再加上进位 ${carry} = ${sum}，写下 ${digit}，本位不再进位。`);
+                } else {
+                    steps.push(`${placeName}：${aDigits[i]} + ${bDigits[i]} = ${sum}，写下 ${digit}。`);
+                }
+                carry = newCarry;
+            }
+            if (carry > 0) {
+                steps.push(`最高位再补上最后的进位 ${carry}。`);
+            }
+            steps.push(`最后得到：${a} + ${b} = ${result}。`);
+            return steps;
+        }
+
+        function buildHighSteps(a, b) {
+            const steps = [];
+            const result = a + b;
+            const aStr = String(a);
+            const bStr = String(b);
+            const maxLen = Math.max(aStr.length, bStr.length);
+            const aDigits = aStr.padStart(maxLen, '0').split('').map(Number);
+            const bDigits = bStr.padStart(maxLen, '0').split('').map(Number);
+
+            const places2 = ['十位', '个位'];
+            const places3 = ['百位', '十位', '个位'];
+            const placeNames = maxLen === 2 ? places2 : places3;
+
+            for (let i = 0; i < maxLen; i++) {
+                const place = placeNames[i] || `${maxLen - i} 位`;
+                const sum = aDigits[i] + bDigits[i];
+                steps.push(`${place}：${aDigits[i]} + ${bDigits[i]} = ${sum}（先记住这一位的大致和）。`);
+            }
+            steps.push(`最后把所有位的和综合起来，仔细处理进位：${a} + ${b} = ${result}。`);
+            return steps;
+        }
+
+        // 根据当前题目计算各位进位，并把进位和逐步结果写在竖式上
+        function updateVerticalWithCarries() {
+            if (gameState.a === null || gameState.b === null) return;
+
+            const aStr = String(gameState.a);
+            const bStr = String(gameState.b);
+            const maxLen = Math.max(aStr.length, bStr.length);
+            const aDigits = aStr.padStart(maxLen, '0').split('').map(Number);
+            const bDigits = bStr.padStart(maxLen, '0').split('').map(Number);
+
+            const width = maxLen + 1; // 与顶部两行保持一致（符号列 + 数字列）
+            const result = gameState.a + gameState.b;
+
+            if (gameState.method === 'high') {
+                // 高位叠加：逐行展示“每一位的和 × 位权”，从高位到低位
+                carryRowEl.textContent = ''.padStart(width, ' ');
+
+                const placeValues = [];
+                for (let i = 0; i < maxLen; i++) {
+                    const placeWeight = Math.pow(10, maxLen - 1 - i);
+                    const sum = (aDigits[i] + bDigits[i]) * placeWeight;
+                    placeValues.push(sum);
+                }
+
+                partialRow1El.textContent = placeValues[0] != null ? String(placeValues[0]).padStart(width) : '';
+                partialRow2El.textContent = placeValues[1] != null ? String(placeValues[1]).padStart(width) : '';
+                partialRow3El.textContent = placeValues[2] != null ? String(placeValues[2]).padStart(width) : '';
+
+                resultPreviewEl.textContent = String(result).padStart(width);
+                return;
+            }
+
+            const carryMarks = new Array(maxLen).fill(' ');
+            const baseSums = []; // 不含前一位进位的各列和，用来画 5 / 3 / 11 这种行
+            let carry = 0;
+
+            // 从右往左算，用 sumWithCarry 生成进位标记，用 base 记录每一列本身的和
+            for (let i = maxLen - 1; i >= 0; i--) {
+                const base = aDigits[i] + bDigits[i];
+                baseSums.push(base); // 顺序：个位、十位、百位……
+
+                const sumWithCarry = base + carry;
+                const newCarry = Math.floor(sumWithCarry / 10);
+                if (newCarry > 0 && i > 0) {
+                    // 把从这一位产生的进位写在更高一位的上方
+                    carryMarks[i - 1] = String(newCarry);
+                }
+                carry = newCarry;
+            }
+
+            // 进位行：左侧补一个空格占符号列，其余按位显示
+            carryRowEl.textContent = ' ' + carryMarks.join('');
+
+            // 逐步结果行：
+            //  - 第一行：个位列（如 6+9=15 -> 个位写 5）
+            //  - 第二行：十位列
+            //      * 两位数：显示包含进位后的十位和（如 55+55 -> 行为 11）
+            //      * 三位数：仍显示该列和的个位数（如 5+8=13 -> 行为 3）
+            //  - 第三行：百位及更高位，完整显示和（如 4+7=11 -> 百位和十位写 11）
+            const val1 = baseSums[0]; // 个位列的“本列和”（未加上前一列进位）
+            const val2 = baseSums[1]; // 十位列（如果存在）
+            const val3 = baseSums[2]; // 百位列（如果存在）
+
+            const chars1 = new Array(width).fill(' ');
+            const chars2 = new Array(width).fill(' ');
+            const chars3 = new Array(width).fill(' ');
+
+            // 列索引：最右列是个位，再往左是十位、百位……
+            const onesCol = width - 1;
+            const tensCol = width - 2;
+            const hundredsCol = width - 3;
+
+            const carryFromOnes = val1 != null ? Math.floor(Math.abs(val1) / 10) : 0;
+
+            // 第一行：个位结果
+            if (val1 != null) {
+                const d1 = Math.abs(val1) % 10; // 只取个位
+                chars1[onesCol] = String(d1);
+            }
+
+            // 第二行：十位结果
+            let tensWithCarry = null;
+            if (val2 != null && tensCol >= 1) {
+                tensWithCarry = val2 + carryFromOnes;
+                const d2 = Math.abs(tensWithCarry) % 10;
+                chars2[tensCol] = String(d2);
+            }
+
+            // 第三行：百位及更高位，显示完整和（仅三位数题目有意义）
+            // 要求：
+            //  - 如果是 1 位数（如 5），这个数显示在百位格；
+            //  - 如果是 2 位数（如 11），左边的 1 在百位格，右边的 1 在十位格。
+            if (val3 != null && hundredsCol >= 1) {
+                const carryFromTens = tensWithCarry != null ? Math.floor(Math.abs(tensWithCarry) / 10) : 0;
+                const hundredsWithCarry = val3 + carryFromTens;
+                const s3 = String(hundredsWithCarry);
+                // 让最后一位落在百位列，前面的数字依次向左扩展（千位等）
+                let pos = hundredsCol;
+                for (let i = s3.length - 1; i >= 0 && pos >= 0; i--, pos--) {
+                    chars3[pos] = s3[i];
+                }
+            }
+
+            partialRow1El.textContent = chars1.join('');
+            partialRow2El.textContent = chars2.join('');
+            partialRow3El.textContent = chars3.join('');
+
+            resultPreviewEl.textContent = String(result).padStart(width);
+        }
+
+        function generateBenchmarkQuestion() {
+            const baseCandidates = [200, 300, 400, 500, 600, 700, 800, 900];
+            const base = baseCandidates[Math.floor(Math.random() * baseCandidates.length)];
+            const offsetA = Math.floor(Math.random() * 50) + 1;
+            const maxOffsetB = Math.min(50, base - 100);
+            const offsetB = Math.floor(Math.random() * maxOffsetB) + 1;
+            const minuend = base + offsetA;
+            const subtrahend = base - offsetB;
+
+            benchmarkState.base = base;
+            benchmarkState.minuend = minuend;
+            benchmarkState.subtrahend = subtrahend;
+            if (bmQuestionText) bmQuestionText.textContent = minuend + ' − ' + subtrahend + ' = ?';
+            if (bmFeedback) {
+                bmFeedback.textContent = '';
+                bmFeedback.className = 'feedback';
+            }
+            if (bmStepsBox) {
+                bmStepsBox.style.display = 'block';
+            }
+            if (bmStepsList) {
+                bmStepsList.innerHTML = '';
+            }
+            if (bmAnswerInput) {
+                bmAnswerInput.value = '';
+                bmAnswerInput.focus();
+                bmAnswerInput.select();
+            }
+        }
+
+        function buildBenchmarkSteps(minuend, subtrahend, base) {
+            const steps = [];
+            const direct = minuend - subtrahend;
+            const part1 = minuend - base;
+            const part2 = base - subtrahend;
+            const viaBenchmark = part1 + part2;
+
+            // 示例样式：
+            // 456−333=?
+            // 基准数400
+            // 456−333
+            // =(456−400)+(400−333)
+            // =56+67
+            // =123
+            
+            steps.push('基准数：' + base);
+            steps.push(minuend + ' − ' + subtrahend);
+            steps.push('= (' + minuend + ' − ' + base + ') + (' + base + ' − ' + subtrahend + ')');
+            steps.push('= ' + part1 + ' + ' + part2);
+            steps.push('= ' + viaBenchmark);
+
+            return steps;
+        }
+
+        function checkBenchmarkAnswer() {
+            if (benchmarkState.minuend === null || benchmarkState.subtrahend === null) {
+                if (bmFeedback) {
+                    bmFeedback.textContent = '请先点击「出一道减法题」。';
+                    bmFeedback.className = 'feedback incorrect';
+                }
+                return;
+            }
+
+            const user = parseInt(bmAnswerInput.value, 10);
+            if (Number.isNaN(user)) {
+                if (bmFeedback) {
+                    bmFeedback.textContent = '请输入一个数字答案。';
+                    bmFeedback.className = 'feedback incorrect';
+                }
+                return;
+            }
+
+            const correct = benchmarkState.minuend - benchmarkState.subtrahend;
+            const isCorrect = user === correct;
+
+            if (bmFeedback) {
+                if (isCorrect) {
+                    bmFeedback.textContent = '🎉 太棒了！你算对了！';
+                    bmFeedback.className = 'feedback correct';
+                } else {
+                    bmFeedback.textContent = '❌ 再想想？正确答案是 ' + correct + '。';
+                    bmFeedback.className = 'feedback incorrect';
+                }
+            }
+
+            if (bmStepsList) {
+                const steps = buildBenchmarkSteps(benchmarkState.minuend, benchmarkState.subtrahend, benchmarkState.base);
+                bmStepsList.innerHTML = '';
+                steps.forEach((text, index) => {
+                    const li = document.createElement('li');
+                    li.textContent = text;
+                    li.classList.add('bm-step-animate');
+                    li.style.animationDelay = (index * 0.18) + 's';
+                    bmStepsList.appendChild(li);
+                });
+                if (bmStepsBox) {
+                    bmStepsBox.style.display = 'block';
+                }
+            }
+        }
+
+        function generateSegmentQuestion() {
+            let minuend = null;
+            let subtrahend = null;
+            let type = null;
+
+            for (let tries = 0; tries < 80; tries++) {
+                const a = Math.floor(Math.random() * 900) + 100; // 100-999
+                const b = Math.floor(Math.random() * 900) + 100; // 100-999
+                if (a <= b) continue;
+
+                const lastTwoA = a % 100;
+                const lastTwoB = b % 100;
+                const onesA = a % 10;
+                const onesB = b % 10;
+
+                if (lastTwoA > lastTwoB) {
+                    // 情况1：先看后两位，适合 “百 | 后两位” 分段
+                    minuend = a;
+                    subtrahend = b;
+                    type = 'hundreds';
+                    break;
+                }
+
+                if (onesA >= onesB) {
+                    // 情况2：后两位不行，再看个位，适合 “前两位 | 个位” 分段
+                    minuend = a;
+                    subtrahend = b;
+                    type = 'tens';
+                    break;
+                }
+            }
+
+            if (!type) return;
+
+            segmentState.type = type;
+            segmentState.minuend = minuend;
+            segmentState.subtrahend = subtrahend;
+
+            if (segQuestionText) {
+                segQuestionText.textContent = minuend + ' − ' + subtrahend + ' = ?';
+            }
+            if (segModeText) {
+                segModeText.textContent = type === 'hundreds' ? '百 | 后两位' : '前两位 | 个位';
+            }
+            if (segFeedback) {
+                segFeedback.textContent = '';
+                segFeedback.className = 'feedback';
+            }
+            if (segStepsBox) {
+                segStepsBox.style.display = 'block';
+            }
+            if (segStepsList) {
+                segStepsList.innerHTML = '';
+            }
+            if (segAnswerInput) {
+                segAnswerInput.value = '';
+                segAnswerInput.focus();
+                segAnswerInput.select();
+            }
+        }
+
+        function buildSegmentSteps(minuend, subtrahend, type) {
+            const steps = [];
+            const result = minuend - subtrahend;
+
+            if (type === 'hundreds') {
+                const aHundreds = Math.floor(minuend / 100);
+                const lowA = minuend % 100;
+                const bHundreds = Math.floor(subtrahend / 100);
+                const lowB = subtrahend % 100;
+                const highDiff = aHundreds - bHundreds;
+                const lowDiff = lowA - lowB;
+                const lowAStr = String(lowA).padStart(2, '0');
+                const lowBStr = String(lowB).padStart(2, '0');
+                const lowDiffStr = String(lowDiff).padStart(2, '0');
+
+                steps.push(minuend + ' − ' + subtrahend + ' = ?');
+                steps.push('因为 ' + lowA + ' > ' + lowB + '，拆成：');
+                steps.push(aHundreds + '|' + lowAStr + ' − ' + bHundreds + '|' + lowBStr);
+                steps.push('= ' + aHundreds + ' − ' + bHundreds + ' | ' + lowA + ' − ' + lowB);
+                steps.push('= ' + highDiff + '|' + lowDiffStr);
+                steps.push('= ' + result);
+            } else {
+                const highA = Math.floor(minuend / 10);
+                const lowA = minuend % 10;
+                const highB = Math.floor(subtrahend / 10);
+                const lowB = subtrahend % 10;
+                const highDiff = highA - highB;
+                const lowDiff = lowA - lowB;
+
+                steps.push(minuend + ' − ' + subtrahend + ' = ?');
+                steps.push('因为 ' + lowA + ' ≥ ' + lowB + '，拆成：');
+                steps.push(highA + '|' + lowA + ' − ' + highB + '|' + lowB);
+                steps.push('= ' + highA + ' − ' + highB + ' | ' + lowA + ' − ' + lowB);
+                steps.push('= ' + highDiff + '|' + lowDiff);
+                steps.push('= ' + result);
+            }
+
+            return steps;
+        }
+
+        function checkSegmentAnswer() {
+            if (segmentState.minuend === null || segmentState.subtrahend === null) {
+                if (segFeedback) {
+                    segFeedback.textContent = '请先点击「出一道减法题」。';
+                    segFeedback.className = 'feedback incorrect';
+                }
+                return;
+            }
+
+            const user = parseInt(segAnswerInput.value, 10);
+            if (Number.isNaN(user)) {
+                if (segFeedback) {
+                    segFeedback.textContent = '请输入一个数字答案。';
+                    segFeedback.className = 'feedback incorrect';
+                }
+                return;
+            }
+
+            const correct = segmentState.minuend - segmentState.subtrahend;
+            const isCorrect = user === correct;
+
+            if (segFeedback) {
+                if (isCorrect) {
+                    segFeedback.textContent = '🎉 太棒了！你算对了！';
+                    segFeedback.className = 'feedback correct';
+                } else {
+                    segFeedback.textContent = '❌ 再想想？正确答案是 ' + correct + '。';
+                    segFeedback.className = 'feedback incorrect';
+                }
+            }
+
+            if (segStepsList) {
+                const steps = buildSegmentSteps(segmentState.minuend, segmentState.subtrahend, segmentState.type);
+                segStepsList.innerHTML = '';
+                steps.forEach((text, index) => {
+                    const li = document.createElement('li');
+                    li.textContent = text;
+                    li.classList.add('bm-step-animate');
+                    li.style.animationDelay = (index * 0.18) + 's';
+                    segStepsList.appendChild(li);
+                });
+                if (segStepsBox) {
+                    segStepsBox.style.display = 'block';
+                }
+            }
+        }
+
+        function checkAnswer() {
+            if (gameState.a === null || gameState.b === null) {
+                feedbackEl.textContent = '请先点击「出一道题」。';
+                feedbackEl.className = 'feedback incorrect';
+                return;
+            }
+            const user = parseInt(answerInput.value, 10);
+            if (Number.isNaN(user)) {
+                feedbackEl.textContent = '请输入一个数字答案。';
+                feedbackEl.className = 'feedback incorrect';
+                return;
+            }
+            const correct = gameState.a + gameState.b;
+            const isCorrect = user === correct;
+            updateStats(isCorrect);
+
+            // 无论对错，都在题目竖式上画出标准竖式的进位和结果
+            updateVerticalWithCarries();
+
+            if (isCorrect) {
+                feedbackEl.textContent = '🎉 太棒了！你算对了！';
+                feedbackEl.className = 'feedback correct';
+            } else {
+                feedbackEl.textContent = `❌ 再想想，看是否算错了某一位？正确答案是 ${correct}。`;
+                feedbackEl.className = 'feedback incorrect';
+            }
+            showSteps();
+        }
+
+        methodLowBtn.addEventListener('click', () => setMethod('low'));
+        methodHighBtn.addEventListener('click', () => setMethod('high'));
+        digits2Btn.addEventListener('click', () => setDigits(2));
+        digits3Btn.addEventListener('click', () => setDigits(3));
+        newQuestionBtn.addEventListener('click', generateQuestion);
+        checkAnswerBtn.addEventListener('click', checkAnswer);
+        if (bmNewQuestionBtn) {
+            bmNewQuestionBtn.addEventListener('click', generateBenchmarkQuestion);
+        }
+        if (bmCheckBtn) {
+            bmCheckBtn.addEventListener('click', checkBenchmarkAnswer);
+        }
+        if (segNewQuestionBtn) {
+            segNewQuestionBtn.addEventListener('click', generateSegmentQuestion);
+        }
+        if (segCheckBtn) {
+            segCheckBtn.addEventListener('click', checkSegmentAnswer);
+        }
+
+        answerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        if (bmAnswerInput) {
+            bmAnswerInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    checkBenchmarkAnswer();
+                }
+            });
+        }
+
+        if (segAnswerInput) {
+            segAnswerInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    checkSegmentAnswer();
+                }
+            });
+        }
+
+        // 初始状态
+        resetQuestionDisplay();
+        statsText.textContent = '0 / 0';
+    </script>
+    <script src="fullscreen-btn.js"></script>
+</body>
+</html>

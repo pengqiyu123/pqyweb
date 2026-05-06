@@ -1,0 +1,2888 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <title>成语学习乐园 - 一到九年级成语大全</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" />
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #64748b;
+            --bg-light: #f8fafc;
+            --card-bg: #ffffff;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        body {
+            background: radial-gradient(circle at top, #eef2ff 0, #f8fafc 40%, #ffffff 100%);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            min-height: 100vh;
+            padding-top: 70px;
+        }
+
+        /* 导航栏样式 - 模仿成语趣解 */
+        .navbar {
+            background: var(--gradient-primary);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: #ffffff !important;
+        }
+
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.8) !important;
+            font-weight: 500;
+            margin: 0 10px;
+            transition: all 0.3s;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: #ffffff !important;
+            transform: translateY(-2px);
+        }
+
+        .main-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-section h1 {
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .header-section p {
+            color: var(--secondary-color);
+            font-size: 1.05rem;
+        }
+
+        .search-container {
+            position: relative;
+            margin: 20px 0 24px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 48px 12px 18px;
+            border-radius: 999px;
+            border: 1px solid #e5e7eb;
+            background: #ffffff;
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: var(--primary-color);
+            color: #ffffff;
+        }
+
+        .grade-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .grade-btn {
+            border-radius: 999px;
+            border: none;
+            padding: 6px 14px;
+            background: #e5e7eb;
+            color: #111827;
+            font-size: 0.9rem;
+        }
+
+        .grade-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .mode-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .mode-btn {
+            border-radius: 999px;
+            border: none;
+            padding: 6px 16px;
+            background: #e5e7eb;
+            color: #111827;
+            font-size: 0.9rem;
+        }
+
+        .mode-btn.active {
+            background: #0ea5e9;
+            color: #ffffff;
+        }
+
+        .alphabet-index {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 16px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .alphabet-btn {
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+            padding: 4px 8px;
+            background: #ffffff;
+            color: #495057;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .alphabet-btn:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+
+        .alphabet-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .progress-container {
+            display: none;
+            margin-bottom: 10px;
+        }
+
+        .idiom-cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 14px;
+        }
+
+        .idiom-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 14px 14px 10px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            position: relative;
+        }
+
+        .idiom-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.09);
+        }
+
+        .idiom-view-badge {
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+        
+        /* 历史记录样式 */
+        .quiz-history {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .quiz-history h5 {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #495057;
+        }
+
+        .history-tabs {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .history-tab {
+            flex: 1;
+            padding: 10px 15px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .history-tab.active {
+            color: #4CAF50;
+            border-bottom-color: #4CAF50;
+        }
+
+        .history-tab:hover {
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            padding-right: 5px;
+        }
+
+        .history-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .history-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .history-list::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .history-list::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* 历史记录样式 - 与古诗排序.html保持一致 */
+        .history-section {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .history-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .history-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+
+        .history-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background-color: white;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-item:hover {
+            background-color: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .history-item-title {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .history-item-info {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        .history-controls {
+            text-align: right;
+        }
+
+        .clear-history-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+
+        .clear-history-btn:hover {
+            background-color: #c82333;
+        }
+
+        .history-tabs {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .history-tab {
+            flex: 1;
+            padding: 10px 15px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .history-tab.active {
+            color: #4CAF50;
+            border-bottom-color: #4CAF50;
+        }
+
+        .history-tab:hover {
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+
+        .no-history {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        /* 按钮样式 */
+        .remove-btn, .master-btn {
+            margin-left: 10px;
+            font-size: 0.8em;
+            padding: 4px 8px;
+        }
+
+        /* 成语历史记录容器 */
+        .idiom-history {
+            margin-top: 20px;
+        }
+
+        .history-score {
+            font-weight: bold;
+            color: #198754;
+        }
+
+        .history-date {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+
+        .history-details {
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        /* 趣味测试样式 */
+        .quiz-container {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+            margin-bottom: 20px;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .quiz-option {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            color: #495057;
+        }
+
+        .quiz-option:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+            transform: translateY(-2px);
+        }
+
+        .quiz-option.correct {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .quiz-option.incorrect {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .quiz-option:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* 历史记录分类显示样式 */
+        .history-tabs {
+            display: flex;
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 1rem;
+        }
+
+        .history-tab {
+            padding: 0.5rem 1rem;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #6c757d;
+            transition: all 0.3s;
+        }
+
+        .history-tab.active {
+            color: #198754;
+            border-bottom-color: #198754;
+            font-weight: 600;
+        }
+
+        .history-tab:hover:not(.active) {
+            color: #495057;
+            border-bottom-color: #adb5bd;
+        }
+
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .history-item {
+            padding: 0.75rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            background-color: white;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .history-item:hover {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .history-item.correct {
+            border-left: 4px solid #198754;
+        }
+
+        .history-item.wrong {
+            border-left: 4px solid #dc2626;
+        }
+
+        .history-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .history-idiom {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #1f2937;
+        }
+
+        .history-status {
+            font-size: 0.8rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 999px;
+            font-weight: 500;
+        }
+
+        .history-status.correct {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .history-status.wrong {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .history-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+        .history-controls {
+            text-align: center;
+            padding-top: 1rem;
+            border-top: 1px solid #dee2e6;
+        }
+
+        @media (max-width: 768px) {
+            .idiom-cards-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 成语故事卡片翻转样式 */
+        .story-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+            cursor: pointer;
+            transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 200px;
+            position: relative;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            will-change: transform, box-shadow;
+        }
+
+        .story-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.09);
+        }
+
+        /* 动画状态类 - 防止重复点击 */
+        .story-card.animating {
+            pointer-events: none;
+        }
+
+        .story-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: left;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+
+        .story-card.flipped .story-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .story-card-front, .story-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            overflow: hidden;
+            background: var(--card-bg);
+            padding: 14px 14px 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .story-card-back {
+            transform: rotateY(180deg);
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+        }
+
+        .story-card-front-content, .story-card-back-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .story-card-back-content {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .story-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 5px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .story-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .story-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 2px;
+        }
+
+        .story-content::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 2px;
+        }
+
+        .story-content::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        .story-hint {
+            font-size: 0.75rem;
+            color: var(--secondary-color);
+            margin-top: 8px;
+            font-style: italic;
+            text-align: center;
+        }
+
+        /* 卡片放大效果样式 */
+        .story-card.expanded {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 600px;
+            height: 70vh;
+            max-height: 500px;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .story-card.expanded .story-card-inner {
+            height: 100%;
+        }
+
+        .story-card.expanded .story-card-back .story-content {
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        /* 周围卡片扩散效果 */
+        .story-card.scattered {
+            opacity: 0.7;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform, opacity;
+        }
+
+        /* 遮罩层 */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: opacity;
+        }
+        
+        .overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+        
+        /* 加载更多触发器样式 */
+        .load-more-trigger {
+            height: 20px;
+            width: 100%;
+            clear: both;
+        }
+        
+        /* 加载状态样式 */
+        .loading-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--secondary-color);
+        }
+        
+        .loading-state .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            border-width: 0.3em;
+        }
+        
+        .loading-state div {
+            margin-top: 1rem;
+            font-size: 1rem;
+            color: var(--secondary-color);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--secondary-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- 遮罩层 -->
+    <div id="overlay" class="overlay"></div>
+    
+    <!-- 导航栏：模仿成语趣解顶部样式 -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-book-open me-2"></i>成语学习乐园
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        
+        <div class="header-section mb-2">
+            <h1><i class="fas fa-graduation-cap me-2"></i>成语学习乐园</h1>
+            <p>探索中华成语的魅力，支持成语浏览、成语故事和趣味测试。</p>
+        </div>
+
+        <div class="search-container">
+            <input id="searchInput" class="search-input" placeholder="搜索成语、拼音或解释..." />
+            <button id="searchBtn" class="search-btn"><i class="fas fa-search"></i></button>
+        </div>
+
+        <div class="mode-bar">
+            <button class="mode-btn active" data-mode="browse">浏览学习</button>
+            <button class="mode-btn" data-mode="poem">成语故事</button>
+            <button class="mode-btn" data-mode="fun">趣味测试</button>
+        </div>
+
+        <div id="browseContainer">
+            <div id="alphabetIndex" class="alphabet-index"></div>
+            <div id="loadingState" class="loading-state" style="display:none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">加载中...</span>
+                </div>
+                <div class="mt-3">正在加载成语数据，首次加载可能需要几秒钟，请稍候...</div>
+            </div>
+            <div id="idiomCardsContainer" class="idiom-cards-container"></div>
+            <div id="emptyState" class="empty-state" style="display:none;">
+                <i class="fas fa-inbox fa-2x mb-2"></i>
+                <div>暂无成语，请尝试其他搜索关键词。</div>
+            </div>
+        </div>
+
+        <div id="poemContainer" style="display:none;">
+            <div id="poemProgressContainer" class="progress-container mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="small text-muted">学习总进度</span>
+                    <span id="poemProgressText" class="small text-muted">0/0</span>
+                </div>
+                <div class="progress" style="height: 8px;">
+                    <div id="poemProgressBar" class="progress-bar bg-success" role="progressbar" style="width: 0%;"></div>
+                </div>
+            </div>
+            <div id="poemList" class="idiom-cards-container"></div>
+            <div id="poemEmpty" class="empty-state" style="display:none;">
+                <i class="fas fa-inbox fa-2x mb-2"></i>
+                <div>暂无成语故事，请稍后再试。</div>
+            </div>
+        </div>
+
+        <div id="quizContainer" class="quiz-container" style="display:none;">
+            <!-- 加载状态 -->
+            <div id="quizLoadingState" class="loading-state" style="display:none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">加载中...</span>
+                </div>
+                <div class="mt-3">正在加载测试数据，请稍候...</div>
+            </div>
+            
+            <div id="quizScore" class="mb-2 small text-muted"></div>
+            
+            <!-- 进度显示 -->
+            <div id="quizTotalProgress" class="progress-container mb-3" style="display:none;">
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="small text-muted">进度</span>
+                    <span id="quizTotalProgressText" class="small text-muted">0/10</span>
+                </div>
+                <div class="progress" style="height: 8px;">
+                    <div id="quizTotalProgressBar" class="progress-bar bg-success" role="progressbar" style="width: 0%;"></div>
+                </div>
+                <div class="d-flex justify-content-end mt-1">
+                    <span class="small text-success me-3">答对：<span id="quizCorrectCount">0</span>题</span>
+                    <span class="small text-danger">答错：<span id="quizWrongCount">0</span>题</span>
+                </div>
+            </div>
+            
+            <div id="quizQuestion" class="mb-3 fw-semibold"></div>
+            <div id="quizOptions" class="quiz-options mb-3"></div>
+            <div id="quizFeedback" class="mb-3"></div>
+            
+            <!-- 按钮区域：下一题和重新开始按钮在同一行 -->
+            <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+                <button id="nextQuestionBtn" class="btn btn-primary btn-sm" disabled>下一题</button>
+                <button id="restartQuizBtn" class="btn btn-outline-secondary btn-sm">🔄 重新开始</button>
+            </div>
+            
+            <div id="quizResult" class="mt-3"></div>
+            
+            <div id="quizHistory" class="quiz-history mt-4">
+                <h5 class="mb-3">作答记录</h5>
+                <div class="history-list" id="history-list">
+                    <!-- 答题记录将通过JavaScript动态生成 -->
+                </div>
+                <div class="history-controls">
+                    <button class="clear-history-btn" id="clear-history-btn">🗑️ 清除历史记录</button>
+                </div>
+            </div>
+            
+            <div id="idiomHistory" class="idiom-history mt-4">
+                <h5 class="mb-3">成语历史记录</h5>
+                <div class="history-tabs">
+                    <button class="history-tab active" id="mastered-tab">✅ 已掌握成语 (<span id="mastered-count">0</span>)</button>
+                    <button class="history-tab" id="wrong-tab">❌ 待掌握成语 (<span id="wrong-count">0</span>)</button>
+                </div>
+                <div class="history-list" id="mastered-list">
+                    <!-- 已掌握成语记录将通过JavaScript动态生成 -->
+                </div>
+                <div class="history-list" id="wrong-list" style="display: none;">
+                    <!-- 待掌握成语记录将通过JavaScript动态生成 -->
+                </div>
+                <div class="history-controls">
+                    <button class="clear-idiom-history-btn" id="clear-idiom-history-btn">🗑️ 清除成语记录</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // 成语数据（从外部JSON文件加载）
+    const idiomDatabase = {};
+
+    // 成语故事数据（从Idiom stories.json加载）
+    let idiomStories = [];
+    let storiesLoaded = false;
+    
+    // 成语故事缓存相关
+    const STORIES_CACHE_KEY = 'chengyu_stories_cache_v1';
+    const STORIES_CACHE_TIMESTAMP_KEY = 'chengyu_stories_cache_timestamp';
+    
+    // 成语故事分批加载相关变量
+    let filteredStories = []; // 过滤后的成语故事列表
+    let currentStoryRenderIndex = 0; // 当前已渲染的索引
+    let isLoadingMoreStories = false; // 是否正在加载
+    let hasMoreStories = true; // 是否还有更多数据
+    let loadMoreStoriesObserver = null; // Intersection Observer 实例
+
+    // 成语首字母映射数据
+    let pinyinMapping = {};
+    let mappingLoaded = false;
+
+    // ===== 全局状态 =====
+    let currentMode = 'browse';
+
+    // 测试相关
+    let quizData = [];
+    let quizIndex = 0;
+    let quizScore = 0;
+    let quizCorrectIds = [];
+    let quizWrongIds = [];
+    let quizTotalCorrect = 0; // 测试总答对数量
+    let quizTotalWrong = 0;   // 测试总答错数量
+    let quizCompleted = false; // 标记测试是否已完成，防止重复提交
+
+    // 持久化：已掌握 / 常错
+    const masteredKey = 'chengyu_mastered_v1';
+    const wrongKey = 'chengyu_wrong_v1';
+    let masteredIdioms = JSON.parse(localStorage.getItem(masteredKey) || '{}');
+    let wrongIdiomsRecord = JSON.parse(localStorage.getItem(wrongKey) || '{}');
+
+    const browseViewKey = 'chengyu_browse_view_counts_v1';
+    let browseViewCounts = JSON.parse(localStorage.getItem(browseViewKey) || '{}');
+
+    // 浏览学习：从 chengyu_all_simple.json 加载的成语列表（对象：{id,text}）
+    let browseIdioms = [];
+    let browseLoaded = false;
+    
+    // 缓存相关
+    const CACHE_KEY = 'chengyu_browse_cache_v1';
+    const CACHE_TIMESTAMP_KEY = 'chengyu_browse_cache_timestamp';
+    const CACHE_EXPIRE_TIME = 7 * 24 * 60 * 60 * 1000; // 7天过期
+    
+    // 当前选中的字母索引
+    let currentAlphabet = '';
+    
+    // 分批加载相关变量
+    let filteredIdioms = []; // 过滤后的成语列表
+    let currentRenderIndex = 0; // 当前已渲染的索引
+    const BATCH_SIZE = 50; // 每批加载的数量
+    let isLoadingMore = false; // 是否正在加载
+    let hasMoreData = true; // 是否还有更多数据
+    let loadMoreObserver = null; // Intersection Observer 实例
+
+    function getIdiomViewCount(item) {
+        const obj = (typeof item === 'string') ? { text: item } : (item || {});
+        const key = obj.text || obj.word || '';
+        if (!key) return 0;
+        return browseViewCounts[key] || 0;
+    }
+
+    function incrementIdiomViewCount(item) {
+        const obj = (typeof item === 'string') ? { text: item } : (item || {});
+        const key = obj.text || obj.word || '';
+        if (!key) return 0;
+        const current = browseViewCounts[key] || 0;
+        const next = current + 1;
+        browseViewCounts[key] = next;
+        try {
+            localStorage.setItem(browseViewKey, JSON.stringify(browseViewCounts));
+        } catch (e) {}
+        return next;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        bindEvents();
+        loadPinyinMapping();
+        loadIdioms();
+        // 立即初始化字母索引按钮，不等待数据加载
+        initAlphabetIndex();
+        // 页面加载时立即显示历史记录
+        displayQuizHistory();
+        // 显示成语历史记录
+        displayIdiomHistory();
+        
+        // 添加遮罩层点击事件
+        document.getElementById('overlay').addEventListener('click', function() {
+            // 关闭展开的卡片
+            const expandedCard = document.querySelector('.story-card.expanded');
+            if (expandedCard) {
+                expandedCard.classList.remove('expanded');
+                expandedCard.classList.remove('flipped');
+            }
+            
+            // 隐藏遮罩层（带动画）
+            this.classList.remove('active');
+            setTimeout(() => {
+                this.style.display = 'none';
+            }, 300);
+            
+            // 恢复其他卡片
+            const allCards = document.querySelectorAll('.story-card');
+            allCards.forEach(c => {
+                c.classList.remove('scattered');
+            });
+        });
+        
+        // 添加成语历史记录选项卡切换事件
+        document.getElementById('mastered-tab').addEventListener('click', function() {
+            document.querySelectorAll('.idiom-history-tab').forEach(tab => tab.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('mastered-list').style.display = 'block';
+            document.getElementById('wrong-list').style.display = 'none';
+        });
+        
+        document.getElementById('wrong-tab').addEventListener('click', function() {
+            document.querySelectorAll('.idiom-history-tab').forEach(tab => tab.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('mastered-list').style.display = 'none';
+            document.getElementById('wrong-list').style.display = 'block';
+        });
+        
+        // 添加清除历史记录按钮事件
+        document.getElementById('clear-history-btn').addEventListener('click', function() {
+            if (confirm('确定要清除所有历史记录吗？此操作不可恢复。')) {
+                clearQuizHistory();
+            }
+        });
+        
+        // 添加清除成语历史记录按钮事件
+        document.getElementById('clear-idiom-history-btn').addEventListener('click', function() {
+            clearIdiomHistory();
+        });
+        
+        // 添加重新开始测试按钮事件
+        document.getElementById('restartQuizBtn').addEventListener('click', function() {
+            if (confirm('确定要重新开始测试吗？当前进度将丢失。')) {
+                clearQuizState();
+                startQuiz();
+            }
+        });
+    });
+
+    // 加载成语首字母映射
+    function loadPinyinMapping() {
+        console.log('开始加载拼音映射...');
+        const timestamp = new Date().getTime();
+        fetch('idiom/成语首字母映射.json?t=' + timestamp)
+            .then(response => {
+                console.log('拼音映射文件响应状态:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('拼音映射数据:', data);
+                pinyinMapping = data.mapping || {};
+                mappingLoaded = true;
+                console.log('拼音映射加载成功，共', Object.keys(pinyinMapping).length, '个汉字');
+                
+                // 拼音映射加载完成后，如果成语数据也已加载，则初始化字母索引
+                if (browseLoaded) {
+                    initAlphabetIndex();
+                }
+            })
+            .catch(error => {
+                console.error('加载拼音映射失败:', error);
+                // 如果加载失败，使用默认的简单映射
+                pinyinMapping = {
+                    '一': 'Y', '二': 'E', '三': 'S', '四': 'S', '五': 'W', '六': 'L', 
+                    '七': 'Q', '八': 'B', '九': 'J', '十': 'S', '百': 'B', '千': 'Q',
+                    '万': 'W', '亿': 'Y', '零': 'L', '半': 'B', '双': 'S', '两': 'L',
+                    '几': 'J', '多': 'D', '少': 'S', '大': 'D', '小': 'X', '中': 'Z',
+                    '上': 'S', '下': 'X', '左': 'Z', '右': 'Y', '前': 'Q', '后': 'H',
+                    '东': 'D', '南': 'N', '西': 'X', '北': 'B', '内': 'N', '外': 'W'
+                };
+                mappingLoaded = true;
+                
+                // 拼音映射加载完成后，如果成语数据也已加载，则初始化字母索引
+                if (browseLoaded) {
+                    initAlphabetIndex();
+                }
+            });
+    }
+
+    // 获取成语的首字母
+    function getIdiomFirstLetter(idiomText) {
+        if (!idiomText || idiomText.length === 0) {
+            console.log('成语文本为空');
+            return '';
+        }
+        
+        const firstChar = idiomText.charAt(0);
+        console.log('成语:', idiomText, '首字符:', firstChar);
+        
+        // 如果映射还没加载完成，返回空字符串
+        if (!mappingLoaded) {
+            console.log('拼音映射尚未加载完成');
+            return '';
+        }
+        
+        // 检查是否是中文字符
+        if (/[\u4e00-\u9fa5]/.test(firstChar)) {
+            const result = pinyinMapping[firstChar] || '';
+            console.log('中文字符', firstChar, '对应首字母:', result);
+            return result;
+        } else {
+            // 如果不是中文字符，直接转换为大写字母
+            const result = firstChar.toUpperCase();
+            console.log('非中文字符', firstChar, '转换为大写:', result);
+            return result;
+        }
+    }
+
+    function bindEvents() {
+        document.getElementById('searchBtn').addEventListener('click', searchIdioms);
+        document.getElementById('searchInput').addEventListener('keyup', e => {
+            if (e.key === 'Enter') searchIdioms();
+        });
+
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => switchMode(btn.dataset.mode));
+        });
+
+        document.getElementById('nextQuestionBtn').addEventListener('click', nextQuizQuestion);
+    }
+    
+    // 初始化字母索引按钮（根据数据中的 first 动态生成）
+    function initAlphabetIndex() {
+        console.log('初始化字母索引按钮...');
+        const alphabetContainer = document.getElementById('alphabetIndex');
+        if (!alphabetContainer) {
+            console.log('找不到alphabetIndex容器');
+            return;
+        }
+        
+        // 清空容器
+        alphabetContainer.innerHTML = '';
+        
+        // 添加"全部"按钮
+        const allBtn = document.createElement('button');
+        allBtn.className = 'alphabet-btn active';
+        allBtn.textContent = '全部';
+        allBtn.dataset.alphabet = '';
+        allBtn.addEventListener('click', () => filterByAlphabet(''));
+        alphabetContainer.appendChild(allBtn);
+        
+        // 如果成语数据还未加载，只保留“全部”按钮
+        if (!browseLoaded || !browseIdioms || !browseIdioms.length) {
+            return;
+        }
+        
+        // 统计每个首字母分组（按 first 的首字母归类）对应的成语数量
+        const letterCounts = {};
+        browseIdioms.forEach(item => {
+            const obj = (typeof item === 'string') ? { text: item } : (item || {});
+            let firstRaw = '';
+            if (obj.first) {
+                firstRaw = String(obj.first).toUpperCase();
+            } else if (obj.firstLetter) {
+                firstRaw = String(obj.firstLetter).toUpperCase();
+            } else {
+                const text = obj.text || obj.word || '';
+                firstRaw = getIdiomFirstLetter(text);
+            }
+            if (!firstRaw) return;
+            const groupLetter = firstRaw.charAt(0);
+            if (!groupLetter) return;
+            if (!letterCounts[groupLetter]) {
+                letterCounts[groupLetter] = 0;
+            }
+            letterCounts[groupLetter]++;
+        });
+        
+        // 按字母顺序生成按钮，只显示真正有成语的分类
+        Object.keys(letterCounts).sort().forEach(letter => {
+            const btn = document.createElement('button');
+            btn.className = 'alphabet-btn';
+            btn.textContent = `${letter}(${letterCounts[letter]})`;
+            btn.dataset.alphabet = letter;
+            btn.addEventListener('click', () => filterByAlphabet(letter));
+            alphabetContainer.appendChild(btn);
+        });
+    }
+
+    function getAllIdioms() {
+        const all = [];
+        for (let g = 1; g <= 9; g++) {
+            if (idiomDatabase[g]) {
+                all.push(...idiomDatabase[g]);
+            }
+        }
+        return all;
+    }
+
+    // 从缓存加载数据
+    function loadFromCache() {
+        try {
+            const cachedData = localStorage.getItem(CACHE_KEY);
+            const cachedTimestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+            
+            if (cachedData && cachedTimestamp) {
+                const timestamp = parseInt(cachedTimestamp, 10);
+                const now = Date.now();
+                
+                // 检查缓存是否过期
+                if (now - timestamp < CACHE_EXPIRE_TIME) {
+                    return JSON.parse(cachedData);
+                } else {
+                    // 缓存过期，清除
+                    localStorage.removeItem(CACHE_KEY);
+                    localStorage.removeItem(CACHE_TIMESTAMP_KEY);
+                }
+            }
+        } catch (e) {
+            console.error('读取缓存失败:', e);
+        }
+        return null;
+    }
+    
+    // 保存数据到缓存
+    function saveToCache(data) {
+        try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+            localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
+        } catch (e) {
+            console.error('保存缓存失败:', e);
+        }
+    }
+    
+    // ===== 浏览学习：从 chengyu_all_simple.json 加载并显示所有成语 =====
+    function loadIdioms(keyword = '') {
+        const container = document.getElementById('idiomCardsContainer');
+        const empty = document.getElementById('emptyState');
+        const loadingState = document.getElementById('loadingState');
+        if (!container || !empty) return;
+
+        const applyFilterAndRender = () => {
+            const kw = keyword.trim().toLowerCase();
+            let list = browseIdioms;
+            
+            // 先按字母过滤（按 first 的首字母分组）
+            if (currentAlphabet) {
+                list = list.filter(item => {
+                    const obj = (typeof item === 'string') ? { text: item } : (item || {});
+                    let firstRaw = '';
+                    if (obj.first) {
+                        firstRaw = String(obj.first).toUpperCase();
+                    } else if (obj.firstLetter) {
+                        firstRaw = String(obj.firstLetter).toUpperCase();
+                    } else {
+                        const text = obj.text || obj.word || '';
+                        firstRaw = getIdiomFirstLetter(text);
+                    }
+                    if (!firstRaw) return false;
+                    const groupLetter = firstRaw.charAt(0);
+                    return groupLetter === currentAlphabet;
+                });
+            }
+            
+            // 再按关键词过滤（成语、拼音、释义等）
+            if (kw) {
+                list = list.filter(item => {
+                    const obj = (typeof item === 'string') ? { text: item } : (item || {});
+                    const candidates = [
+                        obj.text,
+                        obj.word,
+                        obj.pinyin,
+                        obj.pinyin_r,
+                        obj.explanation,
+                        obj.meaning,
+                        obj.derivation,
+                        obj.example,
+                        obj.abbreviation
+                    ];
+                    return candidates.some(field => field && String(field).toLowerCase().includes(kw));
+                });
+            }
+
+            // 方案 B：对过滤后的列表按 first + 拼音 进行排序，保证例如 sa 在 shen 之前
+            list = list.slice().sort((a, b) => {
+                const objA = (typeof a === 'string') ? { text: a } : (a || {});
+                const objB = (typeof b === 'string') ? { text: b } : (b || {});
+                const keyA = ((objA.first || '') + '|' + (objA.pinyin_r || objA.pinyin || objA.text || objA.word || '')).toString();
+                const keyB = ((objB.first || '') + '|' + (objB.pinyin_r || objB.pinyin || objB.text || objB.word || '')).toString();
+                return keyA.localeCompare(keyB);
+            });
+
+            // 保存过滤后的列表，重置渲染索引，开始分批加载
+            filteredIdioms = list;
+            currentRenderIndex = 0;
+            hasMoreData = list.length > 0;
+            renderIdiomCards(true); // true 表示重置并开始渲染
+        };
+
+        if (!browseLoaded) {
+            // 先尝试从缓存加载
+            const cachedData = loadFromCache();
+            const cachedStories = loadStoriesFromCache();
+            
+            if (cachedData && Array.isArray(cachedData) && cachedData.length > 0) {
+                // 使用缓存数据
+                browseIdioms = cachedData;
+                browseLoaded = true;
+                initAlphabetIndex();
+                applyFilterAndRender();
+                
+                // 同时加载成语故事缓存数据
+                if (cachedStories && Array.isArray(cachedStories) && cachedStories.length > 0) {
+                    idiomStories = cachedStories;
+                    storiesLoaded = true;
+                    // 如果当前在成语故事模式，渲染故事列表
+                    if (currentMode === 'poem') {
+                        renderPoemList();
+                    }
+                }
+                
+                // 在后台更新数据（不阻塞界面）
+                Promise.all([
+                    fetchIdiomsData().then(data => {
+                        browseIdioms = data;
+                        saveToCache(data);
+                        // 如果当前没有过滤条件，重新渲染
+                        if (!keyword && !currentAlphabet) {
+                            applyFilterAndRender();
+                        }
+                        initAlphabetIndex();
+                        return data;
+                    }).catch(err => {
+                        console.error('后台更新浏览数据失败:', err);
+                    }),
+                    loadIdiomStories(false).then(data => {
+                        saveStoriesToCache(data);
+                        // 如果当前在成语故事模式，重新渲染
+                        if (currentMode === 'poem') {
+                            renderPoemList();
+                        }
+                        return data;
+                    }).catch(err => {
+                        console.error('后台更新故事数据失败:', err);
+                    })
+                ]);
+            } else {
+                // 没有缓存，显示加载提示并加载数据
+                if (loadingState) {
+                    loadingState.style.display = 'block';
+                }
+                container.style.display = 'none';
+                
+                // 同时加载浏览数据和成语故事数据
+                Promise.all([
+                    fetchIdiomsData(),
+                    loadIdiomStories(false)
+                ])
+                    .then(([browseData, storiesData]) => {
+                        browseIdioms = browseData;
+                        browseLoaded = true;
+                        saveToCache(browseData); // 保存到缓存
+                        
+                        idiomStories = storiesData;
+                        storiesLoaded = true;
+                        saveStoriesToCache(storiesData); // 保存到缓存
+                        
+                        // 隐藏加载提示，显示容器
+                        if (loadingState) {
+                            loadingState.style.display = 'none';
+                        }
+                        container.style.display = '';
+                        
+                        // 数据加载完成后，初始化字母索引
+                        initAlphabetIndex();
+                        applyFilterAndRender();
+                        
+                        // 如果当前在成语故事模式，渲染故事列表
+                        if (currentMode === 'poem') {
+                            renderPoemList();
+                        }
+                    })
+                    .catch(() => {
+                        if (loadingState) {
+                            loadingState.style.display = 'none';
+                        }
+                        container.style.display = '';
+                        container.innerHTML = '';
+                        empty.style.display = 'block';
+                    });
+            }
+        } else {
+            applyFilterAndRender();
+        }
+    }
+    
+    // 按字母索引过滤成语
+    function filterByAlphabet(alphabet) {
+        currentAlphabet = alphabet;
+        
+        // 更新按钮状态
+        document.querySelectorAll('.alphabet-btn').forEach(btn => {
+            if (btn.dataset.alphabet === alphabet) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        
+        // 重新加载成语
+        loadIdioms(document.getElementById('searchInput').value);
+    }
+
+    // 分批渲染成语卡片
+    function renderIdiomCards(reset = false) {
+        const container = document.getElementById('idiomCardsContainer');
+        const empty = document.getElementById('emptyState');
+        
+        if (!container || !empty) return;
+        
+        // 如果是重置，清空容器并重置状态
+        if (reset) {
+            container.innerHTML = '';
+            currentRenderIndex = 0;
+            hasMoreData = filteredIdioms.length > 0;
+            isLoadingMore = false;
+            
+            // 清理旧的 Observer
+            if (loadMoreObserver) {
+                loadMoreObserver.disconnect();
+                loadMoreObserver = null;
+            }
+        }
+        
+        // 检查是否有数据
+        if (!filteredIdioms || filteredIdioms.length === 0) {
+            empty.style.display = 'block';
+            hasMoreData = false;
+            return;
+        }
+        
+        empty.style.display = 'none';
+        
+        // 如果正在加载或没有更多数据，不继续渲染
+        if (isLoadingMore || !hasMoreData) {
+            return;
+        }
+        
+        isLoadingMore = true;
+        
+        // 使用 requestAnimationFrame 优化渲染性能
+        requestAnimationFrame(() => {
+            const endIndex = Math.min(currentRenderIndex + BATCH_SIZE, filteredIdioms.length);
+            const batch = filteredIdioms.slice(currentRenderIndex, endIndex);
+            
+            // 创建文档片段，批量插入DOM
+            const fragment = document.createDocumentFragment();
+            
+            batch.forEach(item => {
+                const obj = (typeof item === 'string') ? { text: item } : (item || {});
+                const text = obj.text || obj.word || '';
+                const pinyin = obj.pinyin || obj.pinyin_r || '';
+                const explanation = obj.explanation || obj.meaning || '';
+                const viewCount = getIdiomViewCount(obj);
+                const card = document.createElement('div');
+                card.className = 'idiom-card';
+                card.innerHTML = `
+                    <div class="idiom-view-badge">${viewCount}</div>
+                    <div class="idiom-card-title">${text}</div>
+                    ${pinyin ? `<div class="idiom-pinyin mb-1">${pinyin}</div>` : ''}
+                    ${explanation ? `<div class="idiom-meaning small text-muted">${explanation}</div>` : ''}
+                `;
+                card.addEventListener('click', () => {
+                    const newCount = incrementIdiomViewCount(obj);
+                    const badgeEl = card.querySelector('.idiom-view-badge');
+                    if (badgeEl) {
+                        badgeEl.textContent = newCount;
+                    }
+                    showIdiomDetailModal(obj);
+                });
+                fragment.appendChild(card);
+            });
+            
+            // 批量插入DOM
+            container.appendChild(fragment);
+            
+            // 更新渲染索引
+            currentRenderIndex = endIndex;
+            hasMoreData = currentRenderIndex < filteredIdioms.length;
+            isLoadingMore = false;
+            
+            // 如果还有更多数据，设置滚动加载监听
+            if (hasMoreData) {
+                setupLoadMoreTrigger();
+            }
+        });
+    }
+    
+    // 设置滚动加载触发器
+    function setupLoadMoreTrigger() {
+        const container = document.getElementById('idiomCardsContainer');
+        if (!container) return;
+        
+        // 如果已经有 Observer，不重复创建
+        if (loadMoreObserver) return;
+        
+        // 创建一个观察目标元素（放在容器底部）
+        let trigger = container.querySelector('.load-more-trigger');
+        if (!trigger) {
+            trigger = document.createElement('div');
+            trigger.className = 'load-more-trigger';
+            trigger.style.height = '20px';
+            trigger.style.width = '100%';
+            container.appendChild(trigger);
+        }
+        
+        // 使用 Intersection Observer 监听滚动
+        loadMoreObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && hasMoreData && !isLoadingMore) {
+                    renderIdiomCards();
+                }
+            });
+        }, {
+            rootMargin: '200px' // 提前200px开始加载
+        });
+        
+        loadMoreObserver.observe(trigger);
+    }
+
+    function showIdiomDetailModal(item) {
+        const text = item.text || item.word || '';
+        const pinyin = item.pinyin || item.pinyin_r || '';
+        const explanation = item.explanation || item.meaning || '';
+        const derivation = item.derivation || '';
+        const example = item.example || '';
+        const abbreviation = item.abbreviation || '';
+
+        const modalId = 'idiomDetailModal';
+        const existing = document.getElementById(modalId);
+        if (existing) {
+            existing.remove();
+        }
+
+        const modalHTML = `
+            <div id="${modalId}" class="modal fade" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">${text}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            ${pinyin ? `<p><strong>拼音：</strong>${pinyin}</p>` : ''}
+                            ${explanation ? `<p><strong>释义：</strong>${explanation}</p>` : ''}
+                            ${example ? `<p><strong>例句：</strong>${example}</p>` : ''}
+                            ${derivation ? `<p><strong>出处：</strong>${derivation}</p>` : ''}
+                            ${abbreviation ? `<p><strong>缩写：</strong>${abbreviation}</p>` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        const modalElement = document.getElementById(modalId);
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+        modalElement.addEventListener('hidden.bs.modal', function () {
+            this.remove();
+        });
+    }
+
+    function fetchSequential(urls, type) {
+        const tryOne = (idx) => {
+            if (idx >= urls.length) return Promise.reject();
+            return fetch(urls[idx]).then(r => {
+                if (!r.ok) return tryOne(idx + 1);
+                return type === 'json' ? r.json() : r.text();
+            }).catch(() => tryOne(idx + 1));
+        };
+        return tryOne(0);
+    }
+
+    function fetchIdiomsData() {
+        const timestamp = new Date().getTime();
+        const richJsonUrls = ['idiom/idiom.json?t=' + timestamp];
+        const simpleJsonUrls = ['idiom/chengyu_all_simple.json?t=' + timestamp];
+        const txtUrls = ['idiom/成语大全(18744).txt?t=' + timestamp];
+
+        // 1) 优先使用完整的 idiom.json
+        return fetchSequential(richJsonUrls, 'json').then(data => {
+            if (Array.isArray(data)) {
+                return data.map((item, index) => {
+                    const text = item.word || item.text || '';
+                    const pinyin = item.pinyin || item.pinyin_r || '';
+                    const explanation = item.explanation || item.meaning || '';
+                    const derivation = item.derivation || '';
+                    const example = item.example || '';
+                    const abbreviation = item.abbreviation || '';
+                    const first = item.first ? String(item.first).toUpperCase() : '';
+                    const last = item.last || '';
+                    const id = item.id || text || ('idiom_' + index);
+
+                    return {
+                        text,
+                        pinyin,
+                        pinyin_r: item.pinyin_r || '',
+                        explanation,
+                        derivation,
+                        example,
+                        abbreviation,
+                        first,
+                        last,
+                        id
+                    };
+                });
+            }
+            return Promise.reject();
+        }).catch(() => {
+            // 2) 兼容旧的 chengyu_all_simple.json
+            return fetchSequential(simpleJsonUrls, 'json').then(data => {
+                if (Array.isArray(data)) return data;
+                return Promise.reject();
+            }).catch(() => {
+                // 3) 最后回退到成语大全文本
+                return fetchSequential(txtUrls, 'text').then(text => {
+                    const lines = text.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+                    return lines.map(s => ({ text: s }));
+                });
+            });
+        });
+    }
+
+    function searchIdioms() {
+        const keyword = document.getElementById('searchInput').value.trim();
+        if (currentMode === 'browse') {
+            // 在浏览学习模式下，基于成语大全文本进行搜索
+            if (!keyword) {
+                loadIdioms();
+            } else {
+                loadIdioms(keyword);
+            }
+            return;
+        }
+
+        // 在成语故事模式下，搜索成语故事内容
+        if (currentMode === 'poem') {
+            loadIdiomStories().then(() => {
+                const container = document.getElementById('poemList');
+                const empty = document.getElementById('poemEmpty');
+                if (!container) return;
+                
+                if (!keyword) {
+                    // 如果没有关键词，显示所有成语故事（使用分批加载）
+                    filteredStories = idiomStories;
+                    renderPoemList(true); // true 表示重置并开始渲染
+                    return;
+                }
+                
+                // 过滤包含关键词的成语故事
+                const kw = keyword.toLowerCase();
+                filteredStories = idiomStories.filter(item => {
+                    return item.text.toLowerCase().includes(kw) || 
+                           item.pinyin.toLowerCase().includes(kw) || 
+                           item.meaning.toLowerCase().includes(kw) ||
+                           (item.example && item.example.toLowerCase().includes(kw)) ||
+                           (item.story && item.story.toLowerCase().includes(kw));
+                });
+                
+                if (!filteredStories.length) {
+                    if (empty) empty.style.display = 'block';
+                    hasMoreStories = false;
+                    return;
+                }
+                
+                if (empty) empty.style.display = 'none';
+                // 使用分批加载渲染过滤后的故事
+                renderPoemList(true); // true 表示重置并开始渲染
+            });
+            return;
+        }
+
+        // 其他模式下暂时只重置各自视图
+        if (!keyword && currentMode === 'poem') {
+            renderPoemList();
+        }
+    }
+
+    // 从缓存加载成语故事数据
+    function loadStoriesFromCache() {
+        try {
+            const cachedData = localStorage.getItem(STORIES_CACHE_KEY);
+            const cachedTimestamp = localStorage.getItem(STORIES_CACHE_TIMESTAMP_KEY);
+            
+            if (cachedData && cachedTimestamp) {
+                const timestamp = parseInt(cachedTimestamp, 10);
+                const now = Date.now();
+                
+                // 检查缓存是否过期
+                if (now - timestamp < CACHE_EXPIRE_TIME) {
+                    return JSON.parse(cachedData);
+                } else {
+                    // 缓存过期，清除
+                    localStorage.removeItem(STORIES_CACHE_KEY);
+                    localStorage.removeItem(STORIES_CACHE_TIMESTAMP_KEY);
+                }
+            }
+        } catch (e) {
+            console.error('读取成语故事缓存失败:', e);
+        }
+        return null;
+    }
+    
+    // 保存成语故事数据到缓存
+    function saveStoriesToCache(data) {
+        try {
+            localStorage.setItem(STORIES_CACHE_KEY, JSON.stringify(data));
+            localStorage.setItem(STORIES_CACHE_TIMESTAMP_KEY, Date.now().toString());
+        } catch (e) {
+            console.error('保存成语故事缓存失败:', e);
+        }
+    }
+    
+    // ===== 模式切换 =====
+    // ===== 成语故事：从Idiom stories.json加载并显示所有成语故事 =====
+    function loadIdiomStories(useCache = true) {
+        if (storiesLoaded) return Promise.resolve(idiomStories);
+        
+        // 先尝试从缓存加载
+        if (useCache) {
+            const cachedData = loadStoriesFromCache();
+            if (cachedData && Array.isArray(cachedData) && cachedData.length > 0) {
+                idiomStories = cachedData;
+                storiesLoaded = true;
+                return Promise.resolve(idiomStories);
+            }
+        }
+        
+        // 先尝试加载 Idiom stories1.json，如果失败则尝试 Idiom stories.json
+        return fetch('idiom/Idiom stories1.json')
+            .then(res => {
+                if (!res.ok) {
+                    // 如果第一个文件不存在，尝试第二个文件
+                    return fetch('idiom/Idiom stories.json');
+                }
+                return res;
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (Array.isArray(data)) {
+                    idiomStories = data;
+                } else {
+                    idiomStories = [];
+                }
+                storiesLoaded = true;
+                saveStoriesToCache(idiomStories); // 保存到缓存
+                return idiomStories;
+            })
+            .catch(err => {
+                console.error('加载成语故事 JSON 失败', err);
+                idiomStories = [];
+                storiesLoaded = true;
+                return idiomStories;
+            });
+    }
+
+    // 分批渲染成语故事卡片
+    function renderPoemList(reset = false) {
+        const container = document.getElementById('poemList');
+        const empty = document.getElementById('poemEmpty');
+        if (!container) return;
+        
+        // 如果是重置，清空容器并重置状态
+        if (reset) {
+            container.innerHTML = '';
+            currentStoryRenderIndex = 0;
+            hasMoreStories = filteredStories.length > 0;
+            isLoadingMoreStories = false;
+            
+            // 清理旧的 Observer
+            if (loadMoreStoriesObserver) {
+                loadMoreStoriesObserver.disconnect();
+                loadMoreStoriesObserver = null;
+            }
+        }
+        
+        // 先加载成语故事数据
+        loadIdiomStories().then(() => {
+            // 如果没有数据，显示空状态
+            if (!idiomStories.length) {
+                if (empty) empty.style.display = 'block';
+                hasMoreStories = false;
+                return;
+            }
+            if (empty) empty.style.display = 'none';
+            
+            // 更新学习总进度
+            updatePoemProgress();
+            
+            // 如果是重置且 filteredStories 未设置，设置过滤后的列表为全部故事
+            if (reset && (!filteredStories || filteredStories.length === 0)) {
+                filteredStories = idiomStories;
+            }
+            
+            // 确保 filteredStories 已设置
+            if (!filteredStories || filteredStories.length === 0) {
+                filteredStories = idiomStories;
+            }
+            
+            // 更新状态
+            if (reset) {
+                currentStoryRenderIndex = 0;
+                hasMoreStories = filteredStories.length > 0;
+            }
+            
+            // 如果正在加载或没有更多数据，不继续渲染
+            if (isLoadingMoreStories || !hasMoreStories) {
+                return;
+            }
+            
+            isLoadingMoreStories = true;
+            
+            // 使用 requestAnimationFrame 优化渲染性能
+            requestAnimationFrame(() => {
+                const endIndex = Math.min(currentStoryRenderIndex + BATCH_SIZE, filteredStories.length);
+                const batch = filteredStories.slice(currentStoryRenderIndex, endIndex);
+                
+                // 创建文档片段，批量插入DOM
+                const fragment = document.createDocumentFragment();
+                
+                batch.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'story-card';
+                    card.innerHTML = `
+                        <div class="story-card-inner">
+                            <div class="story-card-front">
+                                <div class="story-card-front-content">
+                                    <div class="idiom-card-title mb-1">${item.text}</div>
+                                    <div class="idiom-pinyin mb-2">${item.pinyin}</div>
+                                    <div class="idiom-meaning mb-2">${item.meaning}</div>
+                                    <div class="idiom-example mb-2">${item.example}</div>
+                                    <div class="story-hint">点击查看故事</div>
+                                </div>
+                            </div>
+                            <div class="story-card-back">
+                                <div class="story-card-back-content">
+                                    <div class="idiom-card-title mb-2">${item.text}</div>
+                                    <div class="story-content">${item.story ? item.story.replace(/<br\/>/g, '<br>') : ''}</div>
+                                    <div class="story-hint">点击返回</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // 添加点击事件来翻转卡片（带防抖和状态管理）
+                    card.addEventListener('click', function(e) {
+                        // 防止重复点击
+                        if (this.classList.contains('animating')) {
+                            return;
+                        }
+                        
+                        // 添加点击反馈动画
+                        this.classList.add('animating');
+                        
+                        // 如果点击的是已展开的卡片，则只翻转
+                        if (this.classList.contains('expanded')) {
+                            this.classList.toggle('flipped');
+                            setTimeout(() => {
+                                this.classList.remove('animating');
+                            }, 150);
+                            return;
+                        }
+                        
+                        // 如果有其他卡片已展开，先关闭它
+                        const expandedCard = document.querySelector('.story-card.expanded');
+                        if (expandedCard) {
+                            expandedCard.classList.remove('expanded');
+                            expandedCard.classList.remove('flipped');
+                        }
+                        
+                        // 展开当前卡片
+                        this.classList.add('expanded');
+                        this.classList.add('flipped');
+                        
+                        // 显示遮罩层（带动画）
+                        const overlay = document.getElementById('overlay');
+                        overlay.style.display = 'block';
+                        setTimeout(() => {
+                            overlay.classList.add('active');
+                        }, 10);
+                        
+                        // 使其他卡片分散
+                        const allCards = document.querySelectorAll('.story-card');
+                        allCards.forEach(c => {
+                            if (c !== this) {
+                                c.classList.add('scattered');
+                            }
+                        });
+                        
+                        // 移除动画状态
+                        setTimeout(() => {
+                            this.classList.remove('animating');
+                        }, 150);
+                    });
+                    
+                    fragment.appendChild(card);
+                });
+                
+                // 批量插入DOM
+                container.appendChild(fragment);
+                
+                // 更新渲染索引
+                currentStoryRenderIndex = endIndex;
+                hasMoreStories = currentStoryRenderIndex < filteredStories.length;
+                isLoadingMoreStories = false;
+                
+                // 如果还有更多数据，设置滚动加载监听
+                if (hasMoreStories) {
+                    setupLoadMoreStoriesTrigger();
+                }
+            });
+        });
+    }
+    
+    // 设置成语故事滚动加载触发器
+    function setupLoadMoreStoriesTrigger() {
+        const container = document.getElementById('poemList');
+        if (!container) return;
+        
+        // 如果已经有 Observer，不重复创建
+        if (loadMoreStoriesObserver) return;
+        
+        // 创建一个观察目标元素（放在容器底部）
+        let trigger = container.querySelector('.load-more-trigger');
+        if (!trigger) {
+            trigger = document.createElement('div');
+            trigger.className = 'load-more-trigger';
+            trigger.style.height = '20px';
+            trigger.style.width = '100%';
+            container.appendChild(trigger);
+        }
+        
+        // 使用 Intersection Observer 监听滚动
+        loadMoreStoriesObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && hasMoreStories && !isLoadingMoreStories) {
+                    renderPoemList();
+                }
+            });
+        }, {
+            rootMargin: '200px' // 提前200px开始加载
+        });
+        
+        loadMoreStoriesObserver.observe(trigger);
+    }
+
+    function switchMode(mode) {
+        currentMode = mode;
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        const activeBtn = document.querySelector(`.mode-btn[data-mode="${mode}"]`);
+        if (activeBtn) activeBtn.classList.add('active');
+
+        const browse = document.getElementById('browseContainer');
+        const quiz = document.getElementById('quizContainer');
+        const poem = document.getElementById('poemContainer');
+        const alphabetIndex = document.getElementById('alphabetIndex');
+
+        if (mode === 'browse') {
+            browse.style.display = 'block';
+            quiz.style.display = 'none';
+            if (poem) poem.style.display = 'none';
+            if (alphabetIndex) alphabetIndex.style.display = 'flex';
+            loadIdioms();
+        } else if (mode === 'poem') {
+            browse.style.display = 'none';
+            quiz.style.display = 'none';
+            if (poem) poem.style.display = 'block';
+            if (alphabetIndex) alphabetIndex.style.display = 'none';
+            renderPoemList(true); // true 表示重置并开始渲染
+        } else if (mode === 'fun') {
+            browse.style.display = 'none';
+            if (poem) poem.style.display = 'none';
+            quiz.style.display = 'block';
+            if (alphabetIndex) alphabetIndex.style.display = 'none';
+            
+            // 检查是否有保存的测试状态
+            const savedQuizState = localStorage.getItem('quizState');
+            if (savedQuizState && quizData && quizData.length > 0) {
+                // 恢复测试状态
+                restoreQuizState();
+            } else {
+                // 没有保存的状态或测试数据，重新开始测试
+                startQuiz();
+            }
+        }
+    }
+
+    // ===== 保存测试状态到localStorage =====
+    function saveQuizState() {
+        // 如果测试已完成，清除状态而不是保存
+        if (quizCompleted) {
+            clearQuizState();
+            return;
+        }
+        
+        // 检查数据是否有效
+        if (!quizData || !Array.isArray(quizData) || quizData.length === 0) {
+            return;
+        }
+        
+        // 如果 quizIndex 超出范围，清除状态而不是保存无效状态
+        if (quizIndex < 0 || quizIndex >= quizData.length) {
+            clearQuizState();
+            return;
+        }
+        
+        const quizState = {
+            quizData: quizData,
+            quizIndex: quizIndex,
+            quizScore: quizScore,
+            quizCorrectIds: quizCorrectIds,
+            quizWrongIds: quizWrongIds,
+            quizTotalCorrect: quizTotalCorrect,
+            quizTotalWrong: quizTotalWrong,
+            saveTime: Date.now()
+        };
+        localStorage.setItem('quizState', JSON.stringify(quizState));
+    }
+
+    // ===== 从localStorage恢复测试状态 =====
+    function restoreQuizState() {
+        const savedState = localStorage.getItem('quizState');
+        if (savedState) {
+            try {
+                const quizState = JSON.parse(savedState);
+                
+                // 检查状态是否过期（超过1小时）
+                const currentTime = Date.now();
+                if (currentTime - quizState.saveTime > 3600000) { // 1小时
+                    localStorage.removeItem('quizState');
+                    startQuiz();
+                    return;
+                }
+                
+                // 恢复测试状态
+                quizData = quizState.quizData;
+                quizIndex = quizState.quizIndex;
+                quizScore = quizState.quizScore;
+                quizCorrectIds = quizState.quizCorrectIds;
+                quizWrongIds = quizState.quizWrongIds;
+                quizTotalCorrect = quizState.quizTotalCorrect;
+                quizTotalWrong = quizState.quizTotalWrong;
+                quizCompleted = false; // 恢复状态时，测试尚未完成
+                
+                // 验证恢复的状态是否有效
+                if (!quizData || !Array.isArray(quizData) || quizData.length === 0) {
+                    console.error('恢复的测试数据无效，重新开始测试');
+                    localStorage.removeItem('quizState');
+                    startQuiz();
+                    return;
+                }
+                
+                // 检查 quizIndex 是否超出范围
+                if (quizIndex < 0) {
+                    quizIndex = 0;
+                } else if (quizIndex >= quizData.length) {
+                    // 如果索引超出范围，说明测试已经完成，直接显示结果
+                    console.log('测试已完成，显示结果');
+                    showQuizResult();
+                    return;
+                }
+                
+                // 更新UI显示
+                updateQuizProgress(false);
+                updateQuizTotalProgress();
+                renderQuizQuestion();
+                
+                console.log('测试状态已恢复');
+            } catch (error) {
+                console.error('恢复测试状态失败', error);
+                startQuiz();
+            }
+        } else {
+            startQuiz();
+        }
+    }
+
+    // ===== 清除保存的测试状态 =====
+    function clearQuizState() {
+        localStorage.removeItem('quizState');
+    }
+
+    // ===== 趣味测试：从Idiom stories1.json加载测试数据 =====
+    function startQuiz() {
+        const loadingState = document.getElementById('quizLoadingState');
+        const quizContent = document.getElementById('quizScore');
+        
+        // 显示加载动画，隐藏测试内容
+        if (loadingState) {
+            loadingState.style.display = 'block';
+        }
+        if (quizContent) {
+            quizContent.parentElement.querySelectorAll('#quizQuestion, #quizOptions, #quizFeedback, #quizTotalProgress, #nextQuestionBtn, #restartQuizBtn, #quizResult').forEach(el => {
+                if (el) el.style.display = 'none';
+            });
+        }
+
+        // 从指定JSON文件加载数据
+        fetch('idiom/Idiom stories1.json')
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error('无法加载测试数据文件');
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (!Array.isArray(data)) {
+                    throw new Error('测试数据格式错误');
+                }
+
+                const available = data.filter(item => item.text && item.meaning);
+                if (available.length < 4) {
+                    if (loadingState) loadingState.style.display = 'none';
+                    alert('可用成语数据少于 4 条，无法进行测试。');
+                    switchMode('browse');
+                    return;
+                }
+
+                // 重置测试状态
+                quizCorrectIds = [];
+                quizWrongIds = [];
+                quizScore = 0;
+                quizIndex = 0;
+                quizTotalCorrect = 0; // 测试总答对数量
+                quizTotalWrong = 0;   // 测试总答错数量
+                quizCompleted = false; // 重置完成标志
+
+                // 从localStorage加载已掌握的成语记录
+                const masteredRecords = JSON.parse(localStorage.getItem(masteredKey) || '{}');
+                
+                // 过滤掉已掌握的成语，只保留未掌握的成语
+                const availableForQuiz = available.filter(item => !masteredRecords[item.text]);
+                
+                // 如果可用成语不足10个，从已掌握的成语中随机选择补充
+                let finalAvailable = [...availableForQuiz];
+                if (finalAvailable.length < 10) {
+                    const masteredItems = available.filter(item => masteredRecords[item.text]);
+                    const needed = 10 - finalAvailable.length;
+                    // 随机打乱已掌握的成语，然后取需要的数量
+                    const shuffledMastered = masteredItems.sort(() => Math.random() - 0.5);
+                    finalAvailable = [...finalAvailable, ...shuffledMastered.slice(0, needed)];
+                }
+
+                // 生成题目，固定为10题
+                const questions = finalAvailable.map(item => ({
+                    idiomId: item.text || item.id || Math.random().toString(36).substr(2, 9),
+                    text: item.text,
+                    correct: item.meaning,
+                    options: buildOptionsFromData(item, available),
+                    isMastered: masteredRecords[item.text] || false // 标记是否已掌握
+                }));
+                questions.sort(() => Math.random() - 0.5);
+                quizData = questions.slice(0, 10); // 固定取10题
+
+                // 数据加载完成，隐藏加载动画，显示测试内容
+                if (loadingState) {
+                    loadingState.style.display = 'none';
+                }
+                if (quizContent) {
+                    quizContent.parentElement.querySelectorAll('#quizQuestion, #quizOptions, #quizFeedback, #quizTotalProgress, #nextQuestionBtn, #restartQuizBtn').forEach(el => {
+                        if (el) el.style.display = '';
+                    });
+                }
+
+                // 显示测试总进度
+                const totalProgressContainer = document.getElementById('quizTotalProgress');
+                if (totalProgressContainer) {
+                    totalProgressContainer.style.display = 'block';
+                }
+                
+                updateQuizProgress(false);
+                updateQuizTotalProgress();
+                renderQuizQuestion();
+            })
+            .catch(err => {
+                console.error('加载测试数据失败', err);
+                if (loadingState) {
+                    loadingState.style.display = 'none';
+                }
+                alert('加载测试数据失败，请检查文件路径或格式。');
+                switchMode('browse');
+            });
+    }
+
+    function buildOptions(correctIdiom, pool) {
+        const opts = [correctIdiom.meaning];
+        while (opts.length < 4 && pool.length > 1) {
+            const r = pool[Math.floor(Math.random() * pool.length)];
+            if (!opts.includes(r.meaning)) {
+                opts.push(r.meaning);
+            }
+        }
+        return opts.sort(() => Math.random() - 0.5);
+    }
+
+    function buildOptionsFromData(correctItem, pool) {
+        const opts = [correctItem.meaning];
+        while (opts.length < 4 && pool.length > 1) {
+            const r = pool[Math.floor(Math.random() * pool.length)];
+            if (r !== correctItem && !opts.includes(r.meaning)) {
+                opts.push(r.meaning);
+            }
+        }
+        return opts.sort(() => Math.random() - 0.5);
+    }
+
+    function renderQuizQuestion() {
+        // 检查数据是否已准备好
+        if (!quizData || quizData.length === 0) {
+            console.log('测试数据尚未加载完成，等待中...');
+            return;
+        }
+        
+        const questionArea = document.getElementById('quizQuestion');
+        const optionsArea = document.getElementById('quizOptions');
+        const feedback = document.getElementById('quizFeedback');
+        const btnNext = document.getElementById('nextQuestionBtn');
+        const scoreEl = document.getElementById('quizScore');
+        const resultEl = document.getElementById('quizResult');
+        
+        if (!questionArea || !optionsArea || !feedback || !btnNext) {
+            return;
+        }
+        
+        resultEl.innerHTML = '';
+
+        // 检查数据是否有效
+        if (!quizData || !Array.isArray(quizData) || quizData.length === 0) {
+            console.error('测试数据无效，无法渲染题目');
+            return;
+        }
+
+        // 检查 quizIndex 是否超出范围
+        if (quizIndex < 0) {
+            quizIndex = 0;
+        } else if (quizIndex >= quizData.length) {
+            // 如果索引超出范围，直接显示结果
+            showQuizResult();
+            return;
+        }
+
+        const q = quizData[quizIndex];
+        if (!q || !q.text) {
+            console.error('题目数据无效');
+            showQuizResult();
+            return;
+        }
+        
+        scoreEl.textContent = `当前得分：${quizScore} / ${quizData.length}`;
+        questionArea.textContent = `${quizIndex + 1}. 成语"${q.text}"的意思是？`;
+
+        optionsArea.innerHTML = '';
+        feedback.textContent = '';
+        btnNext.disabled = true;
+
+        // 如果是第十题，将按钮文本改为"完成答题"
+        if (quizIndex === quizData.length - 1) {
+            btnNext.textContent = '完成答题';
+        } else {
+            btnNext.textContent = '下一题';
+        }
+
+        q.options.forEach((opt, idx) => {
+            const div = document.createElement('div');
+            div.className = 'quiz-option';
+            div.textContent = opt;
+            div.dataset.index = idx;
+            div.addEventListener('click', () => selectOption(div, q));
+            optionsArea.appendChild(div);
+        });
+    }
+
+    function selectOption(el, q) {
+        // 检查测试是否已完成
+        if (quizCompleted) {
+            return;
+        }
+        
+        // 检查数据是否已准备好
+        if (!quizData || quizData.length === 0) {
+            console.log('测试数据尚未加载完成，无法答题');
+            return;
+        }
+        
+        const options = document.querySelectorAll('.quiz-option');
+        const feedback = document.getElementById('quizFeedback');
+        const btnNext = document.getElementById('nextQuestionBtn');
+
+        if (!feedback || !btnNext) {
+            return;
+        }
+
+        if ([...options].some(o => o.classList.contains('correct') || o.classList.contains('incorrect'))) {
+            return;
+        }
+
+        const selected = el.textContent;
+        const isCorrect = selected === q.correct;
+
+        options.forEach(o => {
+            if (o.textContent === q.correct) {
+                o.classList.add('correct');
+            }
+            if (o === el && !isCorrect) {
+                o.classList.add('incorrect');
+            }
+        });
+
+        if (isCorrect) {
+            quizScore++;
+            quizCorrectIds.push(q.idiomId);
+            
+            // 立即更新分数显示
+            const scoreEl = document.getElementById('quizScore');
+            if (scoreEl) {
+                scoreEl.textContent = `当前得分：${quizScore} / ${quizData.length}`;
+            }
+            
+            // 答对时增加总进度
+            quizTotalCorrect++;
+            
+            // 从localStorage加载答错记录和已掌握记录
+            const wrongRecords = JSON.parse(localStorage.getItem(wrongKey) || '{}');
+            const masteredRecords = JSON.parse(localStorage.getItem(masteredKey) || '{}');
+            
+            // 获取之前的尝试次数（可能在答错记录中，也可能在已掌握记录中）
+            let previousAttempts = 0;
+            if (wrongRecords[q.text]) {
+                previousAttempts = wrongRecords[q.text].attempts || 0;
+                // 如果这个成语之前答错过，现在答对了，从答错记录移除
+                delete wrongRecords[q.text];
+                localStorage.setItem(wrongKey, JSON.stringify(wrongRecords));
+            } else if (masteredRecords[q.text]) {
+                previousAttempts = masteredRecords[q.text].attempts || 0;
+            }
+            
+            // 答对的成语不再进入测试（标记为已掌握）
+            masteredRecords[q.text] = {
+                id: q.idiomId,
+                text: q.text,
+                pinyin: q.pinyin || '',
+                meaning: q.correct,
+                masteredAt: new Date().toLocaleString('zh-CN'),
+                attempts: previousAttempts + 1
+            };
+            localStorage.setItem(masteredKey, JSON.stringify(masteredRecords));
+            
+            // 更新成语故事进度条
+            updatePoemProgress();
+            
+            // 更新成语历史记录显示（实时更新已掌握成语）
+            displayIdiomHistory();
+            
+            feedback.innerHTML = '<span class="text-success">回答正确！</span>';
+        } else {
+            quizWrongIds.push(q.idiomId);
+            quizTotalWrong++;
+            
+            // 答错时记录到localStorage
+            const wrongRecords = JSON.parse(localStorage.getItem(wrongKey) || '{}');
+            wrongRecords[q.text] = {
+                id: q.idiomId,
+                text: q.text,
+                pinyin: q.pinyin || '',
+                meaning: q.correct,
+                wrongAt: new Date().toLocaleString('zh-CN'),
+                attempts: (wrongRecords[q.text]?.attempts || 0) + 1
+            };
+            localStorage.setItem(wrongKey, JSON.stringify(wrongRecords));
+            
+            // 更新成语历史记录显示（实时更新待掌握成语）
+            displayIdiomHistory();
+            
+            feedback.innerHTML = `<span class="text-danger">回答错误，正确答案是：${q.correct}</span>`;
+        }
+
+        updateQuizProgress(true);
+        updateQuizTotalProgress();
+        btnNext.disabled = false;
+        
+        // 保存测试状态
+        saveQuizState();
+    }
+
+    function nextQuizQuestion() {
+        // 如果测试已完成，不允许继续
+        if (quizCompleted) {
+            return;
+        }
+        
+        // 检查数据是否有效
+        if (!quizData || !Array.isArray(quizData) || quizData.length === 0) {
+            console.error('测试数据无效');
+            return;
+        }
+        
+        // 如果当前是最后一题，点击"完成答题"按钮应该显示结果
+        if (quizIndex >= quizData.length - 1) {
+            showQuizResult();
+            return;
+        }
+        
+        quizIndex++;
+        
+        // 再次检查 quizIndex 是否超出范围（双重保险）
+        if (quizIndex >= quizData.length) {
+            showQuizResult();
+            return;
+        }
+        
+        updateQuizProgress(false);
+        
+        // 保存测试状态
+        saveQuizState();
+        
+        renderQuizQuestion();
+    }
+
+    function updateQuizProgress(answered) {
+        // 进度条功能已删除，此函数不再执行任何操作
+    }
+
+    // 更新测试总进度
+    function updateQuizTotalProgress() {
+        const totalProgressText = document.getElementById('quizTotalProgressText');
+        const totalProgressBar = document.getElementById('quizTotalProgressBar');
+        const correctCount = document.getElementById('quizCorrectCount');
+        const wrongCount = document.getElementById('quizWrongCount');
+        
+        if (totalProgressText) {
+            totalProgressText.textContent = quizTotalCorrect + '/10';
+        }
+        if (totalProgressBar) {
+            const progress = Math.round((quizTotalCorrect / 10) * 100);
+            totalProgressBar.style.width = progress + '%';
+        }
+        if (correctCount) {
+            correctCount.textContent = quizTotalCorrect;
+        }
+        if (wrongCount) {
+            wrongCount.textContent = quizTotalWrong;
+        }
+    }
+
+    function showQuizResult() {
+        // 防止重复调用
+        if (quizCompleted) {
+            return;
+        }
+        
+        // 标记测试已完成
+        quizCompleted = true;
+        
+        // 禁用"完成答题"按钮，防止重复点击
+        const btnNext = document.getElementById('nextQuestionBtn');
+        if (btnNext) {
+            btnNext.disabled = true;
+            btnNext.textContent = '测试已完成';
+        }
+        
+        // 禁用所有选项按钮，防止继续操作
+        const options = document.querySelectorAll('.quiz-option');
+        options.forEach(opt => {
+            opt.style.pointerEvents = 'none';
+            opt.style.opacity = '0.6';
+        });
+        
+        // 保存历史记录
+        saveQuizHistory();
+        
+        // 清除保存的测试状态（测试已完成）
+        clearQuizState();
+
+        const total = quizData.length || 0;
+        const percent = total ? Math.round((quizScore / total) * 100) : 0;
+
+        // 如果答对10题，显示特殊表扬弹窗
+        if (quizTotalCorrect === 10) {
+            showPerfectPraiseModal();
+        } else {
+            // 显示普通表扬弹窗
+            showPraiseModal(percent);
+        }
+
+        const resultEl = document.getElementById('quizResult');
+        const correctList = quizCorrectIds.map(id => findIdiomById(id)).filter(Boolean);
+        const wrongList = quizWrongIds.map(id => findIdiomById(id)).filter(Boolean);
+
+        resultEl.innerHTML = `
+            <hr />
+            <div class="mb-2 fw-semibold">测试完成！得分：${quizScore} / ${total}（${percent}%）</div>
+            <div class="mb-2">测试总进度：${quizTotalCorrect}/10</div>
+            <div class="row">
+                <div class="col-md-6 mb-2">
+                    <div class="fw-semibold mb-1">本次答对的成语（${correctList.length} 条）</div>
+                    ${correctList.length ? '<ul class="mb-0 small">' + correctList.map(i => `<li>${i.text}：${i.meaning}</li>`).join('') + '</ul>' : '<div class="small text-muted">暂无。</div>'}
+                </div>
+                <div class="col-md-6 mb-2">
+                    <div class="fw-semibold mb-1">本次答错的成语（${wrongList.length} 条）</div>
+                    ${wrongList.length ? '<ul class="mb-0 small">' + wrongList.map(i => `<li>${i.text}：${i.meaning}</li>`).join('') + '</ul>' : '<div class="small text-muted">暂无。</div>'}
+                </div>
+            </div>
+        `;
+
+        // 自动显示历史记录，不需要点击按钮
+        showQuizHistory();
+        // 更新成语历史记录显示（包括已掌握和待掌握）
+        displayIdiomHistory();
+    }
+
+    // 显示表扬弹窗
+    function showPraiseModal(percent) {
+        let title = '';
+        let message = '';
+        let icon = '';
+
+        if (percent >= 90) {
+            title = '太棒了！';
+            message = `你答对了${percent}%的题目，真是成语小达人！`;
+            icon = '🎉';
+        } else if (percent >= 70) {
+            title = '很不错！';
+            message = `你答对了${percent}%的题目，表现很好！`;
+            icon = '👍';
+        } else if (percent >= 50) {
+            title = '继续加油！';
+            message = `你答对了${percent}%的题目，再接再厉！`;
+            icon = '💪';
+        } else {
+            title = '不要灰心！';
+            message = `你答对了${percent}%的题目，多学习会有进步的！`;
+            icon = '📚';
+        }
+
+        // 创建弹窗HTML
+        const modalHTML = `
+            <div id="praiseModal" class="modal fade" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">${icon} ${title}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">${icon}</div>
+                            <h4>${message}</h4>
+                            <p class="text-muted">点击任意位置关闭</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // 添加到页面
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // 显示弹窗
+        const modal = new bootstrap.Modal(document.getElementById('praiseModal'));
+        modal.show();
+        
+        // 弹窗关闭后移除元素
+        document.getElementById('praiseModal').addEventListener('hidden.bs.modal', function() {
+            this.remove();
+        });
+    }
+
+    // 显示完美表扬弹窗（答对10题）
+    function showPerfectPraiseModal() {
+        const modalHTML = `
+            <div id="perfectPraiseModal" class="modal fade" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">🎉 太厉害了！</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <div style="font-size: 4rem; margin-bottom: 1rem;">🏆</div>
+                            <h3 class="text-success">恭喜你答对了全部10题！</h3>
+                            <p class="lead">你真是成语小天才！</p>
+                            <p class="text-muted">继续保持，成为成语大师！</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // 添加到页面
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // 显示弹窗
+        const modal = new bootstrap.Modal(document.getElementById('perfectPraiseModal'));
+        modal.show();
+        
+        // 弹窗关闭后移除元素
+        document.getElementById('perfectPraiseModal').addEventListener('hidden.bs.modal', function() {
+            this.remove();
+        });
+    }
+
+    // 保存测试历史记录（包含答对和答错的成语详情）
+    function saveQuizHistory() {
+        const historyKey = 'chengyu_quiz_history_v1';
+        const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+        
+        // 获取答对和答错的成语详情
+        const correctIdioms = quizCorrectIds.map(id => findIdiomById(id)).filter(Boolean);
+        const wrongIdioms = quizWrongIds.map(id => findIdiomById(id)).filter(Boolean);
+        
+        const historyItem = {
+            date: new Date().toLocaleString('zh-CN'),
+            timestamp: Date.now(),
+            score: quizScore,
+            total: quizData.length,
+            percent: quizData.length ? Math.round((quizScore / quizData.length) * 100) : 0,
+            correctCount: quizCorrectIds.length,
+            wrongCount: quizWrongIds.length,
+            correctIdioms: correctIdioms.map(idiom => ({
+                text: idiom.text,
+                pinyin: idiom.pinyin,
+                meaning: idiom.meaning
+            })),
+            wrongIdioms: wrongIdioms.map(idiom => ({
+                text: idiom.text,
+                pinyin: idiom.pinyin,
+                meaning: idiom.meaning
+            }))
+        };
+        
+        history.unshift(historyItem); // 添加到开头
+        
+        // 只保留最近10条记录
+        if (history.length > 10) {
+            history.splice(10);
+        }
+        
+        localStorage.setItem(historyKey, JSON.stringify(history));
+        
+        // 更新历史记录显示
+        displayQuizHistory();
+    }
+
+    // 显示历史记录
+    function displayQuizHistory() {
+        const historyKey = 'chengyu_quiz_history_v1';
+        const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+        const quizHistory = document.getElementById('quizHistory');
+        
+        // 确保历史记录区域始终显示
+        quizHistory.style.display = 'block';
+        
+        if (history.length === 0) {
+            document.getElementById('history-list').innerHTML = '<div class="text-muted">暂无答题记录</div>';
+        } else {
+            // 生成答题记录列表（每次测试作为一个记录）
+            const historyList = document.getElementById('history-list');
+            
+            // 按时间戳倒序排列（最新的在前面）
+            history.sort((a, b) => b.timestamp - a.timestamp);
+            
+            // 生成答题记录HTML
+            const quizRecordsHTML = history.map((record, index) => {
+                const recordNumber = history.length - index; // 第几次答题
+                const isGoodScore = record.percent >= 60; // 60分以上算良好
+                
+                return `
+                    <div class="history-item ${isGoodScore ? 'correct' : 'wrong'}">
+                        <div class="history-item-header">
+                            <span class="history-title">第${recordNumber}次作答</span>
+                            <span class="history-status ${isGoodScore ? 'correct' : 'wrong'}">${isGoodScore ? '✅' : '❌'} ${record.percent}%</span>
+                        </div>
+                        <div class="history-meta">
+                            <span>${record.date}</span>
+                            <span>答对: ${record.correctCount} | 答错: ${record.wrongCount}</span>
+                        </div>
+                        <div class="history-details mt-2">
+                            <div class="history-score-info">
+                                <span class="score-badge ${isGoodScore ? 'bg-success' : 'bg-danger'}">${record.score}/${record.total}</span>
+                                <small class="text-muted ms-2">正确率: ${record.percent}%</small>
+                            </div>
+                            
+                            <!-- 答对的成语 -->
+                            ${record.correctIdioms.length > 0 ? `
+                                <div class="mt-2">
+                                    <small class="text-success fw-semibold">答对成语:</small>
+                                    <div class="idiom-list mt-1">
+                                        ${record.correctIdioms.map(idiom => 
+                                            `<span class="idiom-tag correct">${idiom.text}</span>`
+                                        ).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            <!-- 答错的成语 -->
+                            ${record.wrongIdioms.length > 0 ? `
+                                <div class="mt-2">
+                                    <small class="text-danger fw-semibold">答错成语:</small>
+                                    <div class="idiom-list mt-1">
+                                        ${record.wrongIdioms.map(idiom => 
+                                            `<span class="idiom-tag wrong">${idiom.text}</span>`
+                                        ).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // 显示记录
+            historyList.innerHTML = quizRecordsHTML;
+        }
+    }
+
+    // 清除历史记录
+    function clearQuizHistory() {
+        const historyKey = 'chengyu_quiz_history_v1';
+        localStorage.removeItem(historyKey);
+        displayQuizHistory();
+    }
+
+    // 显示测试历史记录（兼容旧版本）
+    function showQuizHistory() {
+        displayQuizHistory();
+    }
+
+    // 显示成语历史记录
+    function displayIdiomHistory() {
+        const masteredRecords = JSON.parse(localStorage.getItem(masteredKey) || '{}');
+        const wrongRecords = JSON.parse(localStorage.getItem(wrongKey) || '{}');
+        
+        // 显示已掌握的成语
+        const masteredList = document.getElementById('mastered-list');
+        const masteredCount = Object.keys(masteredRecords).length;
+        
+        if (masteredCount === 0) {
+            masteredList.innerHTML = '<div class="no-history">暂无已掌握的成语</div>';
+        } else {
+            const masteredHTML = Object.values(masteredRecords).map(idiom => {
+                const date = new Date(idiom.masteredAt);
+                const dateStr = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+                
+                return `
+                    <div class="history-item">
+                        <div class="history-item-title">${idiom.text} ✅</div>
+                        <div class="history-item-info">${dateStr} | 尝试次数: ${idiom.attempts || 1}</div>
+                        <button class="btn btn-sm btn-outline-danger remove-btn" onclick="removeMasteredIdiom('${idiom.text}')">
+                            移除
+                        </button>
+                    </div>
+                `;
+            }).join('');
+            
+            masteredList.innerHTML = masteredHTML;
+        }
+        
+        // 显示待掌握的成语
+        const wrongList = document.getElementById('wrong-list');
+        const wrongCount = Object.keys(wrongRecords).length;
+        
+        if (wrongCount === 0) {
+            wrongList.innerHTML = '<div class="no-history">暂无待掌握的成语</div>';
+        } else {
+            const wrongHTML = Object.values(wrongRecords).map(idiom => {
+                const date = new Date(idiom.wrongAt);
+                const dateStr = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+                
+                return `
+                    <div class="history-item">
+                        <div class="history-item-title">${idiom.text} ❌</div>
+                        <div class="history-item-info">${dateStr} | 答错次数: ${idiom.attempts || 1}</div>
+                        <button class="btn btn-sm btn-outline-success master-btn" onclick="markAsMastered('${idiom.text}')">
+                            标记为已掌握
+                        </button>
+                    </div>
+                `;
+            }).join('');
+            
+            wrongList.innerHTML = wrongHTML;
+        }
+        
+        // 更新计数标签
+        document.getElementById('mastered-count').textContent = masteredCount;
+        document.getElementById('wrong-count').textContent = wrongCount;
+        
+        // 更新成语故事进度条
+        updatePoemProgress();
+    }
+
+    // 从已掌握列表中移除成语
+    function removeMasteredIdiom(idiomText) {
+        const masteredRecords = JSON.parse(localStorage.getItem(masteredKey) || '{}');
+        
+        if (masteredRecords[idiomText]) {
+            // 将成语移到答错列表
+            const wrongRecords = JSON.parse(localStorage.getItem(wrongKey) || '{}');
+            wrongRecords[idiomText] = {
+                ...masteredRecords[idiomText],
+                wrongAt: new Date().toLocaleString('zh-CN'),
+                attempts: (masteredRecords[idiomText].attempts || 0) + 1
+            };
+            
+            delete masteredRecords[idiomText];
+            
+            localStorage.setItem(masteredKey, JSON.stringify(masteredRecords));
+            localStorage.setItem(wrongKey, JSON.stringify(wrongRecords));
+            
+            // 更新显示
+            displayIdiomHistory();
+        }
+    }
+
+    // 将成语标记为已掌握
+    function markAsMastered(idiomText) {
+        const wrongRecords = JSON.parse(localStorage.getItem(wrongKey) || '{}');
+        
+        if (wrongRecords[idiomText]) {
+            // 将成语移到已掌握列表
+            const masteredRecords = JSON.parse(localStorage.getItem(masteredKey) || '{}');
+            masteredRecords[idiomText] = {
+                ...wrongRecords[idiomText],
+                masteredAt: new Date().toLocaleString('zh-CN')
+            };
+            
+            delete wrongRecords[idiomText];
+            
+            localStorage.setItem(masteredKey, JSON.stringify(masteredRecords));
+            localStorage.setItem(wrongKey, JSON.stringify(wrongRecords));
+            
+            // 更新显示
+            displayIdiomHistory();
+        }
+    }
+
+    // 清除成语历史记录
+    function clearIdiomHistory() {
+        if (confirm('确定要清除所有成语历史记录吗？此操作不可恢复。')) {
+            localStorage.removeItem(masteredKey);
+            localStorage.removeItem(wrongKey);
+            displayIdiomHistory();
+        }
+    }
+
+    // 更新成语故事界面的学习总进度
+    function updatePoemProgress() {
+        const progressBar = document.getElementById('poemProgressBar');
+        const progressText = document.getElementById('poemProgressText');
+        const progressContainer = document.getElementById('poemProgressContainer');
+        
+        if (!progressBar || !progressText || !progressContainer) return;
+        
+        // 计算已掌握的成语数量（从localStorage获取）
+        const masteredRecords = JSON.parse(localStorage.getItem(masteredKey) || '{}');
+        const masteredCount = Object.keys(masteredRecords).length;
+        
+        // 获取总成语故事数量
+        const totalCount = idiomStories.length;
+        
+        if (totalCount > 0) {
+            const percent = Math.round((masteredCount / totalCount) * 100);
+            progressBar.style.width = percent + '%';
+            progressText.textContent = `${masteredCount}/${totalCount}`;
+            progressContainer.style.display = 'block';
+        } else {
+            progressContainer.style.display = 'none';
+        }
+    }
+
+    function findIdiomById(id) {
+        for (let g = 1; g <= 9; g++) {
+            const arr = idiomDatabase[g];
+            if (!arr) continue;
+            const found = arr.find(i => i.id === id);
+            if (found) return found;
+        }
+        return null;
+    }
+</script>
+    <script src="fullscreen-btn.js"></script>
+</body>
+</html>

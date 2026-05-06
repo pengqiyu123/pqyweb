@@ -1,0 +1,5937 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>古诗排序学习游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #6ecbf5, #c2e9fb);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #ff6b6b;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            color: #4ecdc4;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        .level-switch {
+            text-align: center;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .level-btn {
+            padding: 6px 12px;
+            margin: 2px;
+            border: 2px solid #4ecdc4;
+            background: white;
+            color: #4ecdc4;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: inline-block;
+            min-width: 60px;
+        }
+
+        .level-btn.active {
+            background: #4ecdc4;
+            color: white;
+        }
+
+        .level-btn:hover {
+            background: #ff6b6b;
+            color: white;
+            border-color: #ff6b6b;
+        }
+
+        .progress {
+            background: #f0f8ff;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            color: #45b7d1;
+        }
+
+        .poem-title {
+            text-align: center;
+            font-size: 1.8em;
+            color: #ff6b6b;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .game-area {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .game-area {
+                flex-direction: row;
+            }
+        }
+
+        .scrambled-section, .answer-section {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            text-align: center;
+            color: #45b7d1;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .scrambled-lines {
+            min-height: 300px;
+            transition: all 0.3s ease;
+        }
+
+        .scrambled-lines.drag-over {
+            background-color: rgba(78, 205, 196, 0.1);
+            border-radius: 10px;
+        }
+
+        .answer-area {
+            min-height: 300px;
+            border: 2px dashed #4ecdc4;
+            border-radius: 10px;
+            padding: 15px;
+            background: #e8f4f8;
+        }
+
+        .line-item {
+            background: white;
+            border: 2px solid #4ecdc4;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 10px 0;
+            cursor: grab;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2c3e50;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .line-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            border-color: #ff6b6b;
+        }
+
+        .line-item.dragging {
+            opacity: 0.7;
+            transform: scale(0.98);
+        }
+
+        .answer-slot {
+            background: white;
+            border: 2px dashed #4ecdc4;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 10px 0;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 1.2em;
+            color: #ccc;
+            transition: all 0.3s ease;
+        }
+
+        .answer-slot.filled {
+            border-style: solid;
+            border-color: #ff6b6b;
+            background: #fff5f5;
+            color: #2c3e50;
+            cursor: grab;
+        }
+
+        .answer-slot.filled:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            background: #ffebeb;
+        }
+
+        .answer-slot.filled.dragging {
+            opacity: 0.7;
+            transform: scale(0.98);
+        }
+
+        .controls {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .check-btn {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+
+        .check-btn:hover {
+            background: linear-gradient(45deg, #44a08d, #3a8a7a);
+            transform: translateY(-2px);
+        }
+
+        .next-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            color: white;
+        }
+
+        .next-btn:hover {
+            background: linear-gradient(45deg, #ff5252, #ff7676);
+            transform: translateY(-2px);
+        }
+
+        .retry-btn {
+            background: linear-gradient(45deg, #ffd93d, #ffcc02);
+            color: white;
+        }
+
+        .retry-btn:hover {
+            background: linear-gradient(45deg, #ffcc02, #ffb300);
+            transform: translateY(-2px);
+        }
+
+        .message {
+            text-align: center;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 15px;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .success {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+
+        .error {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            color: white;
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            opacity: 0.7;
+            border-radius: 50%;
+            animation: confetti-fall 5s linear forwards;
+            z-index: 1000;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .poem-author {
+            text-align: center;
+            font-style: italic;
+            color: #666;
+            margin-top: 10px;
+            font-size: 1.1em;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 15px 0;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            background-color: #f8f9fa;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .stat-label {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .stat-value.correct {
+            color: #28a745;
+        }
+
+        .stat-value.wrong {
+            color: #dc3545;
+        }
+
+        .error-highlight {
+            border: 2px dashed #dc3545 !important;
+            background-color: rgba(220, 53, 69, 0.1) !important;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+            }
+        }
+
+        /* 诗句解析样式 */
+        .explanation-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .explanation-section.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .explanation-title {
+            text-align: center;
+            color: #45b7d1;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            font-weight: bold;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .explanation-title::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #45b7d1, transparent);
+        }
+
+        .explanation-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .explanation-item {
+            background: white;
+            border-left: 4px solid #4ecdc4;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateX(-20px);
+            animation: slideIn 0.5s forwards;
+        }
+
+        .explanation-item:nth-child(1) { animation-delay: 0.1s; }
+        .explanation-item:nth-child(2) { animation-delay: 0.2s; }
+        .explanation-item:nth-child(3) { animation-delay: 0.3s; }
+        .explanation-item:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .explanation-item:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            border-left-color: #ff6b6b;
+        }
+
+        .explanation-line {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .explanation-line::before {
+            content: '📜';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.9em;
+        }
+
+        .explanation-text {
+            color: #555;
+            line-height: 1.6;
+            position: relative;
+            padding-left: 20px;
+            font-style: italic;
+        }
+
+        .explanation-text::before {
+            content: '"';
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: #4ecdc4;
+            font-size: 1.2em;
+            font-style: normal;
+        }
+
+        /* 正确答案样式 */
+        .correct-line {
+            color: #28a745;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .correct-line::before {
+            content: '✅';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.9em;
+        }
+
+        /* 错误答案样式 */
+        .incorrect-line {
+            color: #dc3545;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .incorrect-line::before {
+            content: '❌';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.9em;
+        }
+
+        /* 用户答案样式 */
+        .user-answer {
+            color: #6c757d;
+            font-style: italic;
+            font-size: 0.9em;
+        }
+
+        /* 历史记录样式 */
+        .history-section {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .history-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .history-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+
+        .history-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background-color: white;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .history-item:hover {
+            background-color: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .history-item-title {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .history-item-info {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        .history-controls {
+            text-align: right;
+        }
+
+        .clear-history-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+
+        .clear-history-btn:hover {
+            background-color: #c82333;
+        }
+
+        .history-tabs {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .history-tab {
+            flex: 1;
+            padding: 10px 15px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .history-tab.active {
+            color: #4CAF50;
+            border-bottom-color: #4CAF50;
+        }
+
+        .history-tab:hover {
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+
+        /* 成就按钮 */
+        .achievement-btn {
+            margin-top: 15px;
+            padding: 10px 25px;
+            background: linear-gradient(135deg, #ffd93d 0%, #ff6b6b 100%);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .achievement-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        /* 成就弹窗 */
+        .achievement-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .achievement-modal.show {
+            display: flex;
+        }
+
+        .achievement-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 450px;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .achievement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffd93d 100%);
+            color: white;
+        }
+
+        .achievement-header h2 {
+            margin: 0;
+            font-size: 1.3em;
+        }
+
+        .achievement-header .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8em;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .achievement-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .achievement-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        .achievement-item.unlocked {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border: 2px solid #28a745;
+        }
+
+        .achievement-item.locked {
+            opacity: 0.5;
+        }
+
+        .achievement-icon {
+            font-size: 2.2em;
+            width: 50px;
+            text-align: center;
+        }
+
+        .achievement-info {
+            flex: 1;
+        }
+
+        .achievement-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 1.05em;
+        }
+
+        .achievement-desc {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .achievement-footer {
+            padding: 15px;
+            border-top: 1px solid #eee;
+            text-align: center;
+        }
+
+        .clear-achieve-btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 20px;
+            background: #dc3545;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .clear-achieve-btn:hover {
+            background: #c82333;
+        }
+
+        /* 成就提示Toast */
+        .achievement-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffd93d 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 30px;
+            box-shadow: 0 5px 25px rgba(255, 107, 107, 0.4);
+            z-index: 10000;
+            animation: toastIn 0.4s ease, toastOut 0.4s ease 2.6s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(-30px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        @keyframes toastOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 古诗排序学习游戏</h1>
+            <p class="subtitle">拖动诗句到正确位置，组成完整的古诗吧！</p>
+            <button class="achievement-btn" onclick="showAchievementModal()">🏆 成就</button>
+        </header>
+
+        <!-- 成就弹窗 -->
+        <div class="achievement-modal" id="achievementModal">
+            <div class="achievement-content">
+                <div class="achievement-header">
+                    <h2>🏆 成就</h2>
+                    <button class="close-btn" onclick="closeAchievementModal()">×</button>
+                </div>
+                <div class="achievement-list" id="achievementList"></div>
+                <div class="achievement-footer">
+                    <button class="clear-achieve-btn" onclick="clearAllAchievements()">清除所有记录</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="level-switch">
+            <button id="grade1Btn" class="level-btn active">一年级</button>
+            <button id="grade2Btn" class="level-btn">二年级</button>
+            <button id="grade3Btn" class="level-btn">三年级</button>
+            <button id="grade4Btn" class="level-btn">四年级</button>
+            <button id="grade5Btn" class="level-btn">五年级</button>
+            <button id="grade6Btn" class="level-btn">六年级</button>
+            <button id="grade7Btn" class="level-btn">七年级</button>
+            <button id="grade8Btn" class="level-btn">八年级</button>
+            <button id="grade9Btn" class="level-btn">九年级</button>
+            <button id="extraBtn" class="level-btn">课外</button>
+        </div>
+
+        <div class="progress" id="progress">1/3</div>
+        
+        <div class="stats-container">
+            <div class="stat-item">
+                <span class="stat-label">正确：</span>
+                <span class="stat-value correct" id="correct-count">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">错误：</span>
+                <span class="stat-value wrong" id="wrong-count">0</span>
+            </div>
+        </div>
+        
+        <div class="poem-title" id="poem-title">春晓</div>
+        <div class="poem-author" id="poem-author">（唐）孟浩然</div>
+
+        <div class="game-area">
+            <div class="scrambled-section">
+                <div class="section-title">打乱的诗句</div>
+                <div class="scrambled-lines" id="scrambled-lines">
+                    <!-- 诗句将通过JavaScript生成 -->
+                </div>
+            </div>
+
+            <div class="answer-section">
+                <div class="section-title">正确顺序</div>
+                <div class="answer-area" id="answer-area">
+                    <!-- 答案区域将通过JavaScript生成 -->
+                </div>
+            </div>
+        </div>
+
+        <div class="explanation-section" id="explanation-section" style="display: none;">
+            <div class="explanation-title">诗句解析</div>
+            <div class="explanation-list" id="explanation-list">
+                <!-- 诗句解析将通过JavaScript动态生成 -->
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn check-btn" id="check-btn">✅ 检查答案</button>
+            <button class="btn next-btn" id="next-btn" style="display: none;">➡️ 下一题</button>
+            <button class="btn retry-btn" id="retry-btn" style="display: none;">🔄 再试一次</button>
+        </div>
+
+        <div class="message" id="message" style="display: none;"></div>
+
+        <div class="history-section" id="history-section">
+            <div class="history-title">📜 历史记录</div>
+            <div class="history-tabs">
+                <button class="history-tab active" id="correct-tab">✅ 正确 (<span id="correct-count">0</span>)</button>
+                <button class="history-tab" id="wrong-tab">❌ 错误 (<span id="wrong-count">0</span>)</button>
+            </div>
+            <div class="history-list" id="correct-history-list">
+                <!-- 正确历史记录将通过JavaScript动态生成 -->
+            </div>
+            <div class="history-list" id="wrong-history-list" style="display: none;">
+                <!-- 错误历史记录将通过JavaScript动态生成 -->
+            </div>
+            <div class="history-controls">
+                <button class="btn clear-history-btn" id="clear-history-btn">🗑️ 清除历史记录</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 一年级古诗词（按统编版教材顺序）
+        const grade1Poems = [
+            {
+                title: "咏鹅",
+                author: "（唐）骆宾王",
+                lines: [
+                    "鹅，鹅，鹅",
+                    "曲项向天歌",
+                    "白毛浮绿水",
+                    "红掌拨清波"
+                ],
+                explanations: [
+                    "鹅，鹅，鹅，",
+                    "弯着脖子向天高歌。",
+                    "洁白的羽毛漂浮在碧绿的水面上，",
+                    "红色的脚掌拨动着清澈的水波。"
+                ],
+                grade: 1
+            },
+            {
+                title: "江南",
+                author: "（汉）汉乐府",
+                lines: [
+                    "江南可采莲",
+                    "莲叶何田田",
+                    "鱼戏莲叶间",
+                    "鱼戏莲叶东",
+                    "鱼戏莲叶西",
+                    "鱼戏莲叶南",
+                    "鱼戏莲叶北"
+                ],
+                explanations: [
+                    "江南水乡可以采摘莲子，",
+                    "莲叶长得多么茂盛啊。",
+                    "鱼儿在莲叶间嬉戏，",
+                    "鱼儿在莲叶东边嬉戏，",
+                    "鱼儿在莲叶西边嬉戏，",
+                    "鱼儿在莲叶南边嬉戏，",
+                    "鱼儿在莲叶北边嬉戏。"
+                ],
+                grade: 1
+            },
+            {
+                title: "画",
+                author: "（唐）王维",
+                lines: [
+                    "远看山有色",
+                    "近听水无声",
+                    "春去花还在",
+                    "人来鸟不惊"
+                ],
+                explanations: [
+                    "远看山色青翠，色彩分明，",
+                    "走近听水声，却听不到流水声。",
+                    "春天过去了，花儿依然盛开，",
+                    "人走近了，鸟儿也不会受惊飞走。"
+                ],
+                grade: 1
+            },
+            {
+                title: "悯农（其二）",
+                author: "（唐）李绅",
+                lines: [
+                    "锄禾日当午",
+                    "汗滴禾下土",
+                    "谁知盘中餐",
+                    "粒粒皆辛苦"
+                ],
+                explanations: [
+                    "正午时分，农民在田地里锄草，",
+                    "汗水滴落在禾苗下的土壤中。",
+                    "有谁知道我们盘子里的饭菜，",
+                    "每一粒都来之不易，饱含着农民的辛苦。"
+                ],
+                grade: 1
+            },
+            {
+                title: "古朗月行（节选）",
+                author: "（唐）李白",
+                lines: [
+                    "小时不识月",
+                    "呼作白玉盘",
+                    "又疑瑶台镜",
+                    "飞在青云端"
+                ],
+                explanations: [
+                    "小时候不认识月亮，",
+                    "把它叫做白玉盘。",
+                    "又怀疑它是瑶台的仙镜，",
+                    "飞到了青云之上。"
+                ],
+                grade: 1
+            },
+            {
+                title: "风",
+                author: "（唐）李峤",
+                lines: [
+                    "解落三秋叶",
+                    "能开二月花",
+                    "过江千尺浪",
+                    "入竹万竿斜"
+                ],
+                explanations: [
+                    "秋风能使秋天的树叶飘落，",
+                    "春风能使二月的花儿开放。",
+                    "大风吹过江面，掀起千尺巨浪，",
+                    "风吹入竹林，使万竿竹子倾斜。"
+                ],
+                grade: 1
+            },
+            {
+                title: "春晓",
+                author: "（唐）孟浩然",
+                lines: [
+                    "春眠不觉晓",
+                    "处处闻啼鸟",
+                    "夜来风雨声",
+                    "花落知多少"
+                ],
+                explanations: [
+                    "春天的睡眠格外香甜，不知不觉天已亮了。",
+                    "醒来时听到处处都是鸟儿的啼叫声。",
+                    "回想昨夜的风雨声，还在耳边回响。",
+                    "不知道有多少花朵被风雨打落了。"
+                ],
+                grade: 1
+            },
+            {
+                title: "赠汪伦",
+                author: "（唐）李白",
+                lines: [
+                    "李白乘舟将欲行",
+                    "忽闻岸上踏歌声",
+                    "桃花潭水深千尺",
+                    "不及汪伦送我情"
+                ],
+                explanations: [
+                    "我乘船将要出发时，",
+                    "忽然听到岸上传来踏地而歌的声音。",
+                    "桃花潭的水即使有千尺深，",
+                    "也比不上汪伦送别我的情谊深厚。"
+                ],
+                grade: 1
+            },
+            {
+                title: "静夜思",
+                author: "（唐）李白",
+                lines: [
+                    "床前明月光",
+                    "疑是地上霜",
+                    "举头望明月",
+                    "低头思故乡"
+                ],
+                explanations: [
+                    "明亮的月光洒在床前，",
+                    "让人误以为是地上铺了一层白霜。",
+                    "抬起头来仰望那轮明月，",
+                    "低下头去不禁思念远方的故乡。"
+                ],
+                grade: 1
+            },
+            {
+                title: "寻隐者不遇",
+                author: "（唐）贾岛",
+                lines: [
+                    "松下问童子",
+                    "言师采药去",
+                    "只在此山中",
+                    "云深不知处"
+                ],
+                explanations: [
+                    "在松树下询问童子，",
+                    "童子说他的师父采药去了，",
+                    "只知道就在这座山中，",
+                    "但山中云雾缭绕，不知道具体在什么地方。"
+                ],
+                grade: 1
+            },
+            {
+                title: "池上",
+                author: "（唐）白居易",
+                lines: [
+                    "小娃撑小艇",
+                    "偷采白莲回",
+                    "不解藏踪迹",
+                    "浮萍一道开"
+                ],
+                explanations: [
+                    "小孩子撑着小船，",
+                    "偷偷采摘白莲回来。",
+                    "不懂得隐藏自己的踪迹，",
+                    "水面上的浮萍被划开了一道痕迹。"
+                ],
+                grade: 1
+            },
+            {
+                title: "小池",
+                author: "（宋）杨万里",
+                lines: [
+                    "泉眼无声惜细流",
+                    "树阴照水爱晴柔",
+                    "小荷才露尖尖角",
+                    "早有蜻蜓立上头"
+                ],
+                explanations: [
+                    "泉眼无声地流淌着，珍惜着细细的流水，",
+                    "树荫映照在水面上，喜爱这晴朗柔和的天气。",
+                    "小小的荷叶刚刚露出尖尖的角，",
+                    "早就有蜻蜓停在上面了。"
+                ],
+                grade: 1
+            },
+            {
+                title: "画鸡",
+                author: "（明）唐寅",
+                lines: [
+                    "头上红冠不用裁",
+                    "满身雪白走将来",
+                    "平生不敢轻言语",
+                    "一叫千门万户开"
+                ],
+                explanations: [
+                    "头顶上的红冠不用裁剪，天生就那么美丽，",
+                    "全身雪白的羽毛，昂首阔步走过来。",
+                    "一生中不敢轻易鸣叫，",
+                    "一旦啼叫，千家万户的门都打开了。"
+                ],
+                grade: 1
+            }
+        ];
+
+        // 二年级古诗词（按指定顺序排列）
+        const grade2Poems = [
+            {
+                title: "梅花",
+                author: "（宋）王安石",
+                lines: [
+                    "墙角数枝梅",
+                    "凌寒独自开",
+                    "遥知不是雪",
+                    "为有暗香来"
+                ],
+                explanations: [
+                    "墙角有几枝梅花，",
+                    "在严寒中独自开放。",
+                    "远远就知道那不是雪，",
+                    "因为有淡淡的香气飘来。"
+                ],
+                grade: 2
+            },
+            {
+                title: "小儿垂钓",
+                author: "（唐）胡令能",
+                lines: [
+                    "蓬头稚子学垂纶",
+                    "侧坐莓苔草映身",
+                    "路人借问遥招手",
+                    "怕得鱼惊不应人"
+                ],
+                explanations: [
+                    "头发蓬乱的小孩子正在学习钓鱼，",
+                    "侧身坐在青苔上，青草映衬着他的身影。",
+                    "有路人过来询问，他远远地摆手，",
+                    "害怕惊动了鱼儿，不敢回答路人。"
+                ],
+                grade: 2
+            },
+            {
+                title: "登鹳雀楼",
+                author: "（唐）王之涣",
+                lines: [
+                    "白日依山尽",
+                    "黄河入海流",
+                    "欲穷千里目",
+                    "更上一层楼"
+                ],
+                explanations: [
+                    "夕阳依傍着西山慢慢下沉，",
+                    "黄河向着大海滔滔奔流。",
+                    "想要看到千里之外更远的景色，",
+                    "就要再登上一层高楼。"
+                ],
+                grade: 2
+            },
+            {
+                title: "望庐山瀑布",
+                author: "（唐）李白",
+                lines: [
+                    "日照香炉生紫烟",
+                    "遥看瀑布挂前川",
+                    "飞流直下三千尺",
+                    "疑是银河落九天"
+                ],
+                explanations: [
+                    "阳光照射在香炉峰上，升起紫色的烟雾，",
+                    "远远望去，瀑布像挂在山前的河流。",
+                    "飞奔的瀑布从三千尺的高处直泻而下，",
+                    "让人怀疑是银河从九重天上落下来。"
+                ],
+                grade: 2
+            },
+            {
+                title: "江雪",
+                author: "（唐）柳宗元",
+                lines: [
+                    "千山鸟飞绝",
+                    "万径人踪灭",
+                    "孤舟蓑笠翁",
+                    "独钓寒江雪"
+                ],
+                explanations: [
+                    "群山中看不到一只飞鸟的影子，",
+                    "所有的小路上都没有人的足迹。",
+                    "只有一叶小舟上坐着一位披着蓑衣、戴着斗笠的老翁，",
+                    "独自在寒冷的江雪中垂钓。"
+                ],
+                grade: 2
+            },
+            {
+                title: "夜宿山寺",
+                author: "（唐）李白",
+                lines: [
+                    "危楼高百尺",
+                    "手可摘星辰",
+                    "不敢高声语",
+                    "恐惊天上人"
+                ],
+                explanations: [
+                    "山上寺院的高楼真高啊，好像有一百尺的样子，",
+                    "人在楼上好像一伸手就可以摘下天上的星星。",
+                    "站在这里，我不敢大声说话，",
+                    "唯恐惊动天上的神仙。"
+                ],
+                grade: 2
+            },
+            {
+                title: "敕勒歌",
+                author: "（北朝）民歌",
+                lines: [
+                    "敕勒川，阴山下",
+                    "天似穹庐，笼盖四野",
+                    "天苍苍，野茫茫",
+                    "风吹草低见牛羊"
+                ],
+                explanations: [
+                    "敕勒川在阴山脚下，",
+                    "天空像圆顶的帐篷，笼罩着四面八方。",
+                    "天空蓝蓝的，原野辽阔无边，",
+                    "风吹过，草低下头，就露出了牛羊。"
+                ],
+                grade: 2
+            },
+            {
+                title: "村居",
+                author: "（清）高鼎",
+                lines: [
+                    "草长莺飞二月天",
+                    "拂堤杨柳醉春烟",
+                    "儿童散学归来早",
+                    "忙趁东风放纸鸢"
+                ],
+                explanations: [
+                    "二月里，青草生长，黄莺飞舞，",
+                    "杨柳拂堤，仿佛陶醉在春天的烟雾中。",
+                    "孩子们放学后早早回家，",
+                    "急忙趁着东风放飞风筝。"
+                ],
+                grade: 2
+            },
+            {
+                title: "咏柳",
+                author: "（唐）贺知章",
+                lines: [
+                    "碧玉妆成一树高",
+                    "万条垂下绿丝绦",
+                    "不知细叶谁裁出",
+                    "二月春风似剪刀"
+                ],
+                explanations: [
+                    "高高的柳树像碧玉装扮成的美女，",
+                    "千万条柳枝垂下来，就像绿色的丝带。",
+                    "不知道这细细的柳叶是谁裁剪出来的，",
+                    "二月的春风就像一把神奇的剪刀。"
+                ],
+                grade: 2
+            },
+            {
+                title: "赋得古原草送别（节选）",
+                author: "（唐）白居易",
+                lines: [
+                    "离离原上草",
+                    "一岁一枯荣",
+                    "野火烧不尽",
+                    "春风吹又生"
+                ],
+                explanations: [
+                    "原野上的草长得茂盛，",
+                    "每年经历一次枯萎和繁荣。",
+                    "野火无法将它烧尽，",
+                    "春风一吹，它又重新生长起来。"
+                ],
+                grade: 2
+            },
+            {
+                title: "晓出净慈寺送林子方",
+                author: "（宋）杨万里",
+                lines: [
+                    "毕竟西湖六月中",
+                    "风光不与四时同",
+                    "接天莲叶无穷碧",
+                    "映日荷花别样红"
+                ],
+                explanations: [
+                    "到底是西湖六月天的景色，",
+                    "风光与其他季节都不相同。",
+                    "无边无际的荷叶与天相接，一片碧绿，",
+                    "阳光下的荷花格外红艳。"
+                ],
+                grade: 2
+            },
+            {
+                title: "绝句",
+                author: "（唐）杜甫",
+                lines: [
+                    "两个黄鹂鸣翠柳",
+                    "一行白鹭上青天",
+                    "窗含西岭千秋雪",
+                    "门泊东吴万里船"
+                ],
+                explanations: [
+                    "两只黄鹂在翠绿的柳树上欢快地鸣叫，",
+                    "一行白鹭飞向蔚蓝的天空。",
+                    "从窗口可以望见西岭上千年不化的积雪，",
+                    "门前停泊着将要远航到东吴的船只。"
+                ],
+                grade: 2
+            },
+            {
+                title: "悯农（其一）",
+                author: "（唐）李绅",
+                lines: [
+                    "春种一粒粟",
+                    "秋收万颗子",
+                    "四海无闲田",
+                    "农夫犹饿死"
+                ],
+                explanations: [
+                    "春天播种下一粒谷子，",
+                    "秋天能收获万颗粮食。",
+                    "天下没有一块闲置的田地，",
+                    "可是农民却依然要饿死。"
+                ],
+                grade: 2
+            },
+            {
+                title: "舟夜书所见",
+                author: "（清）查慎行",
+                lines: [
+                    "月黑见渔灯",
+                    "孤光一点萤",
+                    "微微风簇浪",
+                    "散作满河星"
+                ],
+                explanations: [
+                    "漆黑的夜晚，看见渔船上的灯火，",
+                    "孤独的灯光像一点萤火虫的光芒。",
+                    "微风吹来，掀起细小的波浪，",
+                    "灯光散开，像满河的星星在闪烁。"
+                ],
+                grade: 2
+            }
+        ];
+
+
+        // 三年级古诗词
+        const grade3Poems = [
+            {
+                grade: 3,
+                title: "所见",
+                author: "（清）袁枚",
+                lines: [
+                    "牧童骑黄牛",
+                    "歌声振林樾",
+                    "意欲捕鸣蝉",
+                    "忽然闭口立"
+                ],
+                explanations: [
+                    "牧童骑在黄牛背上，",
+                    "嘹亮的歌声在树林中回荡。",
+                    "想要捕捉正在鸣叫的知了，",
+                    "忽然闭上嘴巴停了下来。"
+                ]
+            },
+            {
+                grade: 3,
+                title: "山行",
+                author: "（唐）杜牧",
+                lines: [
+                    "远上寒山石径斜",
+                    "白云生处有人家",
+                    "停车坐爱枫林晚",
+                    "霜叶红于二月花"
+                ],
+                explanations: [
+                    "沿着弯弯曲曲的石子小路远远上山，",
+                    "在白云升腾的地方居然还有几户人家。",
+                    "停下车来是因为喜爱傍晚的枫林美景，",
+                    "经霜的枫叶比二月的鲜花还要红艳。"
+                ]
+            },
+            {
+                grade: 3,
+                title: "赠刘景文",
+                author: "（宋）苏轼",
+                lines: [
+                    "荷尽已无擎雨盖",
+                    "菊残犹有傲霜枝",
+                    "一年好景君须记",
+                    "最是橙黄橘绿时"
+                ],
+                explanations: [
+                    "荷花凋谢，连那擎雨的荷叶也枯萎了，",
+                    "菊花残败，但还有那傲霜挺立的菊枝。",
+                    "一年中最好的景致你一定要记住，",
+                    "那就是在橙子金黄、橘子青绿的秋末冬初的时节啊。"
+                ]
+            },
+            {
+                grade: 3,
+                title: "夜书所见",
+                author: "（宋）叶绍翁",
+                lines: [
+                    "萧萧梧叶送寒声",
+                    "江上秋风动客情",
+                    "知有儿童挑促织",
+                    "夜深篱落一灯明"
+                ],
+                explanations: [
+                    "萧萧秋风吹动梧叶，送来阵阵寒声，",
+                    "江上的秋风吹动了游子的思乡之情。",
+                    "知道有儿童在捉蟋蟀，",
+                    "夜深了，篱笆边有一盏明亮的灯。"
+                ]
+            },
+            {
+                grade: 3,
+                title: "望天门山",
+                author: "（唐）李白",
+                lines: [
+                    "天门中断楚江开",
+                    "碧水东流至此回",
+                    "两岸青山相对出",
+                    "孤帆一片日边来"
+                ],
+                explanations: [
+                    "天门山被长江从中断开，分为两座山，",
+                    "碧绿的江水向东流到这里，回旋澎湃。",
+                    "两岸的青山相对耸立，巍峨险峻，",
+                    "一只小船从太阳升起的地方悠悠驶来。"
+                ]
+            },
+            {
+                grade: 3,
+                title: "饮湖上初晴后雨",
+                author: "（宋）苏轼",
+                lines: [
+                    "水光潋滟晴方好",
+                    "山色空蒙雨亦奇",
+                    "欲把西湖比西子",
+                    "淡妆浓抹总相宜"
+                ],
+                explanations: [
+                    "晴天，西湖水波荡漾，波光闪闪，景色正好，",
+                    "下雨时，远处的山笼罩在烟雨之中，一片朦胧，更显奇妙。",
+                    "想把西湖比作美女西施，",
+                    "无论是淡雅妆饰还是盛装打扮，都总是美丽合适。"
+                ]
+            },
+            {
+                grade: 3,
+                title: "望洞庭",
+                author: "（唐）刘禹锡",
+                lines: [
+                    "湖光秋月两相和",
+                    "潭面无风镜未磨",
+                    "遥望洞庭山水翠",
+                    "白银盘里一青螺"
+                ],
+                explanations: [
+                    "洞庭湖的水光与秋月互相融合，",
+                    "水面平静得像一面没有经过打磨的镜子。",
+                    "远远望去，洞庭湖中的君山一片翠绿，",
+                    "就像在白银盘里放着一只小小的青螺。"
+                ]
+            },
+            {
+                grade: 3,
+                title: "早发白帝城",
+                author: "（唐）李白",
+                lines: [
+                    "朝辞白帝彩云间",
+                    "千里江陵一日还",
+                    "两岸猿声啼不住",
+                    "轻舟已过万重山"
+                ],
+                explanations: [
+                    "清晨，我告别高入云霄的白帝城，",
+                    "千里之外的江陵一天之内就能到达。",
+                    "两岸的猿猴啼叫声不断，",
+                    "轻快的小船已经驶过了万重青山。"
+                ]
+            },
+            {
+                grade: 3,
+                title: "采莲曲",
+                author: "（唐）王昌龄",
+                lines: [
+                    "荷叶罗裙一色裁",
+                    "芙蓉向脸两边开",
+                    "乱入池中看不见",
+                    "闻歌始觉有人来"
+                ],
+                explanations: [
+                    "采莲女的罗裙和荷叶一样绿，仿佛是同一颜色的布料裁剪的，",
+                    "粉红的荷花映照着采莲女的脸庞，两边都显得格外美丽。",
+                    "采莲女混入莲池中，让人看不见她的身影，",
+                    "听到歌声才发觉有人来了。"
+                ]
+            },
+            {
+                grade: 3,
+                title: "绝句",
+                author: "（宋）僧志南",
+                lines: [
+                    "古木阴中系短篷",
+                    "杖藜扶我过桥东",
+                    "沾衣欲湿杏花雨",
+                    "吹面不寒杨柳风"
+                ],
+                explanations: [
+                    "我在古树的树荫下系住小船，",
+                    "拄着藜杖走过小桥的东边。",
+                    "杏花时节的细雨似要沾湿衣服，",
+                    "春风吹拂在脸上一点也不觉得寒冷。"
+                ]
+            },
+            {
+                grade: 3,
+                title: "惠崇春江晚景",
+                author: "（宋）苏轼",
+                lines: [
+                    "竹外桃花三两枝",
+                    "春江水暖鸭先知",
+                    "蒌蒿满地芦芽短",
+                    "正是河豚欲上时"
+                ],
+                explanations: [
+                    "竹林外两三枝桃花初放，",
+                    "鸭子在水中游戏，它们最先察觉了初春江水的回暖。",
+                    "河岸上长满了蒌蒿，芦苇也长出了短短的新芽，",
+                    "这正是河豚要逆流而上产卵的季节。"
+                ]
+            },
+            {
+                grade: 3,
+                title: "三衢道中",
+                author: "（宋）曾几",
+                lines: [
+                    "梅子黄时日日晴",
+                    "小溪泛尽却山行",
+                    "绿阴不减来时路",
+                    "添得黄鹂四五声"
+                ],
+                explanations: [
+                    "梅子黄透了的时候，天天都是晴朗的好天气，",
+                    "乘小船走到小溪的尽头，再走山路继续前行。",
+                    "山路上绿树成荫，不比来时的路差多少，",
+                    "只是多了几声黄鹂的鸣叫。"
+                ]
+            },
+            {
+                grade: 3,
+                title: "忆江南",
+                author: "（唐）白居易",
+                lines: [
+                    "江南好",
+                    "风景旧曾谙",
+                    "日出江花红胜火",
+                    "春来江水绿如蓝"
+                ],
+                explanations: [
+                    "江南的风景多么美好，",
+                    "如画的风景久已熟悉。",
+                    "太阳从江面升起时江边的鲜花比火还红，",
+                    "春天来了，碧绿的江水像湛蓝的蓝草。"
+                ]
+            },
+            {
+                grade: 3,
+                title: "元日",
+                author: "（宋）王安石",
+                lines: [
+                    "爆竹声中一岁除",
+                    "春风送暖入屠苏",
+                    "千门万户曈曈日",
+                    "总把新桃换旧符"
+                ],
+                explanations: [
+                    "噼噼啪啪的爆竹声中送走了旧的一年，",
+                    "春风把暖意吹进了屠苏酒中。",
+                    "千家万户都被初升的太阳照耀着，",
+                    "家家都用新的桃符换下了旧的桃符。"
+                ]
+            },
+            {
+                grade: 3,
+                title: "清明",
+                author: "（唐）杜牧",
+                lines: [
+                    "清明时节雨纷纷",
+                    "路上行人欲断魂",
+                    "借问酒家何处有",
+                    "牧童遥指杏花村"
+                ],
+                explanations: [
+                    "清明节这天细雨纷纷，",
+                    "路上的行人心情愁苦，像是丢了魂似的。",
+                    "请问哪里有酒家可以借酒消愁？",
+                    "牧童远远地指着杏花深处的村庄。"
+                ]
+            },
+            {
+                grade: 3,
+                title: "九月九日忆山东兄弟",
+                author: "（唐）王维",
+                lines: [
+                    "独在异乡为异客",
+                    "每逢佳节倍思亲",
+                    "遥知兄弟登高处",
+                    "遍插茱萸少一人"
+                ],
+                explanations: [
+                    "独自在他乡做他乡的客人，",
+                    "每到欢庆佳节时，就更加思念家中的亲人。",
+                    "我在遥远的异乡想象着，今天兄弟们登高望远，",
+                    "他们都插着茱萸，只少了我一个人。"
+                ]
+            },
+            {
+                grade: 3,
+                title: "滁州西涧",
+                author: "（唐）韦应物",
+                lines: [
+                    "独怜幽草涧边生",
+                    "上有黄鹂深树鸣",
+                    "春潮带雨晚来急",
+                    "野渡无人舟自横"
+                ],
+                explanations: [
+                    "最是喜爱涧边生长的幽幽野草，",
+                    "还有那树丛深处婉转啼唱的黄鹂。",
+                    "春潮不断上涨，还夹带着密密细雨，",
+                    "荒野渡口无人，只有一只小船悠闲地横在水面。"
+                ]
+            },
+            {
+                grade: 3,
+                title: "大林寺桃花",
+                author: "（唐）白居易",
+                lines: [
+                    "人间四月芳菲尽",
+                    "山寺桃花始盛开",
+                    "长恨春归无觅处",
+                    "不知转入此中来"
+                ],
+                explanations: [
+                    "在人间四月里百花凋零已尽，",
+                    "高山古寺中的桃花才刚刚盛开。",
+                    "我常为春光逝去无处寻觅而怅恨，",
+                    "却不知它已经转到这里来了。"
+                ]
+            }
+        ];
+
+        // 四年级古诗词
+        const grade4Poems = [
+            {
+                grade: 4,
+                title: "鹿柴",
+                author: "（唐）王维",
+                lines: [
+                    "空山不见人",
+                    "但闻人语响",
+                    "返景入深林",
+                    "复照青苔上"
+                ],
+                explanations: [
+                    "空寂的山中看不见人影，",
+                    "只听到说话的声音在回响。",
+                    "夕阳的光线射入幽深的树林，",
+                    "又照在青苔上面。"
+                ]
+            },
+            {
+                grade: 4,
+                title: "暮江吟",
+                author: "（唐）白居易",
+                lines: [
+                    "一道残阳铺水中",
+                    "半江瑟瑟半江红",
+                    "可怜九月初三夜",
+                    "露似真珠月似弓"
+                ],
+                explanations: [
+                    "夕阳的余晖铺在江面上，",
+                    "江水一半碧绿一半鲜红。",
+                    "最可爱的是九月初三的夜晚，",
+                    "露珠像珍珠一样，月亮像弯弓一样。"
+                ]
+            },
+            {
+                grade: 4,
+                title: "题西林壁",
+                author: "（宋）苏轼",
+                lines: [
+                    "横看成岭侧成峰",
+                    "远近高低各不同",
+                    "不识庐山真面目",
+                    "只缘身在此山中"
+                ],
+                explanations: [
+                    "从正面看庐山是连绵的山岭，从侧面看是陡峭的山峰，",
+                    "从远处、近处、高处、低处看，庐山的样子各不相同。",
+                    "为什么看不清庐山的真实面目呢？",
+                    "只因为自己就在这座山里面。"
+                ]
+            },
+            {
+                grade: 4,
+                title: "雪梅",
+                author: "（宋）卢梅坡",
+                lines: [
+                    "梅雪争春未肯降",
+                    "骚人阁笔费评章",
+                    "梅须逊雪三分白",
+                    "雪却输梅一段香"
+                ],
+                explanations: [
+                    "梅花和雪花都争着要报春，谁也不肯让谁，",
+                    "诗人放下笔，难以评判它们的高下。",
+                    "梅花必须承认比雪花差了三分洁白，",
+                    "雪花却输给了梅花一段清香。"
+                ]
+            },
+            {
+                grade: 4,
+                title: "嫦娥",
+                author: "（唐）李商隐",
+                lines: [
+                    "云母屏风烛影深",
+                    "长河渐落晓星沉",
+                    "嫦娥应悔偷灵药",
+                    "碧海青天夜夜心"
+                ],
+                explanations: [
+                    "云母屏风上烛影越来越暗，",
+                    "银河渐渐西斜，晨星也慢慢隐没。",
+                    "嫦娥应该后悔偷吃了长生不老的灵药，",
+                    "如今只能在碧海青天之中夜夜孤独。"
+                ]
+            },
+            {
+                grade: 4,
+                title: "出塞",
+                author: "（唐）王昌龄",
+                lines: [
+                    "秦时明月汉时关",
+                    "万里长征人未还",
+                    "但使龙城飞将在",
+                    "不教胡马度阴山"
+                ],
+                explanations: [
+                    "还是秦朝时的明月和汉朝时的关隘，",
+                    "将士们万里长征至今没有回还。",
+                    "只要龙城的飞将军还在，",
+                    "绝不会让胡人的战马越过阴山。"
+                ]
+            },
+            {
+                grade: 4,
+                title: "凉州词",
+                author: "（唐）王翰",
+                lines: [
+                    "葡萄美酒夜光杯",
+                    "欲饮琵琶马上催",
+                    "醉卧沙场君莫笑",
+                    "古来征战几人回"
+                ],
+                explanations: [
+                    "葡萄美酒盛在夜光杯中，",
+                    "正要畅饮时，琵琶声却在马上催促。",
+                    "醉倒在战场上你不要笑话我，",
+                    "自古以来出征打仗的有几人能回来？"
+                ]
+            },
+            {
+                grade: 4,
+                title: "夏日绝句",
+                author: "（宋）李清照",
+                lines: [
+                    "生当作人杰",
+                    "死亦为鬼雄",
+                    "至今思项羽",
+                    "不肯过江东"
+                ],
+                explanations: [
+                    "活着就要做人中的豪杰，",
+                    "死了也要做鬼中的英雄。",
+                    "直到今天人们还在思念项羽，",
+                    "因为他宁死也不肯渡过江东。"
+                ]
+            },
+            {
+                grade: 4,
+                title: "别董大",
+                author: "（唐）高适",
+                lines: [
+                    "千里黄云白日曛",
+                    "北风吹雁雪纷纷",
+                    "莫愁前路无知己",
+                    "天下谁人不识君"
+                ],
+                explanations: [
+                    "千里黄云遮蔽了白日，天色昏暗，",
+                    "北风吹着大雁，大雪纷纷扬扬。",
+                    "不要担心前行的路上没有知己，",
+                    "天下有谁不认识你呢？"
+                ]
+            },
+            {
+                grade: 4,
+                title: "宿新市徐公店",
+                author: "（宋）杨万里",
+                lines: [
+                    "篱落疏疏一径深",
+                    "树头花落未成阴",
+                    "儿童急走追黄蝶",
+                    "飞入菜花无处寻"
+                ],
+                explanations: [
+                    "稀疏的篱笆旁边有一条小路伸向远方，",
+                    "树上的花已经落了，但树叶还没有长成浓荫。",
+                    "儿童们奔跑着追逐黄色的蝴蝶，",
+                    "蝴蝶飞入菜花丛中，再也找不到了。"
+                ]
+            },
+            {
+                grade: 4,
+                title: "四时田园杂兴（其二十五）",
+                author: "（宋）范成大",
+                lines: [
+                    "梅子金黄杏子肥",
+                    "麦花雪白菜花稀",
+                    "日长篱落无人过",
+                    "惟有蜻蜓蛱蝶飞"
+                ],
+                explanations: [
+                    "梅子变得金黄，杏子也长肥了，",
+                    "荞麦花像雪一样白，油菜花却变得稀疏。",
+                    "夏天白天变长，篱笆旁没有人经过，",
+                    "只有蜻蜓和蝴蝶在飞舞。"
+                ]
+            },
+            {
+                grade: 4,
+                title: "蜂",
+                author: "（唐）罗隐",
+                lines: [
+                    "不论平地与山尖",
+                    "无限风光尽被占",
+                    "采得百花成蜜后",
+                    "为谁辛苦为谁甜"
+                ],
+                explanations: [
+                    "无论是在平地上还是在山尖上，",
+                    "无限美好的风光都被蜜蜂占据了。",
+                    "采集了百花酿成蜂蜜之后，",
+                    "它为谁辛苦，又为谁甘甜呢？"
+                ]
+            },
+            {
+                grade: 4,
+                title: "独坐敬亭山",
+                author: "（唐）李白",
+                lines: [
+                    "众鸟高飞尽",
+                    "孤云独去闲",
+                    "相看两不厌",
+                    "只有敬亭山"
+                ],
+                explanations: [
+                    "群鸟高飞远去，无影无踪，",
+                    "孤云也悠闲地飘向远方。",
+                    "我们互相看着都不觉得厌烦，",
+                    "只有我和敬亭山。"
+                ]
+            },
+            {
+                grade: 4,
+                title: "芙蓉楼送辛渐",
+                author: "（唐）王昌龄",
+                lines: [
+                    "寒雨连江夜入吴",
+                    "平明送客楚山孤",
+                    "洛阳亲友如相问",
+                    "一片冰心在玉壶"
+                ],
+                explanations: [
+                    "冷雨洒满江面，夜晚我来到吴地，",
+                    "天亮时送别友人，只见楚山孤零零地立着。",
+                    "如果洛阳的亲友问起我，",
+                    "就说我的心像玉壶里的冰一样纯洁。"
+                ]
+            },
+            {
+                grade: 4,
+                title: "塞下曲",
+                author: "（唐）卢纶",
+                lines: [
+                    "月黑雁飞高",
+                    "单于夜遁逃",
+                    "欲将轻骑逐",
+                    "大雪满弓刀"
+                ],
+                explanations: [
+                    "没有月亮的夜晚，大雁高飞，",
+                    "单于趁着黑夜逃跑。",
+                    "想要率领轻骑兵追赶，",
+                    "可是大雪落满了弓和刀。"
+                ]
+            },
+            {
+                grade: 4,
+                title: "墨梅",
+                author: "（元）王冕",
+                lines: [
+                    "我家洗砚池头树",
+                    "朵朵花开淡墨痕",
+                    "不要人夸好颜色",
+                    "只留清气满乾坤"
+                ],
+                explanations: [
+                    "我家洗砚池边有一棵梅树，",
+                    "朵朵花开都带着淡淡的墨痕。",
+                    "不需要别人夸奖颜色好，",
+                    "只愿留下清气充满天地之间。"
+                ]
+            },
+            {
+                grade: 4,
+                title: "江畔独步寻花",
+                author: "（唐）杜甫",
+                lines: [
+                    "黄四娘家花满蹊",
+                    "千朵万朵压枝低",
+                    "留连戏蝶时时舞",
+                    "自在娇莺恰恰啼"
+                ],
+                explanations: [
+                    "黄四娘家的花开满了小路，",
+                    "千朵万朵的花把枝条都压弯了。",
+                    "恋花的蝴蝶时时在花间飞舞，",
+                    "自由自在的黄莺在花丛中婉转啼叫。"
+                ]
+            }
+        ]
+        // 五年级古诗词
+        const grade5Poems = [
+            {
+                grade: 5,
+                title: "蝉",
+                author: "（唐）虞世南",
+                lines: [
+                    "垂緌饮清露",
+                    "流响出疏桐",
+                    "居高声自远",
+                    "非是藉秋风"
+                ],
+                explanations: [
+                    "蝉垂下像帽缨一样的触角，吸吮着清澈甘甜的露水，",
+                    "响亮的声音从稀疏的梧桐树枝间传出。",
+                    "因为站得高，声音自然传得远，",
+                    "并不是借助了秋风的力量。"
+                ]
+            },
+            {
+                grade: 5,
+                title: "乞巧",
+                author: "（唐）林杰",
+                lines: [
+                    "七夕今宵看碧霄",
+                    "牵牛织女渡河桥",
+                    "家家乞巧望秋月",
+                    "穿尽红丝几万条"
+                ],
+                explanations: [
+                    "七夕晚上，人们望着碧蓝的天空，",
+                    "牛郎织女正在渡过天河上的鹊桥相会。",
+                    "家家户户都在乞求巧手，望着秋天的明月，",
+                    "穿尽了无数的红丝线。"
+                ]
+            },
+            {
+                grade: 5,
+                title: "示儿",
+                author: "（宋）陆游",
+                lines: [
+                    "死去元知万事空",
+                    "但悲不见九州同",
+                    "王师北定中原日",
+                    "家祭无忘告乃翁"
+                ],
+                explanations: [
+                    "我本来知道，当我死后，人间的一切就都和我无关了，",
+                    "但唯一使我痛心的，就是我没能亲眼看到祖国的统一。",
+                    "当大宋军队收复了中原失地的那一天到来之时，",
+                    "你们举行家祭，千万别忘把这好消息告诉你们的父亲！"
+                ]
+            },
+            {
+                grade: 5,
+                title: "题临安邸",
+                author: "（宋）林升",
+                lines: [
+                    "山外青山楼外楼",
+                    "西湖歌舞几时休",
+                    "暖风熏得游人醉",
+                    "直把杭州作汴州"
+                ],
+                explanations: [
+                    "青山之外还有青山，高楼之外还有高楼，",
+                    "西湖边的歌舞什么时候才能停止呢？",
+                    "温暖的春风把游人吹得醉醺醺的，",
+                    "简直把杭州当成了汴州。"
+                ]
+            },
+            {
+                grade: 5,
+                title: "己亥杂诗",
+                author: "（清）龚自珍",
+                lines: [
+                    "九州生气恃风雷",
+                    "万马齐喑究可哀",
+                    "我劝天公重抖擞",
+                    "不拘一格降人才"
+                ],
+                explanations: [
+                    "中华大地的生机勃勃要依靠风雷激荡，",
+                    "万马齐喑的局面实在令人悲哀。",
+                    "我奉劝天公重新振作精神，",
+                    "不要拘泥于一种规格，降下各种人才。"
+                ]
+            },
+            {
+                grade: 5,
+                title: "山居秋暝",
+                author: "（唐）王维",
+                lines: [
+                    "空山新雨后",
+                    "天气晚来秋",
+                    "明月松间照",
+                    "清泉石上流"
+                ],
+                explanations: [
+                    "空旷的山中刚下过一场新雨，",
+                    "傍晚天气显得格外凉爽清新。",
+                    "明亮的月光照在松林间，",
+                    "清澈的泉水在石头上流淌。"
+                ]
+            },
+            {
+                grade: 5,
+                title: "枫桥夜泊",
+                author: "（唐）张继",
+                lines: [
+                    "月落乌啼霜满天",
+                    "江枫渔火对愁眠",
+                    "姑苏城外寒山寺",
+                    "夜半钟声到客船"
+                ],
+                explanations: [
+                    "月亮落下，乌鸦啼叫，寒霜满天，",
+                    "江边的枫树和渔船的灯火对着忧愁难眠的我。",
+                    "姑苏城外的寒山寺，",
+                    "半夜的钟声传到了客船上。"
+                ]
+            },
+            {
+                grade: 5,
+                title: "渔歌子",
+                author: "（唐）张志和",
+                lines: [
+                    "西塞山前白鹭飞",
+                    "桃花流水鳜鱼肥",
+                    "青箬笠",
+                    "绿蓑衣",
+                    "斜风细雨不须归"
+                ],
+                explanations: [
+                    "西塞山前白鹭在自由飞翔，",
+                    "桃花盛开，春水潺潺，鳜鱼肥美。",
+                    "戴着青色的斗笠，",
+                    "披着绿色的蓑衣，",
+                    "在斜风细雨中垂钓，用不着回家。"
+                ]
+            },
+            {
+                grade: 5,
+                title: "观书有感（其一）",
+                author: "（宋）朱熹",
+                lines: [
+                    "半亩方塘一鉴开",
+                    "天光云影共徘徊",
+                    "问渠那得清如许",
+                    "为有源头活水来"
+                ],
+                explanations: [
+                    "半亩大的方形池塘像一面镜子一样展现在眼前，",
+                    "天空的光彩和浮云的影子都在镜子中一起移动。",
+                    "要问为什么那方塘的水会这样清澈呢？",
+                    "是因为有那永不枯竭的源头为它源源不断地输送活水啊。"
+                ]
+            },
+            {
+                grade: 5,
+                title: "观书有感（其二）",
+                author: "（宋）朱熹",
+                lines: [
+                    "昨夜江边春水生",
+                    "蒙冲巨舰一毛轻",
+                    "向来枉费推移力",
+                    "此日中流自在行"
+                ],
+                explanations: [
+                    "昨天夜里江边涨起了阵阵春潮，",
+                    "巨大的战舰就像一根羽毛那样轻。",
+                    "以往花费许多力量也不能推动它，",
+                    "今天却能在江水中央自在地行驶。"
+                ]
+            },
+            {
+                grade: 5,
+                title: "四时田园杂兴（其三十一）",
+                author: "（宋）范成大",
+                lines: [
+                    "昼出耘田夜绩麻",
+                    "村庄儿女各当家",
+                    "童孙未解供耕织",
+                    "也傍桑阴学种瓜"
+                ],
+                explanations: [
+                    "白天出去锄草，夜晚搓麻线，",
+                    "农家男女都各司其事。",
+                    "小孩子还不懂得耕田织布，",
+                    "也在桑树荫下学着种瓜。"
+                ]
+            },
+            {
+                grade: 5,
+                title: "稚子弄冰",
+                author: "（宋）杨万里",
+                lines: [
+                    "稚子金盆脱晓冰",
+                    "彩丝穿取当银钲",
+                    "敲成玉磬穿林响",
+                    "忽作玻璃碎地声"
+                ],
+                explanations: [
+                    "小孩子早晨从金盆里取出冰块，",
+                    "用彩丝穿起来当作银锣。",
+                    "敲击时发出像玉磬一样的声音穿过树林，",
+                    "忽然又像玻璃碎裂的声音落在地上。"
+                ]
+            },
+            {
+                grade: 5,
+                title: "村晚",
+                author: "（宋）雷震",
+                lines: [
+                    "草满池塘水满陂",
+                    "山衔落日浸寒漪",
+                    "牧童归去横牛背",
+                    "短笛无腔信口吹"
+                ],
+                explanations: [
+                    "绿草长满了池塘，池塘里的水几乎溢出了塘岸，",
+                    "远处的青山衔着彤红的落日，倒映在清凉的水波中。",
+                    "放牛的孩子横坐在牛背上，",
+                    "随意地用短笛吹奏着不成调的乐曲。"
+                ]
+            },
+            {
+                grade: 5,
+                title: "游子吟",
+                author: "（唐）孟郊",
+                lines: [
+                    "慈母手中线",
+                    "游子身上衣",
+                    "临行密密缝",
+                    "意恐迟迟归",
+                    "谁言寸草心",
+                    "报得三春晖"
+                ],
+                explanations: [
+                    "慈母手中的针线，",
+                    "变成了远行儿子身上的衣服。",
+                    "临行前一针针密密地缝缀，",
+                    "怕的是儿子回来得太晚。",
+                    "谁说寸草般的心意，",
+                    "能报答得了春天阳光般的慈爱呢？"
+                ]
+            }
+        ]
+        // 六年级古诗词
+        const grade6Poems = [
+            {
+                grade: 6,
+                title: "宿建德江",
+                author: "（唐）孟浩然",
+                lines: [
+                    "移舟泊烟渚",
+                    "日暮客愁新",
+                    "野旷天低树",
+                    "江清月近人"
+                ],
+                explanations: [
+                    "把小船停靠在烟雾迷蒙的小洲边，",
+                    "日暮时分新添了游子的愁绪。",
+                    "原野空旷，天幕低垂，好像比树木还低，",
+                    "江水清澈，明月倒映水中，好像与人更亲近。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "六月二十七日望湖楼醉书",
+                author: "（宋）苏轼",
+                lines: [
+                    "黑云翻墨未遮山",
+                    "白雨跳珠乱入船",
+                    "卷地风来忽吹散",
+                    "望湖楼下水如天"
+                ],
+                explanations: [
+                    "黑云像打翻的墨水还未来得及遮住山峦，",
+                    "白花花的雨点像珍珠一样乱跳着窜入船中。",
+                    "卷地而来的大风忽然把云雨吹散了，",
+                    "望湖楼下的湖水像天空一样清澈明净。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "西江月・夜行黄沙道中",
+                author: "（宋）辛弃疾",
+                lines: [
+                    "明月别枝惊鹊",
+                    "清风半夜鸣蝉",
+                    "稻花香里说丰年",
+                    "听取蛙声一片",
+                    "七八个星天外",
+                    "两三点雨山前",
+                    "旧时茅店社林边",
+                    "路转溪桥忽见"
+                ],
+                explanations: [
+                    "明亮的月光惊动了树枝上的乌鸦，",
+                    "清风吹拂，半夜传来蝉的鸣叫声。",
+                    "在稻花的香气里，人们谈论着丰收的年景，",
+                    "只听见一片青蛙的叫声。",
+                    "天边有七八颗星星在闪烁，",
+                    "山前有两三点雨滴落下。",
+                    "从前的小茅草屋还在土地庙树林的边上，",
+                    "道路转过溪桥，忽然就看见了。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "过故人庄",
+                author: "（唐）孟浩然",
+                lines: [
+                    "故人具鸡黍",
+                    "邀我至田家",
+                    "绿树村边合",
+                    "青山郭外斜",
+                    "开轩面场圃",
+                    "把酒话桑麻",
+                    "待到重阳日",
+                    "还来就菊花"
+                ],
+                explanations: [
+                    "老朋友准备了丰盛的饭菜，",
+                    "邀请我到他的农家做客。",
+                    "绿色的树木环绕着村庄，",
+                    "青色的山峦在城墙外倾斜。",
+                    "打开窗户面对着场院和菜园，",
+                    "端着酒杯谈论着桑麻农事。",
+                    "等到重阳节那天，",
+                    "我还要再来欣赏菊花。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "七律・长征",
+                author: "毛泽东",
+                lines: [
+                    "红军不怕远征难",
+                    "万水千山只等闲",
+                    "五岭逶迤腾细浪",
+                    "乌蒙磅礴走泥丸",
+                    "金沙水拍云崖暖",
+                    "大渡桥横铁索寒",
+                    "更喜岷山千里雪",
+                    "三军过后尽开颜"
+                ],
+                explanations: [
+                    "红军不怕长征路上的艰难险阻，",
+                    "千山万水都只当作平常事看待。",
+                    "五岭山脉连绵起伏，像翻腾的细小波浪，",
+                    "乌蒙山高大雄伟，像滚动的泥丸。",
+                    "金沙江的水拍打着温暖的悬崖峭壁，",
+                    "大渡河上的铁索桥横跨，显得寒气逼人。",
+                    "更令人欣喜的是岷山千里积雪，",
+                    "红军走过之后都喜笑颜开。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "菩萨蛮・大柏地",
+                author: "毛泽东",
+                lines: [
+                    "赤橙黄绿青蓝紫",
+                    "谁持彩练当空舞",
+                    "雨后复斜阳",
+                    "关山阵阵苍",
+                    "当年鏖战急",
+                    "弹洞前村壁",
+                    "装点此关山",
+                    "今朝更好看"
+                ],
+                explanations: [
+                    "赤橙黄绿青蓝紫各种颜色，",
+                    "是谁拿着彩色的绸带在空中飞舞？",
+                    "雨后又出现了夕阳，",
+                    "关隘山峦一片苍茫。",
+                    "当年这里战斗激烈，",
+                    "子弹打穿了前面村庄的墙壁，",
+                    "这些弹痕装点着关隘山峦，",
+                    "今天看起来更加壮美。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "春日",
+                author: "（宋）朱熹",
+                lines: [
+                    "胜日寻芳泗水滨",
+                    "无边光景一时新",
+                    "等闲识得东风面",
+                    "万紫千红总是春"
+                ],
+                explanations: [
+                    "在天气晴好的日子里到泗水边寻找美景，",
+                    "无边的风光景色一时之间都焕然一新。",
+                    "人们轻易就能识别出春风的面貌，",
+                    "万紫千红的景象总是春天的特征。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "回乡偶书",
+                author: "（唐）贺知章",
+                lines: [
+                    "少小离家老大回",
+                    "乡音无改鬓毛衰",
+                    "儿童相见不相识",
+                    "笑问客从何处来"
+                ],
+                explanations: [
+                    "年少时离开家乡，年老了才回来，",
+                    "家乡的口音没有改变，但鬓角的头发已经稀疏变白。",
+                    "村里的孩子们见到我都不认识，",
+                    "笑着问客人是从什么地方来的。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "浪淘沙（其一）",
+                author: "（唐）刘禹锡",
+                lines: [
+                    "九曲黄河万里沙",
+                    "浪淘风簸自天涯",
+                    "如今直上银河去",
+                    "同到牵牛织女家"
+                ],
+                explanations: [
+                    "九曲黄河携带着万里泥沙，",
+                    "波浪滔滔，狂风簸荡，仿佛来自天边。",
+                    "现在要沿着黄河直上银河去，",
+                    "一同到牛郎织女的家里做客。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "江南春",
+                author: "（唐）杜牧",
+                lines: [
+                    "千里莺啼绿映红",
+                    "水村山郭酒旗风",
+                    "南朝四百八十寺",
+                    "多少楼台烟雨中"
+                ],
+                explanations: [
+                    "千里江南莺歌燕舞，绿树红花相映成趣，",
+                    "水边村庄，山边城郭，酒旗在风中飘扬。",
+                    "南朝遗留的四百八十多座寺庙，",
+                    "有多少楼台笼罩在蒙蒙烟雨之中。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "书湖阴先生壁",
+                author: "（宋）王安石",
+                lines: [
+                    "茅檐长扫净无苔",
+                    "花木成畦手自栽",
+                    "一水护田将绿绕",
+                    "两山排闼送青来"
+                ],
+                explanations: [
+                    "茅草屋檐下经常打扫，干净得没有青苔，",
+                    "花草树木成行成畦，都是我亲手栽种的。",
+                    "一条小河环绕着绿色的田地，",
+                    "两座山峰推开门，送来了青翠的山色。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "寒食",
+                author: "（唐）韩翃",
+                lines: [
+                    "春城无处不飞花",
+                    "寒食东风御柳斜",
+                    "日暮汉宫传蜡烛",
+                    "轻烟散入五侯家"
+                ],
+                explanations: [
+                    "春天的京城无处不飞舞着落花，",
+                    "寒食节东风吹拂，皇家柳枝倾斜。",
+                    "傍晚时分汉宫里传出点燃蜡烛的命令，",
+                    "轻烟散入王侯权贵的家中。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "迢迢牵牛星",
+                author: "（汉）佚名",
+                lines: [
+                    "迢迢牵牛星",
+                    "皎皎河汉女",
+                    "纤纤擢素手",
+                    "札札弄机杼",
+                    "终日不成章",
+                    "泣涕零如雨",
+                    "河汉清且浅",
+                    "相去复几许",
+                    "盈盈一水间",
+                    "脉脉不得语"
+                ],
+                explanations: [
+                    "遥远的牵牛星，",
+                    "明亮的织女星。",
+                    "她伸出纤细白嫩的手，",
+                    "札札地摆弄着织布机。",
+                    "整天也织不出布匹来，",
+                    "眼泪像雨一样纷纷落下。",
+                    "银河又清又浅，",
+                    "相隔又能有多远呢？",
+                    "就在这清澈的一水之间，",
+                    "含情脉脉却不能说话。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "十五夜望月",
+                author: "（唐）王建",
+                lines: [
+                    "中庭地白树栖鸦",
+                    "冷露无声湿桂花",
+                    "今夜月明人尽望",
+                    "不知秋思落谁家"
+                ],
+                explanations: [
+                    "庭院中地面发白，乌鸦栖息在树上，",
+                    "冰冷的露水无声地打湿了桂花。",
+                    "今夜明月当空，人们都在仰望，",
+                    "不知这秋天的思念会落在谁家。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "长歌行",
+                author: "（汉）乐府诗",
+                lines: [
+                    "青青园中葵",
+                    "朝露待日晞",
+                    "阳春布德泽",
+                    "万物生光辉",
+                    "常恐秋节至",
+                    "焜黄华叶衰",
+                    "百川东到海",
+                    "何时复西归",
+                    "少壮不努力",
+                    "老大徒伤悲"
+                ],
+                explanations: [
+                    "园中的葵菜青翠欲滴，",
+                    "早晨的露珠等待太阳晒干。",
+                    "春天把恩泽洒向大地，",
+                    "万物都闪耀着生命的光辉。",
+                    "常常担心秋天到来，",
+                    "花草树木就会枯黄衰败。",
+                    "百川向东流入大海，",
+                    "什么时候才能向西回流？",
+                    "年轻时不努力，",
+                    "年老时只能白白地悲伤。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "马诗",
+                author: "（唐）李贺",
+                lines: [
+                    "大漠沙如雪",
+                    "燕山月似钩",
+                    "何当金络脑",
+                    "快走踏清秋"
+                ],
+                explanations: [
+                    "广阔的沙漠沙子像雪一样白，",
+                    "燕山的月亮像钩子一样弯。",
+                    "什么时候才能戴上金色的笼头，",
+                    "在清爽的秋天里飞快奔驰。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "石灰吟",
+                author: "（明）于谦",
+                lines: [
+                    "千锤万凿出深山",
+                    "烈火焚烧若等闲",
+                    "粉身碎骨浑不怕",
+                    "要留清白在人间"
+                ],
+                explanations: [
+                    "经过千锤万凿才从深山里开采出来，",
+                    "烈火焚烧也只当作平常事。",
+                    "即使粉身碎骨也毫不害怕，",
+                    "只愿把清白留在人世间。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "竹石",
+                author: "（清）郑燮",
+                lines: [
+                    "咬定青山不放松",
+                    "立根原在破岩中",
+                    "千磨万击还坚劲",
+                    "任尔东西南北风"
+                ],
+                explanations: [
+                    "紧紧咬住青山不放松，",
+                    "根深深扎在破碎的岩石中。",
+                    "经历千万次磨砺和打击仍然坚韧挺拔，",
+                    "任凭你东西南北风怎么吹。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "采薇（节选）",
+                author: "《诗经》",
+                lines: [
+                    "昔我往矣",
+                    "杨柳依依",
+                    "今我来思",
+                    "雨雪霏霏"
+                ],
+                explanations: [
+                    "从前我出征的时候，",
+                    "杨柳枝条轻轻飘扬。",
+                    "现在我回来了，",
+                    "大雪纷纷扬扬地下着。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "送元二使安西",
+                author: "（唐）王维",
+                lines: [
+                    "渭城朝雨浥轻尘",
+                    "客舍青青柳色新",
+                    "劝君更尽一杯酒",
+                    "西出阳关无故人"
+                ],
+                explanations: [
+                    "渭城早晨的雨湿润了轻尘，",
+                    "客舍周围的柳树颜色格外清新。",
+                    "劝您再喝干一杯酒，",
+                    "向西出了阳关就没有老朋友了。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "春夜喜雨",
+                author: "（唐）杜甫",
+                lines: [
+                    "好雨知时节",
+                    "当春乃发生",
+                    "随风潜入夜",
+                    "润物细无声",
+                    "野径云俱黑",
+                    "江船火独明",
+                    "晓看红湿处",
+                    "花重锦官城"
+                ],
+                explanations: [
+                    "好雨知道时节，正当春天就降临了，",
+                    "随着春风在夜里悄悄地洒落，",
+                    "无声地滋润着万物。",
+                    "野外小路和乌云都黑沉沉的，",
+                    "江上小船的灯火独自亮着。",
+                    "明天早晨去看那带着雨水的红花，",
+                    "整个锦官城将是繁花盛开的世界。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "早春呈水部张十八员外",
+                author: "（唐）韩愈",
+                lines: [
+                    "天街小雨润如酥",
+                    "草色遥看近却无",
+                    "最是一年春好处",
+                    "绝胜烟柳满皇都"
+                ],
+                explanations: [
+                    "京城里的小雨细润如酥，",
+                    "远看草色青青，近看却看不见了。",
+                    "这是一年中最美好的春光，",
+                    "远远胜过满城烟柳的暮春景色。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "江上渔者",
+                author: "（宋）范仲淹",
+                lines: [
+                    "江上往来人",
+                    "但爱鲈鱼美",
+                    "君看一叶舟",
+                    "出没风波里"
+                ],
+                explanations: [
+                    "江上来来往往的人们，",
+                    "只喜爱鲈鱼味道的鲜美。",
+                    "您看那像一片叶子的小船，",
+                    "在风浪中时隐时现。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "泊船瓜洲",
+                author: "（宋）王安石",
+                lines: [
+                    "京口瓜洲一水间",
+                    "钟山只隔数重山",
+                    "春风又绿江南岸",
+                    "明月何时照我还"
+                ],
+                explanations: [
+                    "京口和瓜洲只隔着一条长江，",
+                    "钟山也只隔着几座山。",
+                    "春风又把江南岸吹绿了，",
+                    "明月什么时候才能照着我回家呢？"
+                ]
+            },
+            {
+                grade: 6,
+                title: "游园不值",
+                author: "（宋）叶绍翁",
+                lines: [
+                    "应怜屐齿印苍苔",
+                    "小扣柴扉久不开",
+                    "春色满园关不住",
+                    "一枝红杏出墙来"
+                ],
+                explanations: [
+                    "应该爱惜木屐下的青苔，",
+                    "轻轻地敲打柴门，许久没有人来开。",
+                    "满园的春色是关不住的，",
+                    "一枝红杏伸出墙头来。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "卜算子・送鲍浩然之浙东",
+                author: "（宋）王观",
+                lines: [
+                    "水是眼波横",
+                    "山是眉峰聚",
+                    "欲问行人去那边",
+                    "眉眼盈盈处",
+                    "才始送春归",
+                    "又送君归去",
+                    "若到江南赶上春",
+                    "千万和春住"
+                ],
+                explanations: [
+                    "水是眼波横流，",
+                    "山是眉峰聚拢。",
+                    "要问行人到哪里去？",
+                    "到那眉眼盈盈的地方。",
+                    "刚刚送走了春天，",
+                    "又要送你归去。",
+                    "如果到了江南赶上春天，",
+                    "千万要和春天住在一起。"
+                ]
+            },
+            {
+                grade: 6,
+                title: "浣溪沙",
+                author: "（宋）苏轼",
+                lines: [
+                    "山下兰芽短浸溪",
+                    "松间沙路净无泥",
+                    "萧萧暮雨子规啼",
+                    "谁道人生无再少",
+                    "门前流水尚能西",
+                    "休将白发唱黄鸡"
+                ],
+                explanations: [
+                    "山下的兰草嫩芽浸入小溪，",
+                    "松林间的沙路干净没有泥泞。",
+                    "傍晚下着萧萧细雨，杜鹃鸟在啼叫。",
+                    "谁说人生不能再年轻？",
+                    "门前的流水尚且能够向西流，",
+                    "不要因为白发就唱起黄鸡催时的悲歌。"
+                ]
+            }
+        ]
+        // 七年级古诗词
+        const grade7Poems = [
+            {
+                grade: 7,
+                title: "观沧海",
+                author: "（汉）曹操",
+                lines: [
+                    "东临碣石",
+                    "以观沧海",
+                    "水何澹澹",
+                    "山岛竦峙",
+                    "树木丛生",
+                    "百草丰茂",
+                    "秋风萧瑟",
+                    "洪波涌起",
+                    "日月之行",
+                    "若出其中",
+                    "星汉灿烂",
+                    "若出其里",
+                    "幸甚至哉",
+                    "歌以咏志"
+                ],
+                explanations: [
+                    "向东登上碣石山，来观赏大海。",
+                    "海水多么汹涌荡漾，山岛高高耸立。",
+                    "树木成丛地生长，各种草类丰盛茂密。",
+                    "秋风吹来，树木发出萧瑟的声音，",
+                    "巨大的波浪汹涌而起。",
+                    "太阳和月亮的运行，仿佛出自大海之中。",
+                    "银河星光灿烂，也好像出自大海里面。",
+                    "真是幸运极了，",
+                    "用诗歌来抒发我的志向。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "次北固山下",
+                author: "（唐）王湾",
+                lines: [
+                    "客路青山外",
+                    "行舟绿水前",
+                    "潮平两岸阔",
+                    "风正一帆悬",
+                    "海日生残夜",
+                    "江春入旧年",
+                    "乡书何处达",
+                    "归雁洛阳边"
+                ],
+                explanations: [
+                    "客行的道路在青山之外，",
+                    "乘船行驶在绿水之前。",
+                    "潮水涨满，两岸显得更加宽阔，",
+                    "顺风行船，白帆高挂。",
+                    "海上的太阳在残夜中升起，",
+                    "江上的春意闯入旧的一年。",
+                    "家书要送到什么地方去呢？",
+                    "北归的大雁啊，请替我捎到洛阳那边。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "闻王昌龄左迁龙标遥有此寄",
+                author: "（唐）李白",
+                lines: [
+                    "杨花落尽子规啼",
+                    "闻道龙标过五溪",
+                    "我寄愁心与明月",
+                    "随君直到夜郎西"
+                ],
+                explanations: [
+                    "杨花落尽，杜鹃鸟声声悲啼，",
+                    "听说你被贬到龙标，要经过五溪。",
+                    "我把忧愁的心寄托给明月，",
+                    "伴随着你一直走到夜郎的西边。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "天净沙・秋思",
+                author: "（元）马致远",
+                lines: [
+                    "枯藤老树昏鸦",
+                    "小桥流水人家",
+                    "古道西风瘦马",
+                    "夕阳西下",
+                    "断肠人在天涯"
+                ],
+                explanations: [
+                    "枯萎的藤蔓，衰老的大树，黄昏时归巢的乌鸦，",
+                    "小桥下流水潺潺，桥边有几户人家。",
+                    "古老的道路上，西风吹着瘦弱的马，",
+                    "夕阳从西边落下，",
+                    "伤心断肠的人远在天涯。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "诫子书",
+                author: "（三国）诸葛亮",
+                lines: [
+                    "夫君子之行",
+                    "静以修身",
+                    "俭以养德",
+                    "非淡泊无以明志",
+                    "非宁静无以致远",
+                    "夫学须静也",
+                    "才须学也",
+                    "非学无以广才",
+                    "非志无以成学",
+                    "淫慢则不能励精",
+                    "险躁则不能治性",
+                    "年与时驰",
+                    "意与日去",
+                    "遂成枯落",
+                    "多不接世",
+                    "悲守穷庐",
+                    "将复何及"
+                ],
+                explanations: [
+                    "君子的品行，",
+                    "用静心来修养身心，",
+                    "用节俭来培养品德。",
+                    "不淡泊名利就无法明确志向，",
+                    "不宁静专一就无法达到远大目标。",
+                    "学习必须静心，",
+                    "才干必须学习，",
+                    "不学习就无法增长才干，",
+                    "没有志向就无法完成学业。",
+                    "放纵懈怠就不能振奋精神，",
+                    "急躁冒险就不能陶冶性情。",
+                    "年华随时光飞逝，",
+                    "意志随岁月消磨，",
+                    "最终像枯枝落叶般凋零，",
+                    "大多不接触社会，",
+                    "只能悲伤地守着破旧的茅屋，",
+                    "到那时后悔又怎么来得及呢？"
+                ]
+            },
+            {
+                grade: 7,
+                title: "峨眉山月歌",
+                author: "（唐）李白",
+                lines: [
+                    "峨眉山月半轮秋",
+                    "影入平羌江水流",
+                    "夜发清溪向三峡",
+                    "思君不见下渝州"
+                ],
+                explanations: [
+                    "峨眉山上的半轮秋月，",
+                    "月影倒映在平羌江水中，随江水流淌。",
+                    "夜晚从清溪出发，驶向三峡，",
+                    "思念你却见不到，只能顺流而下到渝州。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "江南逢李龟年",
+                author: "（唐）杜甫",
+                lines: [
+                    "岐王宅里寻常见",
+                    "崔九堂前几度闻",
+                    "正是江南好风景",
+                    "落花时节又逢君"
+                ],
+                explanations: [
+                    "在岐王府中经常见到你，",
+                    "在崔九堂前也曾多次听到你的歌声。",
+                    "现在正是江南风景美好的时候，",
+                    "在这落花的时节又与你相逢。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "行军九日思长安故园",
+                author: "（唐）岑参",
+                lines: [
+                    "强欲登高去",
+                    "无人送酒来",
+                    "遥怜故园菊",
+                    "应傍战场开"
+                ],
+                explanations: [
+                    "勉强想要登高望远，",
+                    "却没有人送酒来。",
+                    "远远地怜爱故园的菊花，",
+                    "应该正开在战场旁边。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "夜上受降城闻笛",
+                author: "（唐）李益",
+                lines: [
+                    "回乐烽前沙似雪",
+                    "受降城外月如霜",
+                    "不知何处吹芦管",
+                    "一夜征人尽望乡"
+                ],
+                explanations: [
+                    "回乐烽前的沙子像雪一样白，",
+                    "受降城外的月光像霜一样寒。",
+                    "不知从什么地方传来芦笛声，",
+                    "一夜之间出征的将士都望着故乡。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "秋词・其一",
+                author: "（唐）刘禹锡",
+                lines: [
+                    "自古逢秋悲寂寥",
+                    "我言秋日胜春朝",
+                    "晴空一鹤排云上",
+                    "便引诗情到碧霄"
+                ],
+                explanations: [
+                    "自古以来，人们遇到秋天就感到悲凉寂寞，",
+                    "我却说秋天的景色胜过春天的早晨。",
+                    "晴朗的天空中一只仙鹤冲破云层飞上，",
+                    "便把我的诗情引到了碧蓝的天空。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "夜雨寄北",
+                author: "（唐）李商隐",
+                lines: [
+                    "君问归期未有期",
+                    "巴山夜雨涨秋池",
+                    "何当共剪西窗烛",
+                    "却话巴山夜雨时"
+                ],
+                explanations: [
+                    "你问我回来的日期，我还没有确定的日期，",
+                    "巴山夜雨涨满了秋天的池塘。",
+                    "什么时候才能在西窗下一起剪烛夜谈，",
+                    "再来谈论这巴山夜雨时的情景。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "十一月四日风雨大作",
+                author: "（宋）陆游",
+                lines: [
+                    "僵卧孤村不自哀",
+                    "尚思为国戍轮台",
+                    "夜阑卧听风吹雨",
+                    "铁马冰河入梦来"
+                ],
+                explanations: [
+                    "僵直地躺在孤寂的村庄里并不为自己感到悲哀，",
+                    "还想着为国家去守卫轮台。",
+                    "夜深了，躺着听风吹雨打的声音，",
+                    "披着铁甲的战马和冰封的河流出现在梦中。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "潼关",
+                author: "（清）谭嗣同",
+                lines: [
+                    "终古高云簇此城",
+                    "秋风吹散马蹄声",
+                    "河流大野犹嫌束",
+                    "山入潼关不解平"
+                ],
+                explanations: [
+                    "从古至今，高高的云朵簇拥着这座城池，",
+                    "秋风吹散了马蹄的声音。",
+                    "黄河在广阔的原野上奔流，还嫌受到束缚，",
+                    "群山进入潼关，却不懂得什么是平坦。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "木兰诗",
+                author: "《乐府诗集》",
+                lines: [
+                    "唧唧复唧唧",
+                    "木兰当户织",
+                    "不闻机杼声",
+                    "惟闻女叹息",
+                    "问女何所思",
+                    "问女何所忆",
+                    "女亦无所思",
+                    "女亦无所忆",
+                    "昨夜见军帖",
+                    "可汗大点兵",
+                    "军书十二卷",
+                    "卷卷有爷名",
+                    "阿爷无大儿",
+                    "木兰无长兄",
+                    "愿为市鞍马",
+                    "从此替爷征"
+                ],
+                explanations: [
+                    "叹息声一声接着一声，",
+                    "木兰正对着家门织布。",
+                    "听不见织布机的声音，",
+                    "只听见姑娘的叹息声。",
+                    "问姑娘在想什么，",
+                    "问姑娘在思念什么，",
+                    "姑娘说也没有想什么，",
+                    "姑娘说也没有思念什么。",
+                    "昨夜看见征兵的文书，",
+                    "可汗在大规模征兵。",
+                    "征兵的名册有很多卷，",
+                    "每一卷上都有父亲的名字。",
+                    "父亲没有成年的儿子，",
+                    "木兰没有成年的哥哥。",
+                    "愿意为此去买鞍马，",
+                    "从此代替父亲去出征。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "登幽州台歌",
+                author: "（唐）陈子昂",
+                lines: [
+                    "前不见古人",
+                    "后不见来者",
+                    "念天地之悠悠",
+                    "独怆然而涕下"
+                ],
+                explanations: [
+                    "往前看不见古代的圣贤，",
+                    "往后看不见未来的英才。",
+                    "想到天地的无穷无尽，",
+                    "独自悲伤地流下眼泪。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "望岳",
+                author: "（唐）杜甫",
+                lines: [
+                    "岱宗夫如何",
+                    "齐鲁青未了",
+                    "造化钟神秀",
+                    "阴阳割昏晓",
+                    "荡胸生曾云",
+                    "决眦入归鸟",
+                    "会当凌绝顶",
+                    "一览众山小"
+                ],
+                explanations: [
+                    "泰山是什么样子？",
+                    "齐鲁大地的青色连绵不断。",
+                    "大自然把神奇和秀美都集中在泰山，",
+                    "山南山北分割出黄昏和清晨。",
+                    "山中云气层层叠叠，激荡心胸，",
+                    "睁大眼睛才能看见归巢的飞鸟。",
+                    "一定要登上泰山的最高峰，",
+                    "看周围的山都显得那么渺小。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "登飞来峰",
+                author: "（宋）王安石",
+                lines: [
+                    "飞来山上千寻塔",
+                    "闻说鸡鸣见日升",
+                    "不畏浮云遮望眼",
+                    "自缘身在最高层"
+                ],
+                explanations: [
+                    "飞来峰上有千寻高的塔，",
+                    "听说鸡叫的时候就能看见太阳升起。",
+                    "不怕浮云遮挡视线，",
+                    "只因为身在最高层。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "游山西村",
+                author: "（宋）陆游",
+                lines: [
+                    "莫笑农家腊酒浑",
+                    "丰年留客足鸡豚",
+                    "山重水复疑无路",
+                    "柳暗花明又一村",
+                    "箫鼓追随春社近",
+                    "衣冠简朴古风存",
+                    "从今若许闲乘月",
+                    "拄杖无时夜叩门"
+                ],
+                explanations: [
+                    "不要笑话农家的腊酒浑浊，",
+                    "丰收之年有足够的鸡猪款待客人。",
+                    "山峦重叠，水流曲折，怀疑没有路了，",
+                    "绿柳成荫，鲜花明丽，又出现一个村庄。",
+                    "箫鼓声声，春社日快要到了，",
+                    "衣着简朴，还保留着古代的风俗。",
+                    "从今以后，如果允许我趁着月色闲游，",
+                    "拄着拐杖随时会在夜里敲门拜访。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "己亥杂诗・其五",
+                author: "（清）龚自珍",
+                lines: [
+                    "浩荡离愁白日斜",
+                    "吟鞭东指即天涯",
+                    "落红不是无情物",
+                    "化作春泥更护花"
+                ],
+                explanations: [
+                    "浩浩荡荡的离愁在夕阳下，",
+                    "吟着诗，马鞭向东一指，就是天涯。",
+                    "落花不是无情的东西，",
+                    "化作春泥更能保护花朵。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "竹里馆",
+                author: "（唐）王维",
+                lines: [
+                    "独坐幽篁里",
+                    "弹琴复长啸",
+                    "深林人不知",
+                    "明月来相照"
+                ],
+                explanations: [
+                    "独自坐在幽深的竹林里，",
+                    "弹琴又长啸。",
+                    "深林中没有人知道，",
+                    "明亮的月光前来照耀。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "春夜洛城闻笛",
+                author: "（唐）李白",
+                lines: [
+                    "谁家玉笛暗飞声",
+                    "散入春风满洛城",
+                    "此夜曲中闻折柳",
+                    "何人不起故园情"
+                ],
+                explanations: [
+                    "谁家的玉笛暗暗飞出声音，",
+                    "散入春风，充满整个洛阳城。",
+                    "今夜在曲子中听到《折杨柳》，",
+                    "谁不产生思念故乡的感情？"
+                ]
+            },
+            {
+                grade: 7,
+                title: "逢入京使",
+                author: "（唐）岑参",
+                lines: [
+                    "故园东望路漫漫",
+                    "双袖龙钟泪不干",
+                    "马上相逢无纸笔",
+                    "凭君传语报平安"
+                ],
+                explanations: [
+                    "向东遥望故乡，路途漫长遥远，",
+                    "两只袖子都湿透了，眼泪流个不停。",
+                    "在马上相逢没有纸笔，",
+                    "麻烦您传个话，报个平安。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "晚春",
+                author: "（唐）韩愈",
+                lines: [
+                    "草树知春不久归",
+                    "百般红紫斗芳菲",
+                    "杨花榆荚无才思",
+                    "惟解漫天作雪飞"
+                ],
+                explanations: [
+                    "花草树木知道春天不久就要归去，",
+                    "各种颜色的花朵争相展示自己的美丽。",
+                    "杨花和榆荚没有什么才思，",
+                    "只知道漫天飞舞像雪花一样。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "泊秦淮",
+                author: "（唐）杜牧",
+                lines: [
+                    "烟笼寒水月笼沙",
+                    "夜泊秦淮近酒家",
+                    "商女不知亡国恨",
+                    "隔江犹唱后庭花"
+                ],
+                explanations: [
+                    "烟雾笼罩着寒冷的江水，月光笼罩着沙滩，",
+                    "夜晚停船在秦淮河边，靠近酒家。",
+                    "歌女不知道亡国的悲恨，",
+                    "隔着江还在唱着《玉树后庭花》。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "贾生",
+                author: "（唐）李商隐",
+                lines: [
+                    "宣室求贤访逐臣",
+                    "贾生才调更无伦",
+                    "可怜夜半虚前席",
+                    "不问苍生问鬼神"
+                ],
+                explanations: [
+                    "汉文帝在宣室征求贤才，访问被贬的臣子，",
+                    "贾生的才华格调更是无人能比。",
+                    "可惜半夜里向前移动坐席，",
+                    "不问百姓的事情，却问鬼神的事情。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "过松源晨炊漆公店",
+                author: "（宋）杨万里",
+                lines: [
+                    "莫言下岭便无难",
+                    "赚得行人空喜欢",
+                    "正入万山圈子里",
+                    "一山放过一山拦"
+                ],
+                explanations: [
+                    "不要说下山就没有困难了，",
+                    "骗得行人白白地高兴一场。",
+                    "正好进入了万山包围的圈子里，",
+                    "一座山放过你，另一座山又拦住你。"
+                ]
+            },
+            {
+                grade: 7,
+                title: "约客",
+                author: "（宋）赵师秀",
+                lines: [
+                    "黄梅时节家家雨",
+                    "青草池塘处处蛙",
+                    "有约不来过夜半",
+                    "闲敲棋子落灯花"
+                ],
+                explanations: [
+                    "黄梅时节，家家户户都在下雨，",
+                    "长满青草的池塘里，到处都是蛙声。",
+                    "约好的朋友过了半夜还没有来，",
+                    "无聊地敲着棋子，震落了灯花。"
+                ]
+            }
+        ]
+        // 八年级古诗词
+        const grade8Poems = [
+            {
+                grade: 8,
+                title: "野望",
+                author: "（唐）王绩",
+                lines: [
+                    "东皋薄暮望",
+                    "徙倚欲何依",
+                    "树树皆秋色",
+                    "山山唯落晖",
+                    "牧人驱犊返",
+                    "猎马带禽归",
+                    "相顾无相识",
+                    "长歌怀采薇"
+                ],
+                explanations: [
+                    "在东皋的薄暮时分远望，",
+                    "徘徊不定，不知依靠什么。",
+                    "每棵树都染上了秋天的色彩，",
+                    "每座山都只有夕阳的余晖。",
+                    "牧人驱赶着牛犊返回，",
+                    "猎马带着猎物归来。",
+                    "相互对视却都不认识，",
+                    "长声歌唱，怀念采薇的隐士。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "黄鹤楼",
+                author: "（唐）崔颢",
+                lines: [
+                    "昔人已乘黄鹤去",
+                    "此地空余黄鹤楼",
+                    "黄鹤一去不复返",
+                    "白云千载空悠悠",
+                    "晴川历历汉阳树",
+                    "芳草萋萋鹦鹉洲",
+                    "日暮乡关何处是",
+                    "烟波江上使人愁"
+                ],
+                explanations: [
+                    "古代的仙人已经乘着黄鹤离去，",
+                    "这里只剩下空荡荡的黄鹤楼。",
+                    "黄鹤一去就不再回来，",
+                    "千百年来只有白云悠闲地飘荡。",
+                    "晴朗的江面上，汉阳的树木清晰可见，",
+                    "鹦鹉洲上芳草茂盛。",
+                    "黄昏时分，故乡在哪里？",
+                    "江上的烟波让人感到忧愁。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "使至塞上",
+                author: "（唐）王维",
+                lines: [
+                    "单车欲问边",
+                    "属国过居延",
+                    "征蓬出汉塞",
+                    "归雁入胡天",
+                    "大漠孤烟直",
+                    "长河落日圆",
+                    "萧关逢候骑",
+                    "都护在燕然"
+                ],
+                explanations: [
+                    "轻车简从要去边关慰问，",
+                    "作为属国经过居延。",
+                    "像飘飞的蓬草离开汉塞，",
+                    "归来的大雁飞入胡人的天空。",
+                    "大漠中一缕孤烟笔直升起，",
+                    "长河上落日浑圆。",
+                    "在萧关遇到侦察的骑兵，",
+                    "都护正在燕然山。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "渡荆门送别",
+                author: "（唐）李白",
+                lines: [
+                    "渡远荆门外",
+                    "来从楚国游",
+                    "山随平野尽",
+                    "江入大荒流",
+                    "月下飞天镜",
+                    "云生结海楼",
+                    "仍怜故乡水",
+                    "万里送行舟"
+                ],
+                explanations: [
+                    "远渡到荆门山之外，",
+                    "来到楚国漫游。",
+                    "群山随着平原的消失而消失，",
+                    "长江流入广阔的荒野。",
+                    "月亮如天镜飞下，",
+                    "云彩升起形成海市蜃楼。",
+                    "仍然喜爱故乡的水，",
+                    "万里相送我远行的船。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "钱塘湖春行",
+                author: "（唐）白居易",
+                lines: [
+                    "孤山寺北贾亭西",
+                    "水面初平云脚低",
+                    "几处早莺争暖树",
+                    "谁家新燕啄春泥",
+                    "乱花渐欲迷人眼",
+                    "浅草才能没马蹄",
+                    "最爱湖东行不足",
+                    "绿杨阴里白沙堤"
+                ],
+                explanations: [
+                    "在孤山寺北面，贾亭西面，",
+                    "湖面刚刚涨平，云层低垂。",
+                    "几处早出的黄莺争着飞向暖树，",
+                    "谁家新来的燕子啄着春泥。",
+                    "纷繁的花朵渐渐要迷住人的眼睛，",
+                    "浅浅的青草刚刚能够没过马蹄。",
+                    "最喜爱湖东的景色，总是看不够，",
+                    "绿杨树荫下的白沙堤。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "饮酒・其五",
+                author: "（东晋）陶渊明",
+                lines: [
+                    "结庐在人境",
+                    "而无车马喧",
+                    "问君何能尔",
+                    "心远地自偏",
+                    "采菊东篱下",
+                    "悠然见南山",
+                    "山气日夕佳",
+                    "飞鸟相与还",
+                    "此中有真意",
+                    "欲辨已忘言"
+                ],
+                explanations: [
+                    "在众人聚居的地方建造房屋，",
+                    "却没有车马的喧闹声。",
+                    "问我为什么能够这样？",
+                    "心志高远，地方自然就显得偏僻。",
+                    "在东篱下采摘菊花，",
+                    "悠然自得地看见南山。",
+                    "山中的气息傍晚时分特别美好，",
+                    "飞鸟结伴归来。",
+                    "这里面有真正的意义，",
+                    "想要辨别却已经忘记了言语。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "春望",
+                author: "（唐）杜甫",
+                lines: [
+                    "国破山河在",
+                    "城春草木深",
+                    "感时花溅泪",
+                    "恨别鸟惊心",
+                    "烽火连三月",
+                    "家书抵万金",
+                    "白头搔更短",
+                    "浑欲不胜簪"
+                ],
+                explanations: [
+                    "国家破碎，山河依旧存在，",
+                    "城中的春天，草木长得茂盛。",
+                    "感伤时局，看到花也流泪，",
+                    "怨恨离别，听到鸟鸣也惊心。",
+                    "战火已经连续三个月，",
+                    "家书珍贵得抵得上万两黄金。",
+                    "白发越搔越稀疏，",
+                    "简直插不上发簪了。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "雁门太守行",
+                author: "（唐）李贺",
+                lines: [
+                    "黑云压城城欲摧",
+                    "甲光向日金鳞开",
+                    "角声满天秋色里",
+                    "塞上燕脂凝夜紫",
+                    "半卷红旗临易水",
+                    "霜重鼓寒声不起",
+                    "报君黄金台上意",
+                    "提携玉龙为君死"
+                ],
+                explanations: [
+                    "黑云压向城池，城池将要被摧毁，",
+                    "铠甲向着阳光，像金色的鳞片闪闪发光。",
+                    "号角声满天，在秋色中回荡，",
+                    "边塞上胭脂般的晚霞凝结成夜间的紫色。",
+                    "半卷着红旗来到易水边，",
+                    "霜很重，鼓声寒冷，敲不响。",
+                    "报答君王在黄金台上的知遇之恩，",
+                    "提着玉龙剑为君王而死。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "赤壁",
+                author: "（唐）杜牧",
+                lines: [
+                    "折戟沉沙铁未销",
+                    "自将磨洗认前朝",
+                    "东风不与周郎便",
+                    "铜雀春深锁二乔"
+                ],
+                explanations: [
+                    "折断的戟沉在沙中，铁还没有销蚀，",
+                    "自己拿来磨洗，认出是前朝的遗物。",
+                    "东风如果不给周瑜方便，",
+                    "二乔就要被深锁在铜雀台了。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "渔家傲",
+                author: "（宋）范仲淹",
+                lines: [
+                    "塞下秋来风景异",
+                    "衡阳雁去无留意",
+                    "四面边声连角起",
+                    "千嶂里",
+                    "长烟落日孤城闭",
+                    "浊酒一杯家万里",
+                    "燕然未勒归无计",
+                    "羌管悠悠霜满地",
+                    "人不寐",
+                    "将军白发征夫泪"
+                ],
+                explanations: [
+                    "边塞秋天来了，风景与内地不同，",
+                    "大雁飞向衡阳，没有留恋的意思。",
+                    "四面八方的边声伴随着号角声响起，",
+                    "在层层山峰中，",
+                    "长烟落日，孤城紧闭。",
+                    "一杯浊酒，家在万里之外，",
+                    "还没有在燕然山刻石记功，无法回去。",
+                    "羌笛声悠扬，霜铺满地，",
+                    "人睡不着，",
+                    "将军白发，征夫流泪。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "庭中有奇树",
+                author: "《古诗十九首》",
+                lines: [
+                    "庭中有奇树",
+                    "绿叶发华滋",
+                    "攀条折其荣",
+                    "将以遗所思",
+                    "馨香盈怀袖",
+                    "路远莫致之",
+                    "此物何足贵",
+                    "但感别经时"
+                ],
+                explanations: [
+                    "庭院中有一棵奇特的树，",
+                    "绿叶繁茂，花朵盛开。",
+                    "攀着树枝折下它的花，",
+                    "准备送给思念的人。",
+                    "香气充满衣袖，",
+                    "路途遥远，无法送达。",
+                    "这花朵有什么珍贵的？",
+                    "只是感叹分别时间太久了。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "龟虽寿",
+                author: "（汉）曹操",
+                lines: [
+                    "神龟虽寿",
+                    "犹有竟时",
+                    "腾蛇乘雾",
+                    "终为土灰",
+                    "老骥伏枥",
+                    "志在千里",
+                    "烈士暮年",
+                    "壮心不已",
+                    "盈缩之期",
+                    "不但在天",
+                    "养怡之福",
+                    "可得永年"
+                ],
+                explanations: [
+                    "神龟虽然长寿，",
+                    "也有死亡的时候。",
+                    "腾蛇虽然能驾雾飞行，",
+                    "最终也会变成土灰。",
+                    "老马虽然卧在马槽旁，",
+                    "志向却在千里之外。",
+                    "有远大志向的人到了晚年，",
+                    "雄心壮志也不会停止。",
+                    "寿命的长短，",
+                    "不完全由天决定，",
+                    "保养身心的福气，",
+                    "可以让人长寿。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "赠从弟・其二",
+                author: "（汉）刘桢",
+                lines: [
+                    "亭亭山上松",
+                    "瑟瑟谷中风",
+                    "风声一何盛",
+                    "松枝一何劲",
+                    "冰霜正惨凄",
+                    "终岁常端正",
+                    "岂不罹凝寒",
+                    "松柏有本性"
+                ],
+                explanations: [
+                    "高高地耸立在山上的松树，",
+                    "山谷中瑟瑟的风声。",
+                    "风声多么猛烈，",
+                    "松枝多么刚劲。",
+                    "冰霜正严酷凄冷，",
+                    "整年都保持端正挺拔。",
+                    "难道不遭受严寒的侵袭？",
+                    "松柏有它们固有的本性。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "梁甫行",
+                author: "（汉）曹植",
+                lines: [
+                    "八方各异气",
+                    "千里殊风雨",
+                    "剧哉边海民",
+                    "寄身于草野",
+                    "妻子象禽兽",
+                    "行止依林阻",
+                    "柴门何萧条",
+                    "狐兔翔我宇"
+                ],
+                explanations: [
+                    "八方气候各不相同，",
+                    "千里之内风雨各异。",
+                    "边海人民的处境多么艰难，",
+                    "寄身在草野之中。",
+                    "妻子儿女像禽兽一样，",
+                    "行动依靠山林险阻。",
+                    "柴门多么萧条冷落，",
+                    "狐狸兔子在我的屋宇间飞翔。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "浣溪沙",
+                author: "（宋）晏殊",
+                lines: [
+                    "一曲新词酒一杯",
+                    "去年天气旧亭台",
+                    "夕阳西下几时回",
+                    "无可奈何花落去",
+                    "似曾相识燕归来",
+                    "小园香径独徘徊"
+                ],
+                explanations: [
+                    "听一首新词，喝一杯酒，",
+                    "还是去年的天气，旧时的亭台。",
+                    "夕阳西下，什么时候能回来？",
+                    "无可奈何地看着花朵凋谢，",
+                    "似曾相识的燕子又飞回来，",
+                    "在小园的香径上独自徘徊。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "采桑子",
+                author: "（宋）欧阳修",
+                lines: [
+                    "轻舟短棹西湖好",
+                    "绿水逶迤",
+                    "芳草长堤",
+                    "隐隐笙歌处处随",
+                    "无风水面琉璃滑",
+                    "不觉船移",
+                    "微动涟漪",
+                    "惊起沙禽掠岸飞"
+                ],
+                explanations: [
+                    "轻舟短桨，西湖风光美好，",
+                    "绿水蜿蜒曲折，",
+                    "长堤上芳草萋萋，",
+                    "隐隐的笙歌处处相随。",
+                    "无风时水面像琉璃一样光滑，",
+                    "不知不觉船已移动，",
+                    "微微荡起涟漪，",
+                    "惊起沙洲上的水鸟掠岸飞起。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "相见欢",
+                author: "（南唐）李煜",
+                lines: [
+                    "无言独上西楼",
+                    "月如钩",
+                    "寂寞梧桐深院锁清秋",
+                    "剪不断",
+                    "理还乱",
+                    "是离愁",
+                    "别是一般滋味在心头"
+                ],
+                explanations: [
+                    "默默无言，独自登上西楼，",
+                    "月亮像钩子一样弯曲。",
+                    "寂寞的梧桐树，深深的庭院，锁住了清冷的秋天。",
+                    "剪也剪不断，",
+                    "整理还是杂乱，",
+                    "这是离别的愁绪，",
+                    "另有一番滋味在心头。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "如梦令",
+                author: "（宋）李清照",
+                lines: [
+                    "常记溪亭日暮",
+                    "沉醉不知归路",
+                    "兴尽晚回舟",
+                    "误入藕花深处",
+                    "争渡",
+                    "争渡",
+                    "惊起一滩鸥鹭"
+                ],
+                explanations: [
+                    "常常记得在溪亭的黄昏时分，",
+                    "沉醉得忘记了回家的路。",
+                    "兴致尽了，傍晚划船回来，",
+                    "误入荷花丛的深处。",
+                    "争着划出去，",
+                    "争着划出去，",
+                    "惊起了一滩的鸥鹭。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "关雎",
+                author: "《诗经》",
+                lines: [
+                    "关关雎鸠",
+                    "在河之洲",
+                    "窈窕淑女",
+                    "君子好逑",
+                    "参差荇菜",
+                    "左右流之",
+                    "窈窕淑女",
+                    "寤寐求之",
+                    "求之不得",
+                    "寤寐思服",
+                    "悠哉悠哉",
+                    "辗转反侧"
+                ],
+                explanations: [
+                    "关关和鸣的雎鸠，",
+                    "栖息在河中的小洲上。",
+                    "美丽贤淑的女子，",
+                    "是君子的好配偶。",
+                    "长短不齐的荇菜，",
+                    "在船的左右两边捞取。",
+                    "美丽贤淑的女子，",
+                    "醒着睡着都在追求她。",
+                    "追求却得不到，",
+                    "醒着睡着都在思念她。",
+                    "思念啊，思念啊，",
+                    "翻来覆去难以入睡。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "蒹葭",
+                author: "《诗经》",
+                lines: [
+                    "蒹葭苍苍",
+                    "白露为霜",
+                    "所谓伊人",
+                    "在水一方",
+                    "溯洄从之",
+                    "道阻且长",
+                    "溯游从之",
+                    "宛在水中央"
+                ],
+                explanations: [
+                    "芦苇青翠茂盛，",
+                    "白色的露水凝结成霜。",
+                    "所说的那个人，",
+                    "在水的另一边。",
+                    "逆流而上去追寻她，",
+                    "道路险阻而且漫长。",
+                    "顺流而下去追寻她，",
+                    "仿佛就在水的中央。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "石壕吏",
+                author: "（唐）杜甫",
+                lines: [
+                    "暮投石壕村",
+                    "有吏夜捉人",
+                    "老翁逾墙走",
+                    "老妇出门看",
+                    "吏呼一何怒",
+                    "妇啼一何苦",
+                    "听妇前致词",
+                    "三男邺城戍",
+                    "一男附书至",
+                    "二男新战死",
+                    "存者且偷生",
+                    "死者长已矣"
+                ],
+                explanations: [
+                    "傍晚投宿在石壕村，",
+                    "有官吏夜里来抓人。",
+                    "老翁翻墙逃走，",
+                    "老妇出门查看。",
+                    "官吏的呵斥多么愤怒，",
+                    "老妇的哭诉多么痛苦。",
+                    "听到老妇上前致词：",
+                    "三个儿子在邺城戍边，",
+                    "一个儿子捎信回来，",
+                    "两个儿子刚刚战死。",
+                    "活着的暂时苟且偷生，",
+                    "死去的永远结束了。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "茅屋为秋风所破歌",
+                author: "（唐）杜甫",
+                lines: [
+                    "八月秋高风怒号",
+                    "卷我屋上三重茅",
+                    "茅飞渡江洒江郊",
+                    "高者挂罥长林梢",
+                    "下者飘转沉塘坳",
+                    "南村群童欺我老无力",
+                    "忍能对面为盗贼",
+                    "公然抱茅入竹去",
+                    "唇焦口燥呼不得",
+                    "归来倚杖自叹息"
+                ],
+                explanations: [
+                    "八月秋高，风声怒号，",
+                    "卷走我屋上的三层茅草。",
+                    "茅草飞过江，散落在江郊，",
+                    "高的挂在树梢上，",
+                    "低的飘转沉入池塘。",
+                    "南村的孩子们欺负我年老无力，",
+                    "竟能当面做盗贼，",
+                    "公然抱着茅草进入竹林，",
+                    "我喊得唇焦口燥也喊不住，",
+                    "回来拄着拐杖独自叹息。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "卖炭翁",
+                author: "（唐）白居易",
+                lines: [
+                    "卖炭翁",
+                    "伐薪烧炭南山中",
+                    "满面尘灰烟火色",
+                    "两鬓苍苍十指黑",
+                    "卖炭得钱何所营",
+                    "身上衣裳口中食",
+                    "可怜身上衣正单",
+                    "心忧炭贱愿天寒",
+                    "夜来城外一尺雪",
+                    "晓驾炭车辗冰辙",
+                    "牛困人饥日已高",
+                    "市南门外泥中歇"
+                ],
+                explanations: [
+                    "卖炭的老翁，",
+                    "在南山中砍柴烧炭。",
+                    "满脸尘灰，烟火熏烤的颜色，",
+                    "两鬓斑白，十指漆黑。",
+                    "卖炭得到的钱用来做什么？",
+                    "身上的衣裳，口中的食物。",
+                    "可怜身上衣裳正单薄，",
+                    "心里担心炭价便宜，希望天冷。",
+                    "夜里城外下了一尺厚的雪，",
+                    "清晨驾着炭车在冰辙上碾过。",
+                    "牛累了，人饿了，太阳已经很高，",
+                    "在市场南门外泥中休息。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "式微",
+                author: "《诗经》",
+                lines: [
+                    "式微式微",
+                    "胡不归",
+                    "微君之故",
+                    "胡为乎中露",
+                    "式微式微",
+                    "胡不归",
+                    "微君之躬",
+                    "胡为乎泥中"
+                ],
+                explanations: [
+                    "天黑了，天黑了，",
+                    "为什么不回家？",
+                    "如果不是为了君主的事，",
+                    "为什么会在露水中？",
+                    "天黑了，天黑了，",
+                    "为什么不回家？",
+                    "如果不是为了君主本人，",
+                    "为什么会在泥水中？"
+                ]
+            },
+            {
+                grade: 8,
+                title: "子衿",
+                author: "《诗经》",
+                lines: [
+                    "青青子衿",
+                    "悠悠我心",
+                    "纵我不往",
+                    "子宁不嗣音",
+                    "青青子佩",
+                    "悠悠我思",
+                    "纵我不往",
+                    "子宁不来",
+                    "挑兮达兮",
+                    "在城阙兮",
+                    "一日不见",
+                    "如三月兮"
+                ],
+                explanations: [
+                    "青青的是你的衣领，",
+                    "悠悠的是我的心。",
+                    "即使我不去找你，",
+                    "你难道不传个音信吗？",
+                    "青青的是你的佩玉，",
+                    "悠悠的是我的思念。",
+                    "即使我不去找你，",
+                    "你难道不来吗？",
+                    "走来走去，",
+                    "在城楼上，",
+                    "一天不见你，",
+                    "像过了三个月一样。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "送杜少府之任蜀州",
+                author: "（唐）王勃",
+                lines: [
+                    "城阙辅三秦",
+                    "风烟望五津",
+                    "与君离别意",
+                    "同是宦游人",
+                    "海内存知己",
+                    "天涯若比邻",
+                    "无为在歧路",
+                    "儿女共沾巾"
+                ],
+                explanations: [
+                    "京城辅佐着三秦大地，",
+                    "在风烟中遥望五津渡口。",
+                    "与你离别的情意，",
+                    "我们都是在外做官的人。",
+                    "四海之内有知心朋友，",
+                    "天涯海角也像邻居一样近。",
+                    "不要在岔路口，",
+                    "像小儿女一样泪湿手巾。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "望洞庭湖赠张丞相",
+                author: "（唐）孟浩然",
+                lines: [
+                    "八月湖水平",
+                    "涵虚混太清",
+                    "气蒸云梦泽",
+                    "波撼岳阳城",
+                    "欲济无舟楫",
+                    "端居耻圣明",
+                    "坐观垂钓者",
+                    "徒有羡鱼情"
+                ],
+                explanations: [
+                    "八月洞庭湖水涨满，",
+                    "包含着天空，与天相混。",
+                    "水气蒸腾着云梦泽，",
+                    "波涛撼动着岳阳城。",
+                    "想要渡湖却没有船桨，",
+                    "闲居着感到惭愧于圣明的时代。",
+                    "坐着观看垂钓的人，",
+                    "白白地有羡慕鱼的心情。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "题破山寺后禅院",
+                author: "（唐）常建",
+                lines: [
+                    "清晨入古寺",
+                    "初日照高林",
+                    "曲径通幽处",
+                    "禅房花木深",
+                    "山光悦鸟性",
+                    "潭影空人心",
+                    "万籁此都寂",
+                    "但余钟磬音"
+                ],
+                explanations: [
+                    "清晨进入古老的寺庙，",
+                    "初升的太阳照在高高的树林上。",
+                    "弯曲的小路通向幽静的地方，",
+                    "禅房在花木深处。",
+                    "山光使鸟儿心情愉悦，",
+                    "潭中的倒影使人心中空明。",
+                    "万籁在此都寂静无声，",
+                    "只留下钟磬的声音。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "送友人",
+                author: "（唐）李白",
+                lines: [
+                    "青山横北郭",
+                    "白水绕东城",
+                    "此地一为别",
+                    "孤蓬万里征",
+                    "浮云游子意",
+                    "落日故人情",
+                    "挥手自兹去",
+                    "萧萧班马鸣"
+                ],
+                explanations: [
+                    "青山横亘在北城外，",
+                    "白水环绕着东城。",
+                    "在这里分别之后，",
+                    "你就像孤独的蓬草万里远行。",
+                    "浮云是游子的心意，",
+                    "落日是故人的情怀。",
+                    "挥手从此离去，",
+                    "萧萧的马鸣声响起。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "卜算子",
+                author: "（宋）李之仪",
+                lines: [
+                    "我住长江头",
+                    "君住长江尾",
+                    "日日思君不见君",
+                    "共饮长江水",
+                    "此水几时休",
+                    "此恨何时已",
+                    "只愿君心似我心",
+                    "定不负相思意"
+                ],
+                explanations: [
+                    "我住在长江的上游，",
+                    "你住在长江的下游。",
+                    "天天思念你却见不到你，",
+                    "我们共同饮用长江的水。",
+                    "这江水什么时候停止流动？",
+                    "这思念什么时候结束？",
+                    "只愿你的心像我的心，",
+                    "一定不辜负相思的情意。"
+                ]
+            },
+            {
+                grade: 8,
+                title: "卜算子・咏梅",
+                author: "（宋）陆游",
+                lines: [
+                    "驿外断桥边",
+                    "寂寞开无主",
+                    "已是黄昏独自愁",
+                    "更着风和雨",
+                    "无意苦争春",
+                    "一任群芳妒",
+                    "零落成泥碾作尘",
+                    "只有香如故"
+                ],
+                explanations: [
+                    "驿站外的断桥边，",
+                    "寂寞地开放，无人欣赏。",
+                    "已经是黄昏，独自忧愁，",
+                    "再加上风和雨。",
+                    "无意苦苦地争春，",
+                    "任凭群花嫉妒。",
+                    "凋零成泥，碾作尘土，",
+                    "只有香气依然如故。"
+                ]
+            }
+        ]
+        // 九年级古诗词
+        const grade9Poems = [
+            {
+                grade: 9,
+                title: "沁园春・雪",
+                author: "（现代）毛泽东",
+                lines: [
+                    "北国风光，千里冰封，万里雪飘。",
+                    "望长城内外，惟余莽莽；大河上下，顿失滔滔。",
+                    "山舞银蛇，原驰蜡象，欲与天公试比高。",
+                    "须晴日，看红装素裹，分外妖娆。",
+                    "江山如此多娇，引无数英雄竞折腰。",
+                    "惜秦皇汉武，略输文采；唐宗宋祖，稍逊风骚。",
+                    "一代天骄，成吉思汗，只识弯弓射大雕。",
+                    "俱往矣，数风流人物，还看今朝。"
+                ],
+                explanations: [
+                    "北方的风光，千里大地冰封，万里长空雪飘。",
+                    "远望长城内外，只剩下白茫茫的一片；黄河上下，顿时失去了滔滔水势。",
+                    "群山像银蛇在舞动，高原像白象在奔跑，想要与天公比一比高低。",
+                    "等到晴天的时候，看红日与白雪交相辉映，格外美丽动人。",
+                    "江山如此美丽多姿，引得无数英雄为之倾倒。",
+                    "可惜秦始皇、汉武帝，略差文采；唐太宗、宋太祖，稍逊风骚。",
+                    "一代天之骄子成吉思汗，只懂得弯弓射大雕。",
+                    "都已成为过去，要数真正的风流人物，还要看今天的人们。"
+                ]
+            },
+            {
+                grade: 9,
+                title: "行路难・其一",
+                author: "（唐）李白",
+                lines: [
+                    "金樽清酒斗十千，玉盘珍羞直万钱。",
+                    "停杯投箸不能食，拔剑四顾心茫然。",
+                    "欲渡黄河冰塞川，将登太行雪满山。",
+                    "闲来垂钓碧溪上，忽复乘舟梦日边。",
+                    "行路难，行路难，多歧路，今安在？",
+                    "长风破浪会有时，直挂云帆济沧海。"
+                ],
+                explanations: [
+                    "金杯中的清酒一斗值十千钱，玉盘里的珍贵菜肴价值万钱。",
+                    "放下酒杯扔掉筷子无法进食，拔出宝剑环顾四周心中茫然。",
+                    "想要渡过黄河却被冰雪堵塞，想要登上太行山却大雪满山。",
+                    "闲暇时在碧绿的溪边垂钓，忽然又梦见乘船来到太阳旁边。",
+                    "行路难啊，行路难，这么多岔路，我现在在哪里？",
+                    "总会有乘风破浪的那一天，到那时定要扬起云帆横渡沧海。"
+                ]
+            },
+            {
+                grade: 9,
+                title: "酬乐天扬州初逢席上见赠",
+                author: "（唐）刘禹锡",
+                lines: [
+                    "巴山楚水凄凉地，二十三年弃置身。",
+                    "怀旧空吟闻笛赋，到乡翻似烂柯人。",
+                    "沉舟侧畔千帆过，病树前头万木春。",
+                    "今日听君歌一曲，暂凭杯酒长精神。"
+                ],
+                explanations: [
+                    "巴山楚水这些凄凉的地方，二十三年来我被弃置在这里。",
+                    "怀念故友只能空吟《闻笛赋》，回到故乡反而像是烂柯人。",
+                    "沉船旁边千帆驶过，枯树前面万木逢春。",
+                    "今天听你唱了一首歌，暂且借这杯酒振作精神。"
+                ]
+            },
+            {
+                grade: 9,
+                title: "水调歌头",
+                author: "（宋）苏轼",
+                lines: [
+                    "明月几时有？把酒问青天。",
+                    "不知天上宫阙，今夕是何年。",
+                    "我欲乘风归去，又恐琼楼玉宇，高处不胜寒。",
+                    "起舞弄清影，何似在人间。",
+                    "转朱阁，低绮户，照无眠。",
+                    "不应有恨，何事长向别时圆？",
+                    "人有悲欢离合，月有阴晴圆缺，此事古难全。",
+                    "但愿人长久，千里共婵娟。"
+                ],
+                explanations: [
+                    "明月从什么时候开始有的？我举起酒杯问苍天。",
+                    "不知道天上的宫殿，今晚是哪一年。",
+                    "我想乘着风回到天上，又担心美玉砌成的楼宇，高处太寒冷。",
+                    "起身舞蹈玩赏着清朗的影子，哪里比得上在人间。",
+                    "月光转过朱红的楼阁，低低地穿过雕花的门窗，照着无法入睡的人。",
+                    "月亮不应该有什么怨恨，为什么总是在人们离别时才圆呢？",
+                    "人有悲欢离合，月有阴晴圆缺，这种事自古以来就难以周全。",
+                    "只希望人们都能长久平安，即使相隔千里，也能共享这美好的月光。"
+                ]
+            },
+            {
+                grade: 9,
+                title: "月夜忆舍弟",
+                author: "（唐）杜甫",
+                lines: [
+                    "戍鼓断人行，边秋一雁声。",
+                    "露从今夜白，月是故乡明。",
+                    "有弟皆分散，无家问死生。",
+                    "寄书长不达，况乃未休兵。"
+                ],
+                explanations: [
+                    "戍楼的鼓声断了行人，边塞的秋天传来一声雁鸣。",
+                    "露水从今夜开始变白，月亮还是故乡的最明亮。",
+                    "有弟弟们却都分散各地，没有家可以询问生死。",
+                    "寄信常常收不到，何况战争还没有停止。"
+                ]
+            },
+            {
+                grade: 9,
+                title: "长沙过贾谊宅",
+                author: "（唐）刘长卿",
+                lines: [
+                    "三年谪宦此栖迟，万古惟留楚客悲。",
+                    "秋草独寻人去后，寒林空见日斜时。",
+                    "汉文有道恩犹薄，湘水无情吊岂知？",
+                    "寂寂江山摇落处，怜君何事到天涯！"
+                ],
+                explanations: [
+                    "三年贬官在这里停留，万古只留下楚客的悲伤。",
+                    "秋草中独自寻找人去后的痕迹，寒林中空见夕阳西下。",
+                    "汉文帝虽然有道但恩情还是浅薄，湘水无情怎能理解凭吊之情？",
+                    "在这寂寞江山草木凋零的地方，可怜你为了什么事来到天涯！"
+                ]
+            },
+            {
+                grade: 9,
+                title: "左迁至蓝关示侄孙湘",
+                author: "（唐）韩愈",
+                lines: [
+                    "一封朝奏九重天，夕贬潮州路八千。",
+                    "欲为圣明除弊事，肯将衰朽惜残年！",
+                    "云横秦岭家何在？雪拥蓝关马不前。",
+                    "知汝远来应有意，好收吾骨瘴江边。"
+                ],
+                explanations: [
+                    "一封奏章早上呈给皇帝，晚上就被贬到八千里外的潮州。",
+                    "想要为圣明的君主革除弊政，哪里肯因为衰老而珍惜晚年！",
+                    "白云横亘秦岭，家乡在哪里？大雪阻塞蓝关，马儿不肯前进。",
+                    "知道你远来应该是有意，好在瘴江边收我的骸骨。"
+                ]
+            },
+            {
+                grade: 9,
+                title: "商山早行",
+                author: "（唐）温庭筠",
+                lines: [
+                    "晨起动征铎，客行悲故乡。",
+                    "鸡声茅店月，人迹板桥霜。",
+                    "槲叶落山路，枳花明驿墙。",
+                    "因思杜陵梦，凫雁满回塘。"
+                ],
+                explanations: [
+                    "清晨起来响起了出征的铃声，游子出行思念故乡。",
+                    "鸡叫声中茅草店上挂着月亮，人的足迹印在结霜的板桥上。",
+                    "槲树叶飘落在山路上，枳树花开在驿墙边。",
+                    "因此想起杜陵的梦，野鸭大雁满池塘。"
+                ]
+            },
+            {
+                grade: 9,
+                title: "咸阳城东楼",
+                author: "（唐）许浑",
+                lines: [
+                    "一上高城万里愁，蒹葭杨柳似汀洲。",
+                    "溪云初起日沉阁，山雨欲来风满楼。",
+                    "鸟下绿芜秦苑夕，蝉鸣黄叶汉宫秋。",
+                    "行人莫问当年事，故国东来渭水流。"
+                ],
+                explanations: [
+                    "一登上高楼万里愁绪涌上心头，蒹葭杨柳好似水中的小洲。",
+                    "溪边云雾初起夕阳落在楼阁，山雨将要来临狂风满楼。",
+                    "鸟儿飞下绿草丛生的秦苑旧址，蝉在黄叶中鸣叫着汉宫的秋天。",
+                    "过路人不要问当年的往事，故国东来只有渭水悠悠流淌。"
+                ]
+            },
+            {
+                grade: 9,
+                title: "无题",
+                author: "（唐）李商隐",
+                lines: [
+                    "相见时难别亦难，东风无力百花残。",
+                    "春蚕到死丝方尽，蜡炬成灰泪始干。",
+                    "晓镜但愁云鬓改，夜吟应觉月光寒。",
+                    "蓬山此去无多路，青鸟殷勤为探看。"
+                ],
+                explanations: [
+                    "相见困难分别也困难，东风无力百花凋残。",
+                    "春蚕到死丝才吐尽，蜡烛成灰泪才流干。",
+                    "早晨照镜只愁云鬓改变，夜晚吟诗应觉月光寒冷。",
+                    "蓬莱山离这里没有多远，青鸟殷勤地去探望。"
+                ]
+            },
+            {
+                grade: 9,
+                title: "行香子",
+                author: "（宋）秦观",
+                lines: [
+                    "树绕村庄，水满陂塘。",
+                    "倚东风，豪兴徜徉。",
+                    "小园几许，收尽春光。",
+                    "有桃花红，李花白，菜花黄。",
+                    "远远围墙，隐隐茅堂。",
+                    "飏青旗，流水桥旁。",
+                    "偶然乘兴，步过东冈。",
+                    "正莺儿啼，燕儿舞，蝶儿忙。"
+                ],
+                explanations: [
+                    "绿树环绕着村庄，春水涨满了池塘。",
+                    "倚着东风，我兴致勃勃地漫步。",
+                    "小小的园林有多少，收尽了春天的风光。",
+                    "有红色的桃花，白色的李花，黄色的菜花。",
+                    "远远的围墙，隐约的茅屋。",
+                    "青色的酒旗飘扬，在流水桥旁。",
+                    "偶然乘着兴致，走过东边的小山冈。",
+                    "正是黄莺啼叫，燕子飞舞，蝴蝶忙碌的时候。"
+                ]
+            },
+            {
+                grade: 9,
+                title: "丑奴儿",
+                author: "（宋）辛弃疾",
+                lines: [
+                    "少年不识愁滋味，爱上层楼。",
+                    "爱上层楼，为赋新词强说愁。",
+                    "而今识尽愁滋味，欲说还休。",
+                    "欲说还休，却道天凉好个秋。"
+                ],
+                explanations: [
+                    "少年时不知道愁的滋味，喜欢登上高楼。",
+                    "喜欢登上高楼，为了写新词勉强说愁。",
+                    "如今尝尽了愁的滋味，想要说却又停下。",
+                    "想要说却又停下，却说天气凉爽好个秋天。"
+                ]
+            },
+            {
+                grade: 9,
+                title: "渔家傲・秋思",
+                author: "（宋）范仲淹",
+                lines: [
+                    "塞下秋来风景异，衡阳雁去无留意。",
+                    "四面边声连角起，千嶂里，长烟落日孤城闭。",
+                    "浊酒一杯家万里，燕然未勒归无计。",
+                    "羌管悠悠霜满地，人不寐，将军白发征夫泪。"
+                ],
+                explanations: [
+                    "边塞秋天来到风景奇异，衡阳的大雁离去没有留恋之意。",
+                    "四面边声伴随着号角响起，在千山万壑中，长烟落日孤城紧闭。",
+                    "一杯浊酒家在万里之外，燕然山还未刻石记功，回去没有计划。",
+                    "羌笛声悠扬，霜满大地，人不能入睡，将军白了头发，征夫流下眼泪。"
+                ]
+            },
+            {
+                grade: 9,
+                title: "江城子・密州出猎",
+                author: "（宋）苏轼",
+                lines: [
+                    "老夫聊发少年狂，左牵黄，右擎苍。",
+                    "锦帽貂裘，千骑卷平冈。",
+                    "为报倾城随太守，亲射虎，看孙郎。",
+                    "酒酣胸胆尚开张，鬓微霜，又何妨！",
+                    "持节云中，何日遣冯唐？",
+                    "会挽雕弓如满月，西北望，射天狼。"
+                ],
+                explanations: [
+                    "老夫我姑且抒发一下少年的狂热，左手牵着黄犬，右手托着苍鹰。",
+                    "戴着锦帽穿着貂裘，千骑奔驰席卷平缓的山冈。",
+                    "为了报答全城的人跟随太守，我亲自射虎，看那孙郎的风采。",
+                    "酒意正浓时胸襟胆气更加开阔，鬓角微白又有什么妨害！",
+                    "手持符节镇守云中，什么时候派遣冯唐？",
+                    "我将要拉满雕弓如满月，向西北望去，射杀天狼星。"
+                ]
+            },
+            {
+                grade: 9,
+                title: "破阵子",
+                author: "（宋）辛弃疾",
+                lines: [
+                    "醉里挑灯看剑，梦回吹角连营。",
+                    "八百里分麾下炙，五十弦翻塞外声。",
+                    "沙场秋点兵。",
+                    "马作的卢飞快，弓如霹雳弦惊。",
+                    "了却君王天下事，赢得生前身后名。",
+                    "可怜白发生！"
+                ],
+                explanations: [
+                    "醉酒中挑亮灯芯观看宝剑，梦中回到号角连天的军营。",
+                    "八百里范围内分给部下烤肉，五十弦乐器奏出边塞的声音。",
+                    "秋天的沙场上正在检阅军队。",
+                    "战马像的卢马一样飞快，弓箭像霹雳一样弦声惊人。",
+                    "完成君王统一天下的大业，赢得生前身后的名声。",
+                    "可惜头发已经白了！"
+                ]
+            },
+            {
+                grade: 9,
+                title: "满江红・小住京华",
+                author: "（清）秋瑾",
+                lines: [
+                    "小住京华，早又是，中秋佳节。",
+                    "为篱下，黄花开遍，秋容如拭。",
+                    "四面歌残终破楚，八年风味徒思浙。",
+                    "苦将侬，强派作蛾眉，殊未屑！",
+                    "身不得，男儿列。",
+                    "心却比，男儿烈！",
+                    "算平生肝胆，因人常热。",
+                    "俗子胸襟谁识我？英雄末路当磨折。",
+                    "莽红尘，何处觅知音？青衫湿！"
+                ],
+                explanations: [
+                    "暂时居住在京城，很快又是中秋佳节。",
+                    "篱笆下面，黄花开遍，秋天的景色像擦拭过一样明净。",
+                    "四面歌声渐渐消散终于突破重围，八年的生活徒然思念浙江。",
+                    "苦苦地把我，强行当作女子，实在不屑一顾！",
+                    "身体不能列入男儿的行列。",
+                    "心却比男儿更加刚烈！",
+                    "回想平生的肝胆，常常为他人而热血沸腾。",
+                    "庸人的胸襟谁能理解我？英雄走到末路应当经受磨折。",
+                    "在茫茫红尘中，到哪里寻找知音？青衫都湿透了！"
+                ]
+            },
+            {
+                grade: 9,
+                title: "十五从军征",
+                author: "（汉）乐府诗",
+                lines: [
+                    "十五从军征，八十始得归。",
+                    "道逢乡里人：'家中有阿谁？'",
+                    "'遥看是君家，松柏冢累累。'",
+                    "兔从狗窦入，雉从梁上飞。",
+                    "中庭生旅谷，井上生旅葵。",
+                    "舂谷持作饭，采葵持作羹。",
+                    "羹饭一时熟，不知贻阿谁？",
+                    "出门东向看，泪落沾我衣。"
+                ],
+                explanations: [
+                    "十五岁就参军出征，八十岁才得以回家。",
+                    "路上遇到同乡人：'家里还有什么人？'",
+                    "'远远看去就是你的家，松柏丛中有许多坟墓。'",
+                    "兔子从狗洞里钻进来，野鸡从房梁上飞过。",
+                    "庭院中长着野生的谷子，井边长着野生的葵菜。",
+                    "舂谷用来做饭，采葵用来做汤。",
+                    "汤饭一会儿就做好了，不知道送给谁吃？",
+                    "出门向东望去，眼泪落下沾湿了我的衣裳。"
+                ]
+            },
+            
+        ]
+        //课外诵读
+        const extraPoems = [
+            {
+                grade: 10,
+                title: "白雪歌送武判官归京",
+                author: "（唐）岑参",
+                lines: [
+                    "北风卷地白草折，胡天八月即飞雪。",
+                    "忽如一夜春风来，千树万树梨花开。",
+                    "散入珠帘湿罗幕，狐裘不暖锦衾薄。",
+                    "将军角弓不得控，都护铁衣冷难着。",
+                    "瀚海阑干百丈冰，愁云惨淡万里凝。",
+                    "中军置酒饮归客，胡琴琵琶与羌笛。",
+                    "纷纷暮雪下辕门，风掣红旗冻不翻。",
+                    "轮台东门送君去，去时雪满天山路。",
+                    "山回路转不见君，雪上空留马行处。"
+                ],
+                explanations: [
+                    "北风席卷大地白草折断，胡地八月就飘起了大雪。",
+                    "忽然像一夜春风吹来，千树万树梨花盛开。",
+                    "雪花飘入珠帘打湿了罗幕，狐皮大衣不暖和锦缎被子太薄。",
+                    "将军的角弓拉不开，都护的铁甲冰冷难以穿着。",
+                    "浩瀚的沙漠结了百丈厚的冰，愁云惨淡在万里上空凝结。",
+                    "中军帐中摆酒宴送别归客，胡琴琵琶和羌笛齐奏。",
+                    "傍晚的大雪纷纷扬扬落在辕门，狂风拉扯着红旗冻得不能翻动。",
+                    "在轮台东门送你离去，走的时候大雪铺满天山路。",
+                    "山路回转看不见你，雪上只留下马走过的地方。"
+                ]
+            },
+            {
+                grade: 10,
+                title: "南乡子",
+                author: "（宋）辛弃疾",
+                lines: [
+                    "何处望神州？满眼风光北固楼。",
+                    "千古兴亡多少事？悠悠。",
+                    "不尽长江滚滚流。",
+                    "年少万兜鍪，坐断东南战未休。",
+                    "天下英雄谁敌手？曹刘。",
+                    "生子当如孙仲谋。"
+                ],
+                explanations: [
+                    "在哪里眺望神州大地？满眼风光尽在北固楼上。",
+                    "千古以来兴亡多少事？无穷无尽。",
+                    "不尽的长江滚滚向东流。",
+                    "孙权年少时就统率万军，占据东南战事不断。",
+                    "天下的英雄谁是他的对手？曹操和刘备。",
+                    "生儿子就应当像孙仲谋那样。"
+                ]
+            },
+            {
+                grade: 10,
+                title: "过零丁洋",
+                author: "（宋）文天祥",
+                lines: [
+                    "辛苦遭逢起一经，干戈寥落四周星。",
+                    "山河破碎风飘絮，身世浮沉雨打萍。",
+                    "惶恐滩头说惶恐，零丁洋里叹零丁。",
+                    "人生自古谁无死，留取丹心照汗青。"
+                ],
+                explanations: [
+                    "辛苦遭遇从科举考试开始，战火稀疏已经四年了。",
+                    "山河破碎如风中飘絮，身世浮沉如雨打浮萍。",
+                    "在惶恐滩头诉说惶恐，在零丁洋里叹息零丁。",
+                    "自古以来谁能免于一死？留下赤诚的忠心照耀史册。"
+                ]
+            },
+            {
+                grade: 10,
+                title: "山坡羊・潼关怀古",
+                author: "（元）张养浩",
+                lines: [
+                    "峰峦如聚，波涛如怒，山河表里潼关路。",
+                    "望西都，意踌躇。",
+                    "伤心秦汉经行处，宫阙万间都做了土。",
+                    "兴，百姓苦；亡，百姓苦。"
+                ],
+                explanations: [
+                    "山峰像聚集在一起，波涛像愤怒咆哮，山河内外是通往潼关的道路。",
+                    "望向西都长安，心中犹豫不决。",
+                    "伤心地走过秦汉的故地，万间宫殿都变成了泥土。",
+                    "朝代兴起，百姓受苦；朝代灭亡，百姓也受苦。"
+                ]
+            },
+            {
+                grade: 10,
+                title: "定风波",
+                author: "（宋）苏轼",
+                lines: [
+                    "莫听穿林打叶声，何妨吟啸且徐行。",
+                    "竹杖芒鞋轻胜马，谁怕？一蓑烟雨任平生。",
+                    "料峭春风吹酒醒，微冷，山头斜照却相迎。",
+                    "回首向来萧瑟处，归去，也无风雨也无晴。"
+                ],
+                explanations: [
+                    "不要听那穿林打叶的雨声，何妨一边吟诗长啸一边慢慢行走。",
+                    "竹杖和草鞋比马还轻快，谁怕呢？一件蓑衣在风雨中度过一生。",
+                    "料峭的春风吹醒了酒意，微冷，山头的斜阳却来迎接。",
+                    "回头看刚才风雨萧瑟的地方，回去吧，既没有风雨也没有晴天。"
+                ]
+            },
+            {
+                grade: 10,
+                title: "临江仙",
+                author: "（宋）苏轼",
+                lines: [
+                    "夜饮东坡醒复醉，归来仿佛三更。",
+                    "家童鼻息已雷鸣，敲门都不应，倚杖听江声。",
+                    "长恨此身非我有，何时忘却营营？",
+                    "夜阑风静縠纹平，小舟从此逝，江海寄余生。"
+                ],
+                explanations: [
+                    "夜晚在东坡饮酒醒了又醉，回来时仿佛已是三更时分。",
+                    "家童的鼻息声已经像雷鸣，敲门都不应答，拄着拐杖听江水声。",
+                    "常常遗憾这身躯不属于自己，什么时候才能忘却世俗的纷扰？",
+                    "夜深了风静了，水面波纹平静，乘着小船从此离去，在江海中寄托余生。"
+                ]
+            },
+            {
+                grade: 10,
+                title: "太常引",
+                author: "（宋）辛弃疾",
+                lines: [
+                    "一轮秋影转金波，飞镜又重磨。",
+                    "把酒问姮娥：被白发，欺人奈何？",
+                    "乘风好去，长空万里，直下看山河。",
+                    "斫去桂婆娑，人道是，清光更多。"
+                ],
+                explanations: [
+                    "一轮秋天的影子转动着金色的波纹，飞镜又重新磨亮。",
+                    "举酒问嫦娥：被白发欺凌，又能怎么样？",
+                    "乘着风好去，长空万里，直接向下看山河。",
+                    "砍去那婆娑的桂树，人们说，清光会更多。"
+                ]
+            },
+            {
+                grade: 10,
+                title: "浣溪沙",
+                author: "（宋）晏殊",
+                lines: [
+                    "一曲新词酒一杯，去年天气旧亭台。",
+                    "夕阳西下几时回？",
+                    "无可奈何花落去，似曾相识燕归来。",
+                    "小园香径独徘徊。"
+                ],
+                explanations: [
+                    "一曲新词一杯酒，去年的天气旧日的亭台。",
+                    "夕阳西下什么时候能回来？",
+                    "无可奈何花凋谢了，似曾相识的燕子又飞回来了。",
+                    "在小园的香径上独自徘徊。"
+                ]
+            },
+            {
+                grade: 10,
+                title: "南安军",
+                author: "（宋）文天祥",
+                lines: [
+                    "梅花南北路，风雨湿征衣。",
+                    "出岭同谁出？归乡如不归！",
+                    "山河千古在，城郭一时非。",
+                    "饿死真吾志，梦中行采薇。"
+                ],
+                explanations: [
+                    "梅花盛开在南北路上，风雨打湿了远行的衣裳。",
+                    "出岭时和谁一起出来？回乡却好像没有回家！",
+                    "山河千古长存，城郭一时之间就不属于我们了。",
+                    "饿死真是我的志向，梦中还在采摘薇菜。"
+                ]
+            },
+            {
+                grade: 10,
+                title: "别云间",
+                author: "（明）夏完淳",
+                lines: [
+                    "三年羁旅客，今日又南冠。",
+                    "无限河山泪，谁言天地宽？",
+                    "已知泉路近，欲别故乡难。",
+                    "毅魄归来日，灵旗空际看。"
+                ],
+                explanations: [
+                    "三年作客他乡，今天又成了囚徒。",
+                    "无限的山河之泪，谁说天地宽广？",
+                    "已经知道黄泉路近了，想要告别故乡很难。",
+                    "刚毅的魂魄归来之日，灵旗在空中招展。"
+                ]
+            },
+            {
+                grade: 10,
+                title: "山坡羊・骊山怀古",
+                author: "（元）张养浩",
+                lines: [
+                    "骊山四顾，阿房一炬，当时奢侈今何处？",
+                    "只见草萧疏，水萦纡。",
+                    "至今遗恨迷烟树，列国周齐秦汉楚。",
+                    "赢，都变做了土；输，都变做了土。"
+                ],
+                explanations: [
+                    "环顾骊山四周，阿房宫一把火烧了，当时的奢侈现在在哪里？",
+                    "只见草木稀疏，水波回旋。",
+                    "至今遗恨迷失在烟雾笼罩的树林中，列国时期的周齐秦汉楚。",
+                    "赢了的，都变成了土；输了的，也都变成了土。"
+                ]
+            },
+            {
+                grade: 10,
+                title: "朝天子・咏喇叭",
+                author: "（明）王磐",
+                lines: [
+                    "喇叭，锁哪，曲儿小腔儿大。",
+                    "官船来往乱如麻，全仗你抬声价。",
+                    "军听了军愁，民听了民怕。",
+                    "哪里去辨甚么真共假？",
+                    "眼见的吹翻了这家，吹伤了那家，",
+                    "只吹的水尽鹅飞罢！"
+                ],
+                explanations: [
+                    "喇叭，唢呐，曲子小但腔调大。",
+                    "官船来往乱如麻，全靠你抬高声价。",
+                    "军人听了军人发愁，百姓听了百姓害怕。",
+                    "哪里去分辨什么真假？",
+                    "眼看着吹翻了这家，吹伤了那家，",
+                    "只吹得水干了鹅飞了才罢休！"
+                ]
+            }
+        ]
+
+        
+
+        
+        
+        // 当前使用的题库（默认为一年级）
+        let poems = grade1Poems;
+
+        // 当前状态
+        let currentState = {
+            currentPoemIndex: 0,
+            currentPoem: null,
+            scrambledLines: [],
+            answerLines: [],
+            usedPoemIndices: [], // 已使用的题目索引
+            totalQuestions: 0,    // 总题目数
+            correctAnswers: 0,   // 正确答案数
+            wrongAnswers: 0,      // 错误答案数
+            isGameCompleted: false, // 游戏是否完成
+            isAnswerChecked: false, // 是否已检查答案
+            currentGrade: 1 // 当前年级
+        };
+
+        // ========== 成就系统 ==========
+        const achievements = [
+            { id: 'first_poem', name: '初识诗词', desc: '完成第一首古诗排序', icon: '📜' },
+            { id: 'poems_10', name: '诗词入门', desc: '累计完成10首古诗', icon: '📖' },
+            { id: 'poems_50', name: '诗词达人', desc: '累计完成50首古诗', icon: '📚' },
+            { id: 'poems_100', name: '诗词大师', desc: '累计完成100首古诗', icon: '🎓' },
+            { id: 'streak_5', name: '连胜新星', desc: '连续答对5题', icon: '⭐' },
+            { id: 'streak_10', name: '连胜高手', desc: '连续答对10题', icon: '🌟' },
+            { id: 'grade_complete', name: '年级通关', desc: '完成一个年级全部古诗', icon: '🏅' },
+            { id: 'perfect_game', name: '完美表现', desc: '一轮游戏全部答对', icon: '💯' },
+            { id: 'explorer', name: '探索者', desc: '尝试3个不同年级', icon: '🧭' },
+            { id: 'master', name: '全能大师', desc: '完成所有年级各1首', icon: '🏆' }
+        ];
+
+        let achieveData = { 
+            unlocked: [], 
+            totalPoems: 0, 
+            streak: 0, 
+            maxStreak: 0,
+            gradesTriedSet: [],
+            gradesCompletedSet: []
+        };
+
+        function loadAchieveData() {
+            const saved = localStorage.getItem('poem_achieve');
+            if (saved) {
+                achieveData = JSON.parse(saved);
+            }
+        }
+
+        function saveAchieveData() {
+            localStorage.setItem('poem_achieve', JSON.stringify(achieveData));
+        }
+
+        function unlockAchievement(id) {
+            if (achieveData.unlocked.includes(id)) return;
+            achieveData.unlocked.push(id);
+            saveAchieveData();
+            
+            const ach = achievements.find(a => a.id === id);
+            if (ach) {
+                showAchievementToast(ach);
+            }
+        }
+
+        function showAchievementToast(ach) {
+            const toast = document.createElement('div');
+            toast.className = 'achievement-toast';
+            toast.innerHTML = `<span style="font-size:1.5em">${ach.icon}</span> 成就解锁：${ach.name}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function showAchievementModal() {
+            renderAchievementList();
+            document.getElementById('achievementModal').classList.add('show');
+        }
+
+        function closeAchievementModal() {
+            document.getElementById('achievementModal').classList.remove('show');
+        }
+
+        function renderAchievementList() {
+            const list = document.getElementById('achievementList');
+            list.innerHTML = achievements.map(ach => {
+                const unlocked = achieveData.unlocked.includes(ach.id);
+                return `
+                    <div class="achievement-item ${unlocked ? 'unlocked' : 'locked'}">
+                        <div class="achievement-icon">${ach.icon}</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">${ach.name}</div>
+                            <div class="achievement-desc">${ach.desc}</div>
+                        </div>
+                        ${unlocked ? '<span style="color:#28a745;font-size:1.3em">✓</span>' : '<span style="color:#999;font-size:1.2em">🔒</span>'}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function clearAllAchievements() {
+            if (confirm('确定要清除所有成就和游戏记录吗？')) {
+                achieveData = { 
+                    unlocked: [], 
+                    totalPoems: 0, 
+                    streak: 0, 
+                    maxStreak: 0,
+                    gradesTriedSet: [],
+                    gradesCompletedSet: []
+                };
+                saveAchieveData();
+                localStorage.removeItem('poemGameHistory');
+                renderAchievementList();
+                displayHistory();
+                alert('已清除所有记录');
+            }
+        }
+
+        function checkPoemAchievements(isCorrect) {
+            // 记录尝试的年级
+            if (!achieveData.gradesTriedSet.includes(currentState.currentGrade)) {
+                achieveData.gradesTriedSet.push(currentState.currentGrade);
+            }
+            
+            if (isCorrect) {
+                achieveData.totalPoems++;
+                achieveData.streak++;
+                if (achieveData.streak > achieveData.maxStreak) {
+                    achieveData.maxStreak = achieveData.streak;
+                }
+                
+                // 首次完成
+                if (achieveData.totalPoems === 1) unlockAchievement('first_poem');
+                if (achieveData.totalPoems >= 10) unlockAchievement('poems_10');
+                if (achieveData.totalPoems >= 50) unlockAchievement('poems_50');
+                if (achieveData.totalPoems >= 100) unlockAchievement('poems_100');
+                
+                // 连胜成就
+                if (achieveData.streak >= 5) unlockAchievement('streak_5');
+                if (achieveData.streak >= 10) unlockAchievement('streak_10');
+                
+                // 探索者成就
+                if (achieveData.gradesTriedSet.length >= 3) unlockAchievement('explorer');
+                
+                // 检查年级通关
+                checkGradeCompletion();
+                
+                // 检查全能大师
+                checkMasterAchievement();
+            } else {
+                achieveData.streak = 0;
+            }
+            
+            saveAchieveData();
+        }
+
+        function checkGradeCompletion() {
+            const history = getHistory();
+            const currentGrade = currentState.currentGrade;
+            const currentGradePoems = getGradePoems(currentGrade);
+            
+            const completedTitles = history
+                .filter(item => item.isCorrect && item.grade === currentGrade)
+                .map(item => item.poemTitle);
+            
+            if (completedTitles.length >= currentGradePoems.length) {
+                if (!achieveData.gradesCompletedSet.includes(currentGrade)) {
+                    achieveData.gradesCompletedSet.push(currentGrade);
+                    unlockAchievement('grade_complete');
+                }
+            }
+        }
+
+        function checkMasterAchievement() {
+            // 检查是否每个年级都至少完成了一首
+            const history = getHistory();
+            const gradesWithCorrect = new Set();
+            history.forEach(item => {
+                if (item.isCorrect) gradesWithCorrect.add(item.grade);
+            });
+            
+            // 检查1-9年级和课外
+            let allGradesHaveOne = true;
+            for (let g = 1; g <= 10; g++) {
+                if (!gradesWithCorrect.has(g)) {
+                    allGradesHaveOne = false;
+                    break;
+                }
+            }
+            if (allGradesHaveOne) unlockAchievement('master');
+        }
+
+        function checkPerfectGameAchievement() {
+            if (currentState.isGameCompleted && currentState.wrongAnswers === 0 && currentState.correctAnswers > 0) {
+                unlockAchievement('perfect_game');
+            }
+        }
+
+        function getGradePoems(grade) {
+            switch(grade) {
+                case 1: return grade1Poems;
+                case 2: return grade2Poems;
+                case 3: return grade3Poems;
+                case 4: return grade4Poems;
+                case 5: return grade5Poems;
+                case 6: return grade6Poems;
+                case 7: return grade7Poems;
+                case 8: return grade8Poems;
+                case 9: return grade9Poems;
+                case 10: return extraPoems;
+                default: return grade1Poems;
+            }
+        }
+
+        // 初始化加载成就数据
+        loadAchieveData();
+
+        // 保存游戏进度到本地存储
+        function saveProgress() {
+            const saveData = {
+                currentState: currentState,
+                currentGrade: currentState.currentGrade,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('poemGameProgress', JSON.stringify(saveData));
+        }
+
+        // 从本地存储加载游戏进度
+        function loadProgress() {
+            const savedData = localStorage.getItem('poemGameProgress');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                return data;
+            }
+            return null;
+        }
+
+        // 保存历史记录
+        function saveToHistory(poemTitle, isCorrect, completionTime) {
+            let history = JSON.parse(localStorage.getItem('poemGameHistory') || '[]');
+            
+            // 检查是否已存在相同诗歌和年级的记录
+            const currentGrade = currentState.currentGrade;
+            const existingIndex = history.findIndex(item => 
+                item.poemTitle === poemTitle && item.grade === currentGrade
+            );
+            
+            // 如果存在记录，先删除旧记录
+            if (existingIndex !== -1) {
+                history.splice(existingIndex, 1);
+            }
+            
+            // 添加新的历史记录
+            history.push({
+                poemTitle: poemTitle,
+                isCorrect: isCorrect,
+                completionTime: completionTime,
+                timestamp: new Date().toISOString(),
+                grade: currentGrade
+            });
+            
+            // 限制历史记录数量，最多保留20条
+            if (history.length > 20) {
+                history = history.slice(-20);
+            }
+            
+            localStorage.setItem('poemGameHistory', JSON.stringify(history));
+        }
+
+        // 获取历史记录
+        function getHistory() {
+            return JSON.parse(localStorage.getItem('poemGameHistory') || '[]');
+        }
+
+        // 清除历史记录
+        function clearHistory() {
+            localStorage.removeItem('poemGameHistory');
+            // 重置已使用的题目索引
+            currentState.usedPoemIndices = [];
+            // 重新加载题目
+            loadPoem();
+            renderScrambledLines();
+            renderAnswerArea();
+            // 更新统计显示
+            updateStatistics();
+            // 显示历史记录
+            displayHistory();
+        }
+
+        // 显示历史记录
+        function displayHistory() {
+            const correctHistoryList = document.getElementById('correct-history-list');
+            const wrongHistoryList = document.getElementById('wrong-history-list');
+            const correctCountEl = document.getElementById('correct-count');
+            const wrongCountEl = document.getElementById('wrong-count');
+            const history = getHistory();
+            
+            // 分离正确和错误的历史记录
+            const correctHistory = history.filter(item => item.isCorrect);
+            const wrongHistory = history.filter(item => !item.isCorrect);
+            
+            // 更新计数
+            correctCountEl.textContent = correctHistory.length;
+            wrongCountEl.textContent = wrongHistory.length;
+            
+            // 按时间倒序排列，最新的在前面
+            correctHistory.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            wrongHistory.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            // 显示正确历史记录
+            if (correctHistory.length === 0) {
+                correctHistoryList.innerHTML = '<div class="no-history">暂无正确记录</div>';
+            } else {
+                correctHistoryList.innerHTML = '';
+                correctHistory.forEach((item, index) => {
+                    const date = new Date(item.timestamp);
+                    const dateStr = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+                    const gradeStr = `${item.grade}年级`;
+                    
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    historyItem.innerHTML = `
+                        <div class="history-item-title">${item.poemTitle} ✅</div>
+                        <div class="history-item-info">${gradeStr} | ${dateStr} | 用时: ${item.completionTime || '未知'}</div>
+                    `;
+                    
+                    // 点击历史记录可以恢复该游戏状态
+                    historyItem.addEventListener('click', () => {
+                        restoreHistoryItem(item);
+                    });
+                    
+                    correctHistoryList.appendChild(historyItem);
+                });
+            }
+            
+            // 显示错误历史记录
+            if (wrongHistory.length === 0) {
+                wrongHistoryList.innerHTML = '<div class="no-history">暂无错误记录</div>';
+            } else {
+                wrongHistoryList.innerHTML = '';
+                wrongHistory.forEach((item, index) => {
+                    const date = new Date(item.timestamp);
+                    const dateStr = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+                    const gradeStr = `${item.grade}年级`;
+                    
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    historyItem.innerHTML = `
+                        <div class="history-item-title">${item.poemTitle} ❌</div>
+                        <div class="history-item-info">${gradeStr} | ${dateStr} | 用时: ${item.completionTime || '未知'}</div>
+                    `;
+                    
+                    // 点击历史记录可以恢复该游戏状态
+                    historyItem.addEventListener('click', () => {
+                        restoreHistoryItem(item);
+                    });
+                    
+                    wrongHistoryList.appendChild(historyItem);
+                });
+            }
+        }
+
+        // 恢复历史记录项
+        function restoreHistoryItem(historyItem) {
+            // 查找对应的诗歌
+            let targetPoem = null;
+            let targetPoems = [];
+            
+            // 根据年级选择对应的诗歌集合
+            switch(historyItem.grade) {
+                case 1:
+                    targetPoems = grade1Poems;
+                    break;
+                case 2:
+                    targetPoems = grade2Poems;
+                    break;
+                case 3:
+                    targetPoems = grade3Poems;
+                    break;
+                case 4:
+                    targetPoems = grade4Poems;
+                    break;
+                case 5:
+                    targetPoems = grade5Poems;
+                    break;
+                case 6:
+                    targetPoems = grade6Poems;
+                    break;
+                case 7:
+                    targetPoems = grade7Poems;
+                    break;
+                case 8:
+                    targetPoems = grade8Poems;
+                    break;
+                case 9:
+                    targetPoems = grade9Poems;
+                    break;
+                case 10:
+                    targetPoems = extraPoems;
+                    break;
+                default:
+                    targetPoems = grade1Poems;
+            }
+            
+            for (let poem of targetPoems) {
+                if (poem.title === historyItem.poemTitle) {
+                    targetPoem = poem;
+                    break;
+                }
+            }
+            
+            if (!targetPoem) {
+                showMessage('无法找到对应的诗歌', 'error');
+                return;
+            }
+            
+            // 切换到对应的年级
+            poems = targetPoems;
+            currentState.currentGrade = historyItem.grade;
+            
+            // 更新年级按钮状态
+            updateGradeButtons(historyItem.grade);
+            
+            // 设置当前诗歌
+            currentState.currentPoem = targetPoem;
+            currentState.currentPoemIndex = poems.indexOf(targetPoem);
+            currentState.scrambledLines = [...targetPoem.lines].sort(() => Math.random() - 0.5);
+            currentState.answerLines = Array(targetPoem.lines.length).fill(null);
+            currentState.isAnswerChecked = false;
+            
+            // 更新UI
+            poemTitleEl.textContent = targetPoem.title;
+            poemAuthorEl.textContent = targetPoem.author;
+            
+            // 重新渲染
+            renderScrambledLines();
+            renderAnswerArea();
+            
+            // 显示提示
+            showMessage(`已恢复到诗歌《${targetPoem.title}》`, 'success');
+        }
+
+        // 更新年级按钮状态
+        function updateGradeButtons(grade) {
+            // 移除所有年级按钮的active类
+            for (let i = 1; i <= 9; i++) {
+                const btn = document.getElementById(`grade${i}Btn`);
+                if (btn) {
+                    btn.classList.remove('active');
+                }
+            }
+            
+            // 移除课外按钮的active类
+            const extraBtn = document.getElementById('extraBtn');
+            if (extraBtn) {
+                extraBtn.classList.remove('active');
+            }
+            
+            // 为当前年级按钮添加active类
+            if (grade === 10) {
+                // 如果是课外诵读，激活课外按钮
+                if (extraBtn) {
+                    extraBtn.classList.add('active');
+                }
+            } else {
+                // 否则激活对应的年级按钮
+                const currentBtn = document.getElementById(`grade${grade}Btn`);
+                if (currentBtn) {
+                    currentBtn.classList.add('active');
+                }
+            }
+        }
+
+        // 切换到指定年级
+        function switchToGrade(grade) {
+            // 根据年级选择对应的诗歌集合
+            switch(grade) {
+                case 1:
+                    poems = grade1Poems;
+                    break;
+                case 2:
+                    poems = grade2Poems;
+                    break;
+                case 3:
+                    poems = grade3Poems;
+                    break;
+                case 4:
+                    poems = grade4Poems;
+                    break;
+                case 5:
+                    poems = grade5Poems;
+                    break;
+                case 6:
+                    poems = grade6Poems;
+                    break;
+                case 7:
+                    poems = grade7Poems;
+                    break;
+                case 8:
+                    poems = grade8Poems;
+                    break;
+                case 9:
+                    poems = grade9Poems;
+                    break;
+                default:
+                    poems = grade1Poems;
+            }
+            
+            // 更新当前年级
+            currentState.currentGrade = grade;
+            currentState.currentPoemIndex = 0;
+            currentState.usedPoemIndices = []; // 重置已使用的题目
+            currentState.totalQuestions = 0;    // 重置题目计数
+            currentState.correctAnswers = 0;    // 重置正确答案数
+            currentState.wrongAnswers = 0;     // 重置错误答案数
+            currentState.isGameCompleted = false; // 重置游戏完成状态
+            
+            // 更新按钮状态
+            updateGradeButtons(grade);
+            
+            // 重置游戏
+            resetGame();
+        }
+
+        // 切换到课外诵读
+        function switchToExtra() {
+            // 使用课外诵读诗歌集合
+            poems = extraPoems;
+            
+            // 更新当前年级为10（表示课外）
+            currentState.currentGrade = 10;
+            currentState.currentPoemIndex = 0;
+            currentState.usedPoemIndices = []; // 重置已使用的题目
+            currentState.totalQuestions = 0;    // 重置题目计数
+            currentState.correctAnswers = 0;    // 重置正确答案数
+            currentState.wrongAnswers = 0;     // 重置错误答案数
+            currentState.isGameCompleted = false; // 重置游戏完成状态
+            
+            // 更新按钮状态
+            updateGradeButtons(10);
+            
+            // 重置游戏
+            resetGame();
+        }
+
+        // DOM元素
+        const scrambledLinesEl = document.getElementById('scrambled-lines');
+        const answerAreaEl = document.getElementById('answer-area');
+        const checkBtn = document.getElementById('check-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const retryBtn = document.getElementById('retry-btn');
+        const messageEl = document.getElementById('message');
+        const poemTitleEl = document.getElementById('poem-title');
+        const poemAuthorEl = document.getElementById('poem-author');
+        const progressEl = document.getElementById('progress');
+        const correctTab = document.getElementById('correct-tab');
+        const wrongTab = document.getElementById('wrong-tab');
+        const correctHistoryList = document.getElementById('correct-history-list');
+        const wrongHistoryList = document.getElementById('wrong-history-list');
+
+        // 初始化游戏
+        function initGame() {
+            // 默认设置为一年级
+            poems = grade1Poems;
+            // 初始化状态
+            currentState.usedPoemIndices = [];
+            currentState.totalQuestions = 0;
+            currentState.correctAnswers = 0;
+            currentState.wrongAnswers = 0;
+            currentState.isGameCompleted = false;
+            currentState.currentGrade = 1;
+            
+            loadPoem();
+            renderScrambledLines();
+            renderAnswerArea();
+            setupEventListeners();
+            
+            // 显示历史记录
+            displayHistory();
+            
+            // 添加年级切换事件监听器
+            for (let i = 1; i <= 9; i++) {
+                const gradeBtn = document.getElementById(`grade${i}Btn`);
+                if (gradeBtn) {
+                    gradeBtn.addEventListener('click', () => {
+                        switchToGrade(i);
+                    });
+                }
+            }
+            
+            // 添加课外按钮事件监听器
+            const extraBtn = document.getElementById('extraBtn');
+            if (extraBtn) {
+                extraBtn.addEventListener('click', () => {
+                    switchToExtra();
+                });
+            }
+            
+            // 添加清除历史记录事件监听器
+            document.getElementById('clear-history-btn').addEventListener('click', clearHistory);
+            
+            // 添加历史记录标签页切换事件监听器
+            correctTab.addEventListener('click', () => {
+                correctTab.classList.add('active');
+                wrongTab.classList.remove('active');
+                correctHistoryList.style.display = 'block';
+                wrongHistoryList.style.display = 'none';
+            });
+            
+            wrongTab.addEventListener('click', () => {
+                wrongTab.classList.add('active');
+                correctTab.classList.remove('active');
+                correctHistoryList.style.display = 'none';
+                wrongHistoryList.style.display = 'block';
+            });
+        }
+
+        // 加载当前古诗（随机选择）
+        function loadPoem() {
+            // 获取历史记录
+            const history = getHistory();
+            // 确定当前年级
+            const currentGrade = currentState.currentGrade;
+            
+            // 找出当前年级中所有正确答对的古诗标题
+            const correctPoemTitles = history
+                .filter(item => item.isCorrect && item.grade === currentGrade)
+                .map(item => item.poemTitle);
+            
+            // 找出当前年级中未被正确答对的古诗索引
+            const availablePoemIndices = [];
+            for (let i = 0; i < poems.length; i++) {
+                if (!correctPoemTitles.includes(poems[i].title)) {
+                    availablePoemIndices.push(i);
+                }
+            }
+            
+            // 如果当前年级所有题目都已正确答对，重置当前年级的历史记录
+            if (availablePoemIndices.length === 0) {
+                // 只清除当前年级的历史记录
+                const filteredHistory = history.filter(item => item.grade !== currentGrade);
+                localStorage.setItem('poemGameHistory', JSON.stringify(filteredHistory));
+                
+                // 重新获取可用题目
+                for (let i = 0; i < poems.length; i++) {
+                    availablePoemIndices.push(i);
+                }
+                
+                showMessage(`已重置${currentGrade}年级的历史记录`, 'info');
+            }
+            
+            // 从可用题目中随机选择一个
+            const randomIndex = availablePoemIndices[Math.floor(Math.random() * availablePoemIndices.length)];
+            
+            // 记录已使用的题目
+            currentState.usedPoemIndices.push(randomIndex);
+            currentState.currentPoemIndex = randomIndex;
+            currentState.currentPoem = poems[randomIndex];
+            currentState.scrambledLines = [...currentState.currentPoem.lines].sort(() => Math.random() - 0.5);
+            currentState.answerLines = Array(currentState.currentPoem.lines.length).fill(null);
+            
+            // 更新标题和作者
+            poemTitleEl.textContent = currentState.currentPoem.title;
+            poemAuthorEl.textContent = currentState.currentPoem.author;
+            
+            // 更新进度
+            currentState.totalQuestions++;
+            updateStatistics();
+        }
+
+        // 渲染打乱的诗句
+        function renderScrambledLines() {
+            scrambledLinesEl.innerHTML = '';
+            scrambledLinesEl.ondragover = handleDragOver;
+            scrambledLinesEl.ondrop = handleDrop;
+            
+            currentState.scrambledLines.forEach((line, index) => {
+                if (line !== null) {
+                    const lineEl = document.createElement('div');
+                    lineEl.className = 'line-item';
+                    lineEl.textContent = line;
+                    lineEl.draggable = true;
+                    lineEl.dataset.index = index;
+                    lineEl.ondragstart = handleDragStart;
+                    lineEl.ondragend = handleDragEnd;
+                    // 点击将诗句放入答案区（适配手机触控）
+                    lineEl.addEventListener('click', () => {
+                        handleScrambledClick(index);
+                    });
+                    scrambledLinesEl.appendChild(lineEl);
+                }
+            });
+        }
+
+        // 渲染答案区域
+        function renderAnswerArea() {
+            answerAreaEl.innerHTML = '';
+            for (let i = 0; i < currentState.currentPoem.lines.length; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'answer-slot';
+                slot.dataset.index = i;
+                slot.ondragover = handleDragOver;
+                slot.ondrop = handleDrop;
+                
+                if (currentState.answerLines[i] !== null) {
+                    slot.textContent = currentState.answerLines[i];
+                    slot.classList.add('filled');
+                    // 使已填充的答案槽位可以拖动
+                    slot.draggable = true;
+                    slot.dataset.answerIndex = i;
+                    slot.ondragstart = handleAnswerDragStart;
+                    slot.ondragend = handleDragEnd;
+                    // 点击将诗句从答案区移回打乱区
+                    slot.addEventListener('click', () => {
+                        handleAnswerSlotClick(i);
+                    });
+                } else {
+                    slot.textContent = `第 ${i + 1} 句`;
+                }
+                
+                answerAreaEl.appendChild(slot);
+            }
+            
+            // 显示已放置诗句的解析
+            showExplanations();
+        }
+
+        // 处理打乱区点击：将诗句放入答案区的第一个空槽
+        function handleScrambledClick(index) {
+            if (currentState.isAnswerChecked) return; // 已检查后不再允许修改
+            const line = currentState.scrambledLines[index];
+            if (line === null) return;
+
+            // 找到答案区中的第一个空槽
+            const targetIndex = currentState.answerLines.findIndex(item => item === null);
+            if (targetIndex === -1) return; // 已经没有空槽
+
+            currentState.answerLines[targetIndex] = line;
+            currentState.scrambledLines[index] = null;
+
+            renderScrambledLines();
+            renderAnswerArea();
+        }
+
+        // 处理答案区点击：将诗句移回打乱区
+        function handleAnswerSlotClick(index) {
+            if (currentState.isAnswerChecked) return; // 已检查后不再允许修改
+            const line = currentState.answerLines[index];
+            if (!line) return;
+
+            // 找到打乱区中的第一个空位
+            const targetIndex = currentState.scrambledLines.findIndex(item => item === null);
+            if (targetIndex === -1) return; // 理论上不会发生，因为数量一致
+
+            currentState.scrambledLines[targetIndex] = line;
+            currentState.answerLines[index] = null;
+
+            renderScrambledLines();
+            renderAnswerArea();
+        }
+
+        // 拖拽开始
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.dataset.index);
+            e.dataTransfer.setData('source', 'scrambled');
+            e.target.classList.add('dragging');
+        }
+
+        // 答案区域拖拽开始
+        function handleAnswerDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.dataset.answerIndex);
+            e.dataTransfer.setData('source', 'answer');
+            e.target.classList.add('dragging');
+        }
+
+        // 拖拽结束
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            
+            // 清除所有拖动悬停效果
+            document.querySelectorAll('.drag-over').forEach(el => {
+                el.classList.remove('drag-over');
+            });
+        }
+
+        // 拖拽悬停
+        function handleDragOver(e) {
+            e.preventDefault();
+            
+            // 添加拖动悬停效果
+            if (e.target.classList.contains('scrambled-lines')) {
+                e.target.classList.add('drag-over');
+            }
+        }
+
+        // 拖拽放置
+        function handleDrop(e) {
+            e.preventDefault();
+            const draggedIndex = e.dataTransfer.getData('text/plain');
+            const source = e.dataTransfer.getData('source');
+            const targetIndex = e.target.dataset.index;
+            
+            // 判断拖动源和目标
+            if (source === 'scrambled' && e.target.classList.contains('answer-slot')) {
+                // 从打乱区域拖到答案区域
+                if (currentState.answerLines[targetIndex] === null) {
+                    const line = currentState.scrambledLines[draggedIndex];
+                    currentState.answerLines[targetIndex] = line;
+                    currentState.scrambledLines[draggedIndex] = null;
+                    
+                    // 重新渲染
+                    renderScrambledLines();
+                    renderAnswerArea();
+                }
+            } else if (source === 'answer' && e.target.classList.contains('scrambled-lines')) {
+                // 从答案区域拖到打乱区域
+                const line = currentState.answerLines[draggedIndex];
+                
+                // 找到打乱区域中的第一个空位
+                for (let i = 0; i < currentState.scrambledLines.length; i++) {
+                    if (currentState.scrambledLines[i] === null) {
+                        currentState.scrambledLines[i] = line;
+                        break;
+                    }
+                }
+                
+                // 清空答案区域的对应位置
+                currentState.answerLines[draggedIndex] = null;
+                
+                // 重新渲染
+                renderScrambledLines();
+                renderAnswerArea();
+            } else if (source === 'answer' && e.target.classList.contains('answer-slot')) {
+                // 在答案区域内部交换位置
+                if (targetIndex !== draggedIndex && currentState.answerLines[targetIndex] === null) {
+                    // 只有当目标位置为空时才移动
+                    const line = currentState.answerLines[draggedIndex];
+                    currentState.answerLines[targetIndex] = line;
+                    currentState.answerLines[draggedIndex] = null;
+                    
+                    // 重新渲染
+                    renderAnswerArea();
+                }
+            }
+        }
+
+        // 锁定答题区域，禁用拖拽
+        function lockAnswerArea() {
+            // 禁用所有诗句的拖拽
+            const scrambledLines = document.querySelectorAll('#scrambled-lines .line-item');
+            scrambledLines.forEach(line => {
+                line.draggable = false;
+                line.style.opacity = '0.6';
+                line.style.cursor = 'not-allowed';
+            });
+            
+            // 禁用答案区域的拖拽
+            const answerSlots = document.querySelectorAll('.answer-slot');
+            answerSlots.forEach(slot => {
+                slot.ondragover = null;
+                slot.ondrop = null;
+                slot.draggable = false;
+                if (slot.classList.contains('filled')) {
+                    slot.style.cursor = 'not-allowed';
+                }
+            });
+            
+            // 禁用打乱区域的拖拽
+            scrambledLinesEl.ondragover = null;
+            scrambledLinesEl.ondrop = null;
+        }
+
+        // 检查答案
+        function checkAnswer() {
+            // 标记答案已检查
+            currentState.isAnswerChecked = true;
+            
+            const isCorrect = currentState.answerLines.every((line, index) => 
+                line === currentState.currentPoem.lines[index]
+            );
+            
+            // 计算完成时间（这里简化处理，实际可以记录开始时间）
+            const completionTime = Math.floor(Math.random() * 300) + 30; // 30-330秒的随机时间
+            
+            // 保存历史记录
+            saveToHistory(currentState.currentPoem.title, isCorrect, completionTime);
+            
+            // 刷新历史记录显示
+            displayHistory();
+            
+            // 锁定答题区域，禁用拖拽
+            lockAnswerArea();
+            
+            // 显示完整的诗句解析
+            showFullExplanations();
+            
+            if (isCorrect) {
+                currentState.correctAnswers++;
+                showMessage('🎉 恭喜你！答案正确！', 'success');
+                showConfetti();
+                showNextButton();
+            } else {
+                currentState.wrongAnswers++;
+                // 显示更详细的错误提示
+                showDetailedErrorHint();
+                showNextButton(); // 改为显示"下一题"按钮而不是"再试一次"
+            }
+            
+            // 检查成就
+            checkPoemAchievements(isCorrect);
+            
+            // 更新统计显示
+            updateStatistics();
+            
+            // 检查是否完成所有题目
+            checkGameCompletion();
+        }
+
+        // 显示详细的错误提示
+        function showDetailedErrorHint() {
+            // 找出第一个错误的位置
+            let firstErrorIndex = -1;
+            for (let i = 0; i < currentState.currentPoem.lines.length; i++) {
+                if (currentState.answerLines[i] !== currentState.currentPoem.lines[i]) {
+                    firstErrorIndex = i;
+                    break;
+                }
+            }
+            
+            let hintMessage = '❌ 答案不正确！';
+            
+            if (firstErrorIndex === -1) {
+                // 所有位置都有诗句，但顺序不对
+                hintMessage += '诗句的顺序不正确，请重新排列。';
+            } else if (currentState.answerLines[firstErrorIndex] === null) {
+                // 有空位置
+                hintMessage += `第 ${firstErrorIndex + 1} 句还没有填写，请将诗句拖到正确位置。`;
+            } else {
+                // 诗句位置错误
+                hintMessage += `第 ${firstErrorIndex + 1} 句应该是"${currentState.currentPoem.lines[firstErrorIndex]}"，请检查并重新排列。`;
+            }
+            
+            showMessage(hintMessage, 'error');
+            
+            // 高亮显示错误的位置
+            highlightErrorSlots();
+        }
+
+        // 高亮显示错误的位置
+        function highlightErrorSlots() {
+            const answerSlots = document.querySelectorAll('.answer-slot');
+            answerSlots.forEach((slot, index) => {
+                // 移除之前的高亮
+                slot.classList.remove('error-highlight');
+                
+                // 如果这个位置是错误的，添加高亮
+                if (currentState.answerLines[index] !== currentState.currentPoem.lines[index]) {
+                    slot.classList.add('error-highlight');
+                }
+            });
+        }
+
+        // 显示消息
+        function showMessage(text, type) {
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            messageEl.style.display = 'block';
+        }
+
+        // 显示下一题按钮
+        function showNextButton() {
+            checkBtn.style.display = 'none';
+            nextBtn.style.display = 'inline-block';
+            retryBtn.style.display = 'none';
+        }
+
+        // 显示再试一次按钮
+        function showRetryButton() {
+            checkBtn.style.display = 'none';
+            nextBtn.style.display = 'none';
+            retryBtn.style.display = 'inline-block';
+        }
+
+        // 下一题
+        function nextQuestion() {
+            // 删除了保存历史记录的代码，不再在点击下一题时刷新历史记录
+            
+            if (currentState.isGameCompleted) {
+                // 如果游戏已完成，重新开始游戏
+                resetGameStats();
+                resetGame();
+            } else {
+                currentState.currentPoemIndex = (currentState.currentPoemIndex + 1) % poems.length;
+                resetGame();
+            }
+        }
+
+        // 更新统计显示
+        function updateStatistics() {
+            const correctEl = document.getElementById('correct-count');
+            const wrongEl = document.getElementById('wrong-count');
+            const progressEl = document.getElementById('progress');
+            
+            if (correctEl) correctEl.textContent = currentState.correctAnswers;
+            if (wrongEl) wrongEl.textContent = currentState.wrongAnswers;
+            
+            // 更新历史记录中的正确和错误数量
+            const history = getHistory();
+            const correctHistory = history.filter(item => item.isCorrect);
+            const wrongHistory = history.filter(item => !item.isCorrect);
+            
+            // 更新历史记录标签页中的计数
+            const correctTabCount = document.querySelector('#correct-tab span');
+            const wrongTabCount = document.querySelector('#wrong-tab span');
+            if (correctTabCount) correctTabCount.textContent = correctHistory.length;
+            if (wrongTabCount) wrongTabCount.textContent = wrongHistory.length;
+            
+            // 计算剩余未答对的古诗数量
+            const correctPoemTitles = correctHistory.map(item => item.poemTitle);
+            
+            // 计算当前等级下未答对的古诗数量
+            let remainingCount = 0;
+            for (let poem of poems) {
+                if (!correctPoemTitles.includes(poem.title)) {
+                    remainingCount++;
+                }
+            }
+            
+            // 显示格式为 "剩余数量/总数量"
+            if (progressEl) progressEl.textContent = `${remainingCount}/${poems.length}`;
+        }
+
+        // 检查游戏是否完成
+        function checkGameCompletion() {
+            // 如果已回答的题目数量等于题库中的题目数量，则游戏完成
+            if (currentState.usedPoemIndices.length >= poems.length) {
+                currentState.isGameCompleted = true;
+                const accuracy = Math.round((currentState.correctAnswers / currentState.totalQuestions) * 100);
+                showMessage(`🎊 游戏完成！正确率：${accuracy}%`, 'success');
+                showConfetti();
+                
+                // 检查完美表现成就
+                checkPerfectGameAchievement();
+                
+                // 修改下一题按钮为重新开始按钮
+                const nextBtn = document.getElementById('next-btn');
+                if (nextBtn) nextBtn.textContent = '重新开始';
+            }
+        }
+
+        // 显示完整的诗句解析
+        function showFullExplanations() {
+            const explanationSection = document.getElementById('explanation-section');
+            const explanationList = document.getElementById('explanation-list');
+            
+            // 清空之前的解析内容
+            explanationList.innerHTML = '';
+            
+            // 遍历所有诗句，显示完整解析
+            for (let i = 0; i < currentState.currentPoem.lines.length; i++) {
+                // 创建解析项
+                const explanationItem = document.createElement('div');
+                explanationItem.className = 'explanation-item';
+                
+                // 创建诗句文本
+                const poemLine = document.createElement('div');
+                poemLine.className = 'explanation-line';
+                poemLine.textContent = currentState.currentPoem.lines[i];
+                
+                // 如果当前答案与正确答案不符，添加错误标记
+                if (currentState.answerLines[i] !== currentState.currentPoem.lines[i]) {
+                    poemLine.classList.add('incorrect-line');
+                    if (currentState.answerLines[i]) {
+                        poemLine.innerHTML += ` <span class="user-answer">(你的答案: ${currentState.answerLines[i]})</span>`;
+                    }
+                } else {
+                    poemLine.classList.add('correct-line');
+                }
+                
+                // 创建解析文本
+                const explanationText = document.createElement('div');
+                explanationText.className = 'explanation-text';
+                
+                // 获取对应诗句的解析
+                if (currentState.currentPoem.explanations && 
+                    currentState.currentPoem.explanations[i]) {
+                    explanationText.textContent = currentState.currentPoem.explanations[i];
+                } else {
+                    explanationText.textContent = '暂无解析';
+                }
+                
+                // 添加到解析项
+                explanationItem.appendChild(poemLine);
+                explanationItem.appendChild(explanationText);
+                explanationList.appendChild(explanationItem);
+            }
+            
+            // 显示解析区域
+            explanationSection.style.display = 'block';
+            // 触发动画效果
+            setTimeout(() => {
+                explanationSection.classList.add('show');
+            }, 10);
+        }
+
+        // 显示诗句解析
+        function showExplanations() {
+            const explanationSection = document.getElementById('explanation-section');
+            const explanationList = document.getElementById('explanation-list');
+            
+            // 如果已经检查过答案，显示完整解析
+            if (currentState.isAnswerChecked) {
+                showFullExplanations();
+                return;
+            }
+            
+            // 清空之前的解析内容
+            explanationList.innerHTML = '';
+            
+            // 检查是否有诗句被放置
+            let hasAnyExplanation = false;
+            
+            // 遍历答案区域，显示已放置诗句的解析
+            for (let i = 0; i < currentState.answerLines.length; i++) {
+                if (currentState.answerLines[i] !== null) {
+                    hasAnyExplanation = true;
+                    
+                    // 创建解析项
+                    const explanationItem = document.createElement('div');
+                    explanationItem.className = 'explanation-item';
+                    
+                    // 创建诗句文本
+                    const poemLine = document.createElement('div');
+                    poemLine.className = 'explanation-line';
+                    poemLine.textContent = currentState.answerLines[i];
+                    
+                    // 创建解析文本
+                    const explanationText = document.createElement('div');
+                    explanationText.className = 'explanation-text';
+                    
+                    // 获取对应诗句的解析
+                    if (currentState.currentPoem.explanations && 
+                        currentState.currentPoem.explanations[i]) {
+                        explanationText.textContent = currentState.currentPoem.explanations[i];
+                    } else {
+                        explanationText.textContent = '暂无解析';
+                    }
+                    
+                    // 添加到解析项
+                    explanationItem.appendChild(poemLine);
+                    explanationItem.appendChild(explanationText);
+                    explanationList.appendChild(explanationItem);
+                }
+            }
+            
+            // 如果有诗句被放置，显示解析区域
+            if (hasAnyExplanation) {
+                explanationSection.style.display = 'block';
+                // 触发动画效果
+                setTimeout(() => {
+                    explanationSection.classList.add('show');
+                }, 10);
+            } else {
+                explanationSection.classList.remove('show');
+                // 动画结束后隐藏
+                setTimeout(() => {
+                    if (!hasAnyExplanation) {
+                        explanationSection.style.display = 'none';
+                    }
+                }, 500);
+            }
+        }
+
+        // 重置游戏统计
+        function resetGameStats() {
+            currentState.usedPoemIndices = [];
+            currentState.totalQuestions = 0;
+            currentState.correctAnswers = 0;
+            currentState.wrongAnswers = 0;
+            currentState.isGameCompleted = false;
+            
+            // 恢复下一题按钮文本
+            const nextBtn = document.getElementById('next-btn');
+            if (nextBtn) nextBtn.textContent = '下一题';
+        }
+
+        // 再试一次
+        function retryQuestion() {
+            resetGame();
+        }
+
+        // 重置游戏
+        function resetGame() {
+            // 重置答案检查状态
+            currentState.isAnswerChecked = false;
+            
+            loadPoem();
+            renderScrambledLines();
+            renderAnswerArea();
+            messageEl.style.display = 'none';
+            checkBtn.style.display = 'inline-block';
+            nextBtn.style.display = 'none';
+            retryBtn.style.display = 'none';
+            
+            // 清除之前的高亮效果
+            const answerSlots = document.querySelectorAll('.answer-slot');
+            answerSlots.forEach(slot => {
+                slot.classList.remove('error-highlight');
+            });
+            
+            // 隐藏解析区域
+            const explanationSection = document.getElementById('explanation-section');
+            if (explanationSection) {
+                explanationSection.classList.remove('show');
+                // 动画结束后隐藏
+                setTimeout(() => {
+                    explanationSection.style.display = 'none';
+                }, 500);
+            }
+        }
+
+        // 撒花动画
+        function showConfetti() {
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3'];
+            const container = document.body;
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.width = Math.random() * 10 + 5 + 'px';
+                confetti.style.height = Math.random() * 10 + 5 + 'px';
+                confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
+                
+                container.appendChild(confetti);
+                
+                // 移除动画完成后元素
+                setTimeout(() => {
+                    if (confetti.parentNode) {
+                        confetti.parentNode.removeChild(confetti);
+                    }
+                }, 5000);
+            }
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            checkBtn.addEventListener('click', checkAnswer);
+            nextBtn.addEventListener('click', nextQuestion);
+            retryBtn.addEventListener('click', retryQuestion);
+        }
+
+        // 初始化游戏
+        initGame();
+    </script>
+    <script src="fullscreen-btn.js"></script>
+</body>
+
+

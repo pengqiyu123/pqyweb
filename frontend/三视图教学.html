@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三视图教学 - 3D交互展示</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: white;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        section {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        h2 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+
+        .introduction {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ffd700;
+        }
+
+        .shape-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .shape-3d-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .shape-btn {
+            padding: 12px 24px;
+            background: rgba(255, 215, 0, 0.2);
+            border: 2px solid #ffd700;
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .shape-btn:hover, .shape-btn.active {
+            background: #ffd700;
+            color: #1a2a6c;
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px 10px;
+            }
+
+            header {
+                padding: 20px 0;
+            }
+
+            h1 {
+                font-size: 1.9em;
+            }
+
+            .subtitle {
+                font-size: 1em;
+            }
+
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .introduction {
+                grid-template-columns: 1fr;
+            }
+            
+            .shape-selector {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+            }
+
+            .shape-btn {
+                padding: 10px 18px;
+                font-size: 0.95em;
+            }
+
+            #threejs-container {
+                height: 260px;
+                margin-top: 8px;
+            }
+
+            .orthographic-views {
+                grid-template-columns: 1fr;
+            }
+
+            .view-content {
+                height: 80px;
+            }
+
+            .controls {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .control-btn {
+                flex: 1 1 calc(50% - 10px);
+                text-align: center;
+                font-size: 0.9em;
+                padding: 8px 10px;
+            }
+
+            .net-section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            #cube-net-container {
+                height: 280px;
+            }
+
+            .net-buttons {
+                justify-content: center;
+            }
+        }
+
+        #threejs-container {
+            height: 400px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .orthographic-views {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .view-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .view-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+
+        .view-content {
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .control-btn {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .feature-list li::before {
+            content: "• ";
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .net-section-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .net-info {
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+
+        .net-highlight {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        #cube-net-container {
+            margin-top: 20px;
+            height: 360px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .net-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .net-btn {
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.25s;
+        }
+
+        .net-btn:hover,
+        .net-btn.active {
+            background: #ffd700;
+            color: #1a2a6c;
+            border-color: #ffd700;
+            transform: translateY(-1px);
+        }
+
+        .net-controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .net-toggle-btn {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.2s;
+        }
+
+        .net-toggle-btn:hover {
+            background: #ffd700;
+            color: #1a2a6c;
+            border-color: #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>三视图教学 - 3D交互展示</h1>
+            <p class="subtitle">通过3D模型与三视图的对比学习，帮助理解物体在不同视角下的投影关系</p>
+        </header>
+
+        <section class="introduction">
+            <div class="card">
+                <h3>什么是三视图？</h3>
+                <p>三视图是观察者从三个不同方向（正面、上面、侧面）观察同一空间几何体而画出的图形。它是工程制图和设计中的重要工具。</p>
+            </div>
+            <div class="card">
+                <h3>主视图</h3>
+                <p>从物体的前面向后面投射所得的视图，反映物体的长度和高度。</p>
+            </div>
+            <div class="card">
+                <h3>俯视图</h3>
+                <p>从物体的上面向下面投射所得的视图，反映物体的长度和宽度。</p>
+            </div>
+            <div class="card">
+                <h3>左视图</h3>
+                <p>从物体的左面向右面投射所得的视图，反映物体的高度和宽度。</p>
+            </div>
+        </section>
+
+        <section>
+            <div class="shape-3d-header">
+                <h2>3D模型与三视图对照</h2>
+                <div class="shape-selector">
+                    <button class="shape-btn active" data-shape="cube">正方体</button>
+                    <button class="shape-btn" data-shape="cylinder">圆柱体</button>
+                    <button class="shape-btn" data-shape="cone">圆锥体</button>
+                </div>
+            </div>
+            <div class="main-content">
+                <div>
+                    <div id="threejs-container"></div>
+                    <div class="controls">
+                        <button class="control-btn" id="front-view">前视图</button>
+                        <button class="control-btn" id="top-view">俯视图</button>
+                        <button class="control-btn" id="side-view">侧视图</button>
+                        <button class="control-btn" id="reset-view">重置视图</button>
+                    </div>
+                </div>
+                <div>
+                    <div class="orthographic-views">
+                        <div class="view-card">
+                            <div class="view-title">主视图</div>
+                            <div class="view-content" id="front-view-content">正方形</div>
+                        </div>
+                        <div class="view-card">
+                            <div class="view-title">俯视图</div>
+                            <div class="view-content" id="top-view-content">正方形</div>
+                        </div>
+                        <div class="view-card">
+                            <div class="view-title">左视图</div>
+                            <div class="view-content" id="side-view-content">正方形</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>各几何体三视图特点</h2>
+            <div class="features">
+                <div class="card">
+                    <h3>正方体</h3>
+                    <ul class="feature-list">
+                        <li>主视图：正方形</li>
+                        <li>俯视图：正方形</li>
+                        <li>左视图：正方形</li>
+                        <li>三个视图完全相同</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>圆柱体</h3>
+                    <ul class="feature-list">
+                        <li>主视图：矩形</li>
+                        <li>俯视图：圆形</li>
+                        <li>左视图：矩形</li>
+                        <li>主视图和左视图相同</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>圆锥体</h3>
+                    <ul class="feature-list">
+                        <li>主视图：三角形</li>
+                        <li>俯视图：圆形</li>
+                        <li>左视图：三角形</li>
+                        <li>主视图和左视图相同</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="net-section-header">
+                <h2>正方体展开图与空间想象</h2>
+                <div class="net-info">
+                    数学上，正方体一共有<span class="net-highlight">11</span>种不同的平面展开图（去掉重合与翻转）。
+                    本模块展示<span class="net-highlight" id="net-total">11</span>种展开方式进行 3D 展示，当前展示：
+                    <span class="net-highlight" id="net-index">1</span>/<span class="net-highlight" id="net-total-display">11</span>
+                </div>
+            </div>
+
+            <div class="net-buttons">
+                <button class="net-btn active" data-net="0">展开图 1</button>
+                <button class="net-btn" data-net="1">展开图 2</button>
+                <button class="net-btn" data-net="2">展开图 3</button>
+                <button class="net-btn" data-net="3">展开图 4</button>
+                <button class="net-btn" data-net="4">展开图 5</button>
+                <button class="net-btn" data-net="5">展开图 6</button>
+                <button class="net-btn" data-net="6">展开图 7</button>
+                <button class="net-btn" data-net="7">展开图 8</button>
+                <button class="net-btn" data-net="8">展开图 9</button>
+                <button class="net-btn" data-net="9">展开图 10</button>
+                <button class="net-btn" data-net="10">展开图 11</button>
+            </div>
+
+            <div class="net-controls">
+                <button class="net-toggle-btn" id="net-fold-btn">折叠成立方体</button>
+                <button class="net-toggle-btn" id="net-unfold-btn">展开为平面</button>
+            </div>
+
+            <div id="cube-net-container"></div>
+        </section>
+    </div>
+
+    <script>
+        // 初始化Three.js场景
+        let scene, camera, renderer, controls, currentObject;
+
+        // 正方体展开图 Three.js 场景
+        let netScene, netCamera, netRenderer, netControls;
+        let netFaces = [];
+        let cubeNets = [];
+        let netCurrentIndex = 0;
+        let netIsUnfolded = true;
+        let netCube;
+        // 每个展开图对应一份“虚立方体”面数字配置（按 BoxGeometry 面顺序：[+X, -X, +Y, -Y, +Z, -Z]）
+        let netGhostConfigs = [];
+        
+        function init() {
+            // 创建场景（上方三视图演示）
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+
+            // 创建相机
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            // 创建渲染器
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            const mainContainer = document.getElementById('threejs-container');
+            if (mainContainer) {
+                renderer.setSize(mainContainer.offsetWidth, mainContainer.offsetHeight);
+            }
+            renderer.setPixelRatio(window.devicePixelRatio || 1);
+
+            // 将渲染器添加到DOM
+            if (mainContainer) {
+                while (mainContainer.firstChild) {
+                    mainContainer.removeChild(mainContainer.firstChild);
+                }
+                mainContainer.appendChild(renderer.domElement);
+            }
+
+            // 添加光源
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(1, 1, 1);
+            scene.add(directionalLight);
+
+            // 添加轨道控制器
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+
+            // 创建默认几何体（正方体）
+            createCube();
+
+            // 初始化正方体展开图模块
+            initCubeNet();
+
+            // 窗口大小调整事件
+            window.addEventListener('resize', onWindowResize);
+
+            // 启动渲染循环
+            animate();
+        }
+
+        function onWindowResize() {
+            const mainContainer = document.getElementById('threejs-container');
+            if (mainContainer && camera && renderer) {
+                camera.aspect = mainContainer.offsetWidth / mainContainer.offsetHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(mainContainer.offsetWidth, mainContainer.offsetHeight);
+            }
+
+            const netContainer = document.getElementById('cube-net-container');
+            if (netContainer && netCamera && netRenderer) {
+                netCamera.aspect = netContainer.offsetWidth / netContainer.offsetHeight;
+                netCamera.updateProjectionMatrix();
+                netRenderer.setSize(netContainer.offsetWidth, netContainer.offsetHeight);
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (controls) {
+                controls.update();
+            }
+            if (renderer && scene && camera) {
+                renderer.render(scene, camera);
+            }
+
+            if (netControls && netRenderer && netScene && netCamera) {
+                netControls.update();
+                netRenderer.render(netScene, netCamera);
+            }
+        }
+        
+        function createCube() {
+            if (currentObject) scene.remove(currentObject);
+            
+            const geometry = new THREE.BoxGeometry(2, 2, 2);
+            const material = new THREE.MeshLambertMaterial({ 
+                color: 0x4a90e2,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            currentObject = new THREE.Mesh(geometry, material);
+            scene.add(currentObject);
+            
+            // 更新三视图显示
+            document.getElementById('front-view-content').textContent = '正方形';
+            document.getElementById('top-view-content').textContent = '正方形';
+            document.getElementById('side-view-content').textContent = '正方形';
+        }
+        
+        function createCylinder() {
+            if (currentObject) scene.remove(currentObject);
+            
+            const geometry = new THREE.CylinderGeometry(1, 1, 2, 32);
+            const material = new THREE.MeshLambertMaterial({ 
+                color: 0x7ed321,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            currentObject = new THREE.Mesh(geometry, material);
+            scene.add(currentObject);
+            
+            // 更新三视图显示
+            document.getElementById('front-view-content').textContent = '矩形';
+            document.getElementById('top-view-content').textContent = '圆形';
+            document.getElementById('side-view-content').textContent = '矩形';
+        }
+        
+        function createCone() {
+            if (currentObject) scene.remove(currentObject);
+            
+            const geometry = new THREE.ConeGeometry(1, 2, 32);
+            const material = new THREE.MeshLambertMaterial({ 
+                color: 0xf5a623,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            currentObject = new THREE.Mesh(geometry, material);
+            scene.add(currentObject);
+            
+            // 更新三视图显示
+            document.getElementById('front-view-content').textContent = '三角形';
+            document.getElementById('top-view-content').textContent = '圆形';
+            document.getElementById('side-view-content').textContent = '三角形';
+        }
+        
+        // ===== 正方体展开图模块 =====
+        function createNumberTexture(num) {
+            const size = 256;
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // 背景
+            ctx.fillStyle = '#1a2a6c';
+            ctx.fillRect(0, 0, size, size);
+
+            // 数字
+            ctx.fillStyle = '#ffd700';
+            ctx.font = 'bold 160px "Microsoft YaHei", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(String(num), size / 2, size / 2);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.needsUpdate = true;
+            return texture;
+        }
+
+        // 立方体用的“虚”数字纹理：透明背景，只画数字，且按照指定方向旋转/翻转
+        function createGhostNumberTexture(num, netIndex) {
+            const size = 256;
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // 透明背景，不填充底色
+            ctx.clearRect(0, 0, size, size);
+
+            // 数字（带一点发光感）
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.8)';
+            ctx.font = 'bold 160px "Microsoft YaHei", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            ctx.save();
+            // 以画布中心为原点进行旋转/翻转
+            ctx.translate(size / 2, size / 2);
+
+            // 数字方向约定：
+            // 6：先旋转 180 度再左右翻转；
+            // 3：先上下镜像翻转再旋转 180 度；
+            // 2：顺时针 90 度；
+            // 5：左右镜像翻转（头在上，开口朝右）；
+            // 4：逆时针 90 度；
+            // 1：先旋转 180 度再左右翻转；
+            // 其它数字保持默认方向。
+            switch (num) {
+                case 6:
+                    // 先旋转 180 度再左右翻转
+                    ctx.rotate(Math.PI);
+                    ctx.scale(-1, 1);
+                    break;
+                case 3:
+                    // 先上下镜像翻转，再旋转 180 度
+                    ctx.scale(1, -1);
+                    ctx.rotate(Math.PI);
+                    break;
+                case 2:
+                    // 顺时针 90 度
+                    ctx.rotate(Math.PI / 2);
+                    break;
+                case 5:
+                    // 左右镜像翻转，使 5 保持头在上、开口朝右
+                    ctx.scale(-1, 1);
+                    break;
+                case 4:
+                    // 逆时针 90 度
+                    ctx.rotate(-Math.PI / 2);
+                    break;
+                case 1:
+                    // 虚 1：先旋转 180 度，再做左右翻转
+                    ctx.rotate(Math.PI);
+                    ctx.scale(-1, 1);
+                    break;
+                default:
+                    // 其它未特别说明的数字保持默认方向
+                    break;
+            }
+
+            // 针对展开图 2（索引 1）再做一次旋转微调：
+            // 把上一轮的顺时针/逆时针方向全部取反
+            if (netIndex === 1) {
+                switch (num) {
+                    case 6:
+                        // 原来是逆时针 90 度，这里改为顺时针 90 度
+                        ctx.rotate(0);
+                        break;
+                    case 2:
+                        // 在当前基础上再逆时针 90 度（总额外旋转 180 度）
+                        ctx.rotate(-Math.PI);
+                        ctx.scale(-1, 1);
+                        break;
+                    case 4:
+                        // 在当前基础上再旋转 180 度，等效为额外顺时针 90 度
+                        ctx.rotate(Math.PI / 2);
+                        ctx.scale(-1, 1);
+                        break;
+                    case 3:
+                        // 原来是顺时针 90 度，这里改为逆时针 90 度
+                        ctx.rotate(-Math.PI / 2);
+                        break;
+                    case 5:
+                        // 原来是逆时针 90 度，这里改为顺时针 90 度
+                        ctx.rotate(Math.PI / 2);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            // 针对展开图 3（索引 2），根据你的指令微调当前姿态：
+            // 2 上下翻转，3 顺时针 90 度，4 顺时针 90 度，5 逆时针 90 度，6 逆时针 90 度
+            // 之后再让 3、5、6 在当前基础上继续旋转 180 度
+            if (netIndex === 2) {
+                switch (num) {
+                    case 2:
+                        ctx.scale(1, -1);
+                        break;
+                    case 3:
+                        // 先顺时针 90 度，再继续旋转 180 度
+                        ctx.rotate(Math.PI / 2);
+                        ctx.rotate(Math.PI);
+                        break;
+                    case 4:
+                        ctx.rotate(Math.PI / 2);
+                        ctx.scale(-1, 1);
+                        break;
+                    case 5:
+                        // 先逆时针 90 度，再继续旋转 180 度
+                        ctx.rotate(-Math.PI / 2);
+                        ctx.rotate(Math.PI);
+                        break;
+                    case 6:
+                        // 先逆时针 90 度，再继续旋转 180 度
+                        ctx.rotate(-Math.PI / 2);
+                        ctx.rotate(Math.PI);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            // 针对展开图 4（索引 3），根据你的指令微调当前姿态：
+            // 2 上下翻转，3 逆时针 90 度，4 逆时针 90 度，5 顺时针 90 度，6 旋转 180 度
+            if (netIndex === 3) {
+                switch (num) {
+                    case 2:
+                        // 上下翻转
+                        ctx.scale(1, -1);
+                        break;
+                    case 3:
+                        // 逆时针 90 度
+                        ctx.rotate(-Math.PI / 2);
+                        break;
+                    case 4:
+                        // 逆时针 90 度，再上下翻转
+                        ctx.rotate(-Math.PI / 2);
+                        ctx.scale(1, -1);
+                        break;
+                    case 5:
+                        // 顺时针 90 度
+                        ctx.rotate(Math.PI / 2);
+                        break;
+                    case 6:
+                        // 旋转 180 度
+                        ctx.rotate(Math.PI);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            // 针对展开图 5（索引 4），根据你的指令微调当前姿态：
+            // 2 上下翻转，3 逆时针 90 度，4 顺时针 90 度，再左右翻转
+            if (netIndex === 4) {
+                switch (num) {
+                    case 2:
+                        // 上下翻转
+                        ctx.scale(1, -1);
+                        break;
+                    case 3:
+                        // 逆时针 90 度
+                        ctx.rotate(-Math.PI / 2);
+                        break;
+                    case 4:
+                        // 顺时针 90 度，再左右翻转
+                        ctx.rotate(Math.PI / 2);
+                        ctx.scale(-1, 1);
+                        break;
+                    case 5:
+                        // 逆时针 90 度
+                        ctx.rotate(-Math.PI / 2);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            // 针对展开图 6（索引 5），根据你的指令微调当前姿态：
+            // 2 上下翻转，3 逆时针 90 度，4 顺时针 90 度，再左右翻转，6 顺时针 90 度
+            if (netIndex === 5) {
+                switch (num) {
+                    case 2:
+                        // 上下翻转
+                        ctx.scale(1, -1);
+                        break;
+                    case 3:
+                        // 逆时针 90 度
+                        ctx.rotate(-Math.PI / 2);
+                        break;
+                    case 4:
+                        // 顺时针 90 度，再左右翻转
+                        ctx.rotate(Math.PI / 2);
+                        ctx.scale(-1, 1);
+                        break;
+                    case 6:
+                        // 顺时针 90 度
+                        ctx.rotate(Math.PI / 2);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            // 针对展开图 7（索引 6），根据你的指令微调当前姿态：
+            // 2 上下翻转再顺时针 90 度，3 逆时针 90 度，4 顺时针 90 度再左右翻转
+            if (netIndex === 6) {
+                switch (num) {
+                    case 2:
+                        // 上下翻转，再顺时针 90 度
+                        ctx.scale(1, -1);
+                        ctx.rotate(Math.PI / 2);
+                        break;
+                    case 3:
+                        // 逆时针 90 度
+                        ctx.rotate(-Math.PI / 2);
+                        break;
+                    case 4:
+                        // 顺时针 90 度，再左右翻转
+                        ctx.rotate(Math.PI / 2);
+                        ctx.scale(-1, 1);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            // 针对展开图 8（索引 7），根据你的指令微调当前姿态：
+            // 2 上下翻转再顺时针 90 度，3 逆时针 90 度，4 顺时针 90 度再左右翻转，5 逆时针 90 度
+            if (netIndex === 7) {
+                switch (num) {
+                    case 2:
+                        // 上下翻转，再顺时针 90 度
+                        ctx.scale(1, -1);
+                        ctx.rotate(Math.PI / 2);
+                        break;
+                    case 3:
+                        // 逆时针 90 度
+                        ctx.rotate(-Math.PI / 2);
+                        break;
+                    case 4:
+                        // 顺时针 90 度，再左右翻转
+                        ctx.rotate(Math.PI / 2);
+                        ctx.scale(-1, 1);
+                        break;
+                    case 5:
+                        // 逆时针 90 度
+                        ctx.rotate(-Math.PI / 2);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            // 针对展开图 9（索引 8），根据你的指令微调当前姿态：
+            // 2 上下翻转，3 逆时针 90 度，4 顺时针 90 度再左右翻转，5 旋转 180 度
+            if (netIndex === 8) {
+                switch (num) {
+                    case 2:
+                        // 上下翻转
+                        ctx.scale(1, -1);
+                        ctx.rotate(Math.PI / 2);
+                        break;
+                    case 3:
+                        // 逆时针 90 度
+                        ctx.rotate(-Math.PI / 2);
+                        break;
+                    case 4:
+                        // 顺时针 90 度，再左右翻转
+                        ctx.rotate(Math.PI / 2);
+                        ctx.scale(-1, 1);
+                        break;
+                    case 5:
+                        // 旋转 180 度
+                        ctx.rotate(Math.PI);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            // 针对展开图 10（索引 9），根据你的指令微调当前姿态：
+            // 2 左右翻转再逆时针 90 度，3 逆时针 90 度
+            if (netIndex === 9) {
+                switch (num) {
+                    case 2:
+                        // 左右翻转，再逆时针 90 度
+                        ctx.scale(-1, 1);
+                        ctx.rotate(-Math.PI / 2);
+                        break;
+                    case 3:
+                        // 逆时针 90 度
+                        ctx.rotate(-Math.PI / 2);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            // 针对展开图 11（索引 10），根据你的指令微调当前姿态：
+            // 2 顺时针 90 度，3 逆时针 90 度，4 顺时针 90 度再左右翻转，5 旋转 180 度
+            if (netIndex === 10) {
+                switch (num) {
+                    case 2:
+                        // 再顺时针 90 度
+                        ctx.rotate(Math.PI / 2);
+                        break;
+                    case 3:
+                        // 逆时针 90 度
+                        ctx.rotate(-Math.PI / 2);
+                        break;
+                    case 4:
+                        // 顺时针 90 度，再左右翻转
+                        ctx.rotate(Math.PI / 2);
+                        ctx.scale(-1, 1);
+                        break;
+                    case 5:
+                        // 旋转 180 度
+                        ctx.rotate(Math.PI);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            ctx.fillText(String(num), 0, 0);
+            ctx.restore();
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.needsUpdate = true;
+            return texture;
+        }
+
+        // 将用 "X" 和 "." 表示的展开图模式转换为网格坐标数组
+        function patternToPositions(pattern) {
+            const rows = pattern.split('/');
+            const positions = [];
+            let originX = null;
+            let originZ = null;
+
+            for (let z = 0; z < rows.length; z++) {
+                const row = rows[z];
+                for (let x = 0; x < row.length; x++) {
+                    if (row[x] === 'X') {
+                        if (originX === null) {
+                            originX = x;
+                            originZ = z;
+                        }
+                        positions.push([x - originX, z - originZ]);
+                    }
+                }
+            }
+            return positions;
+        }
+
+        function createNetFaces() {
+            const size = 1.2;
+            const geometry = new THREE.PlaneGeometry(size, size);
+            netFaces = [];
+
+            for (let i = 0; i < 6; i++) {
+                const texture = createNumberTexture(i + 1);
+                const material = new THREE.MeshLambertMaterial({
+                    map: texture,
+                    transparent: false,
+                    side: THREE.DoubleSide
+                });
+
+                const mesh = new THREE.Mesh(geometry, material);
+                netScene.add(mesh);
+
+                netFaces.push({
+                    mesh: mesh,
+                    foldedPos: new THREE.Vector3(),
+                    foldedRot: new THREE.Euler(),
+                    unfoldPos: new THREE.Vector3(),
+                    unfoldRot: new THREE.Euler()
+                });
+            }
+
+            // 折叠成立方体时，各面的目标位置和朝向
+            const d = size / 2;
+            const foldedDefs = [
+                { pos: [0, 0,  d], rot: [0, 0, 0] },                  // 1 正面
+                { pos: [0, 0, -d], rot: [0, Math.PI, 0] },            // 2 背面
+                { pos: [ d, 0, 0], rot: [0, -Math.PI / 2, 0] },       // 3 右面
+                { pos: [-d, 0, 0], rot: [0, Math.PI / 2, 0] },        // 4 左面
+                { pos: [0,  d, 0], rot: [-Math.PI / 2, 0, 0] },       // 5 上面
+                { pos: [0, -d, 0], rot: [Math.PI / 2, 0, 0] }         // 6 下面
+            ];
+
+            foldedDefs.forEach((def, i) => {
+                const f = netFaces[i];
+                f.foldedPos.set(def.pos[0], def.pos[1], def.pos[2]);
+                f.foldedRot.set(def.rot[0], def.rot[1], def.rot[2]);
+            });
+        }
+
+        function applyNetLayout(index, immediate) {
+            if (!cubeNets.length || !netFaces.length) return;
+
+            netCurrentIndex = index;
+            const indexSpan = document.getElementById('net-index');
+            if (indexSpan) {
+                // 展开图从 1 开始编号显示
+                indexSpan.textContent = (index + 1).toString();
+            }
+
+            const layout = cubeNets[index];
+            const spacing = 1.3;
+
+            for (let i = 0; i < 6; i++) {
+                const pos = layout.positions[i];
+                const face = netFaces[i];
+                if (!pos || !face) continue;
+
+                const gx = pos[0];
+                const gz = pos[1];
+
+                face.unfoldPos.set(gx * spacing, 0, gz * spacing);
+                // 展开时，让所有面平躺在 XZ 平面上
+                face.unfoldRot.set(-Math.PI / 2, 0, 0);
+
+                if (immediate) {
+                    if (netIsUnfolded) {
+                        face.mesh.position.copy(face.unfoldPos);
+                        face.mesh.rotation.copy(face.unfoldRot);
+                    } else {
+                        face.mesh.position.copy(face.foldedPos);
+                        face.mesh.rotation.copy(face.foldedRot);
+                    }
+                }
+            }
+        }
+
+        // 根据当前展开图索引，为虚立方体设置对应的 6 个面数字
+        function applyGhostCubeForNet(index) {
+            if (!netCube || !netGhostConfigs || !netGhostConfigs.length) return;
+
+            const config = netGhostConfigs[index];
+            if (!config) {
+                return;
+            }
+
+            const materials = Array.isArray(netCube.material) ? netCube.material : [netCube.material];
+            const count = Math.min(materials.length, config.length);
+
+            for (let i = 0; i < count; i++) {
+                const num = config[i];
+                const mat = materials[i];
+                mat.map = createGhostNumberTexture(num, index);
+                mat.needsUpdate = true;
+            }
+        }
+
+        function setupNetUI() {
+            const buttons = document.querySelectorAll('.net-btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const index = parseInt(btn.getAttribute('data-net') || '0', 10) || 0;
+
+                    buttons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    // 切换不同展开图的平面布局
+                    applyNetLayout(index, true);
+
+                    // 同步切换对应展开图的虚立方体数字
+                    applyGhostCubeForNet(index);
+                });
+            });
+
+            const foldBtn = document.getElementById('net-fold-btn');
+            const unfoldBtn = document.getElementById('net-unfold-btn');
+
+            // 折叠/展开按钮改为：显示/隐藏立方体（虚）
+            if (foldBtn) {
+                foldBtn.addEventListener('click', () => {
+                    if (netCube) {
+                        netCube.visible = true;
+                    }
+                });
+            }
+
+            if (unfoldBtn) {
+                unfoldBtn.addEventListener('click', () => {
+                    if (netCube) {
+                        netCube.visible = false;
+                    }
+                });
+            }
+        }
+
+        function initCubeNet() {
+            const container = document.getElementById('cube-net-container');
+            if (!container || typeof THREE === 'undefined') {
+                return;
+            }
+
+            // 使用你重新优化后的 11 种展开图模式（X 表示有方块，. 为占位）
+            const netPatterns = [
+                'X.../XXXX/X...',   // 展开图 1
+                'X.../XXXX/.X..',   // 展开图 2
+                'X.../XXXX/..X.',   // 展开图 3
+                'X.../XXXX/...X',   // 展开图 4
+                '.X../XXXX/.X..',   // 展开图 5（修正：中间一行用 XXXX）
+                '.X../XXXX/..X.',   // 展开图 6
+                '.X../.XXX/XX..',   // 展开图 7
+                '..X./.XXX/XX..',   // 展开图 8
+                '...X/.XXX/XX..',   // 展开图 9
+                '..XX/.XX./XX..',   // 展开图 10
+                'XXX../..XXX'       // 展开图 11
+            ];
+
+            // 仅使用 11 个展开图本身
+            cubeNets = netPatterns.map(p => ({ positions: patternToPositions(p) }));
+
+            // 针对展开图 1（索引 0），按照你给出的数字布局 5.../1234/6... 重新指定 1-6 的位置
+            // 以 1 所在格为原点：[0,0]
+            // 5 在 1 上方一格，6 在 1 下方一格，2/3/4 在 1 右侧依次排开
+            if (cubeNets[0]) {
+                cubeNets[0].positions = [
+                    [0, 0],   // 1
+                    [1, 0],   // 2
+                    [2, 0],   // 3
+                    [3, 0],   // 4
+                    [0, -1],  // 5 在 1 上方一格
+                    [0, 1]    // 6 在 1 下方一格
+                ];
+            }
+
+            // 针对展开图 2（索引 1），按照你给出的数字布局：
+            // 5... / 2134 / .6.. 重新指定 1-6 的位置
+            // 以 1 所在格为原点：[0,0]
+            // 2 在 1 左侧一格，3 在 1 右侧一格，4 在 3 右侧一格，
+            // 5 在 2 上方一格，6 在 1 正下方一格（对应模式 X.../XXXX/.X.. 第三行第二列）。
+            if (cubeNets[1]) {
+                cubeNets[1].positions = [
+                    [0, 0],    // 1
+                    [-1, 0],   // 2
+                    [1, 0],    // 3
+                    [2, 0],    // 4
+                    [-1, -1],  // 5 在 2 上方一格
+                    [0, 1]     // 6 在 1 下方一格（第三行第二列）
+                ];
+            }
+
+            // 针对展开图 3（索引 2），按照你给出的数字布局：
+            // 5... / 2134 / ..6. 重新指定 1-6 的位置
+            // 以 1 所在格为原点：[0,0]
+            // 2 在 1 左侧一格，3 在 1 右侧一格，4 在 3 右侧一格，
+            // 5 在 2 上方一格，6 在 3 下方一格（对应模式 X.../XXXX/..X. 第三行第三列）。
+            if (cubeNets[2]) {
+                cubeNets[2].positions = [
+                    [0, 0],    // 1
+                    [-1, 0],   // 2
+                    [1, 0],    // 3
+                    [2, 0],    // 4
+                    [-1, -1],  // 5 在 2 上方一格
+                    [1, 1]     // 6 在 3 下方一格（第三行第三列）
+                ];
+            }
+
+            // 针对展开图 4（索引 3），按照你给出的数字布局：
+            // 5... / 2134 / ...6 重新指定 1-6 的位置
+            // 以 1 所在格为原点：[0,0]
+            // 2 在 1 左侧一格，3 在 1 右侧一格，4 在 3 右侧一格，
+            // 5 在 2 上方一格，6 在 4 下方一格（对应模式 X.../XXXX/...X 第三行第四列）。
+            if (cubeNets[3]) {
+                cubeNets[3].positions = [
+                    [0, 0],    // 1
+                    [-1, 0],   // 2
+                    [1, 0],    // 3
+                    [2, 0],    // 4
+                    [-1, -1],  // 5 在 2 上方一格
+                    [2, 1]     // 6 在 4 下方一格（第三行第四列）
+                ];
+            }
+
+            // 针对展开图 5（索引 4），按照你给出的数字布局：
+            // .5../2134/.6.. 重新指定 1-6 的位置
+            // 以 1 所在格为原点：[0,0]
+            // 2 在 1 左侧一格，3 在 1 右侧一格，4 在 3 右侧一格，
+            // 5 在 1 上方一格，6 在 1 下方一格。
+            if (cubeNets[4]) {
+                cubeNets[4].positions = [
+                    [0, 0],    // 1
+                    [-1, 0],   // 2
+                    [1, 0],    // 3
+                    [2, 0],    // 4
+                    [0, -1],   // 5 在 1 上方一格
+                    [0, 1]     // 6 在 1 下方一格
+                ];
+            }
+
+            // 针对展开图 6（索引 5），按照你给出的数字布局：
+            // 0500/2134/6 解释为 .5../2134/..6. 重新指定 1-6 的位置
+            // 以 1 所在格为原点：[0,0]
+            // 2 在 1 左侧一格，3 在 1 右侧一格，4 在 3 右侧一格，
+            // 5 在 1 上方一格，6 在 3 下方一格（对应模式 .X../XXXX/..X. 第三行第三列）。
+            if (cubeNets[5]) {
+                cubeNets[5].positions = [
+                    [0, 0],    // 1
+                    [-1, 0],   // 2
+                    [1, 0],    // 3
+                    [2, 0],    // 4
+                    [0, -1],   // 5 在 1 上方一格
+                    [1, 1]     // 6 在 3 下方一格（第三行第三列）
+                ];
+            }
+
+            // 针对展开图 7（索引 6），按照你给出的数字布局：
+            // .5../.134/26 重新指定 1-6 的位置
+            // 以 1 所在格为原点：[0,0]
+            // 2 在 1 左下方一格，3 在 1 右侧一格，4 在 3 右侧一格，
+            // 5 在 1 上方一格，6 在 1 下方一格。
+            if (cubeNets[6]) {
+                cubeNets[6].positions = [
+                    [0, 0],    // 1 （第二行第二列）
+                    [-1, 1],   // 2 （第三行第一列）
+                    [1, 0],    // 3 （第二行第三列）
+                    [2, 0],    // 4 （第二行第四列）
+                    [0, -1],   // 5 （第一行第二列，在 1 上方）
+                    [0, 1]     // 6 （第三行第二列，在 1 下方）
+                ];
+            }
+
+            // 针对展开图 8（索引 7），按照你给出的数字布局：
+            // ..5./.134/26.. 重新指定 1-6 的位置
+            // 以 1 所在格为原点：[0,0]
+            // 2 在 1 左下方一格，3 在 1 右侧一格，4 在 3 右侧一格，
+            // 5 在 1 右上方一格，6 在 1 下方一格。
+            if (cubeNets[7]) {
+                cubeNets[7].positions = [
+                    [0, 0],    // 1 （第二行第二列）
+                    [-1, 1],   // 2 （第三行第一列）
+                    [1, 0],    // 3 （第二行第三列）
+                    [2, 0],    // 4 （第二行第四列）
+                    [1, -1],   // 5 （第一行第三列，在 1 右上方）
+                    [0, 1]     // 6 （第三行第二列，在 1 下方）
+                ];
+            }
+
+            // 针对展开图 9（索引 8），按照你给出的数字布局：
+            // ...5/.134/26 重新指定 1-6 的位置
+            // 模式为 '...X/.XXX/XX..'，以 1 所在格为原点：[0,0]（第二行第二列）
+            // 2 在 1 左下方一格，3 在 1 右侧一格，4 在 3 右侧一格，
+            // 5 在 1 右上方两格（第一行第四列），6 在 1 下方一格。
+            if (cubeNets[8]) {
+                cubeNets[8].positions = [
+                    [0, 0],    // 1 （第二行第二列）
+                    [-1, 1],   // 2 （第三行第一列）
+                    [1, 0],    // 3 （第二行第三列）
+                    [2, 0],    // 4 （第二行第四列）
+                    [2, -1],   // 5 （第一行第四列，在 1 右上方两格）
+                    [0, 1]     // 6 （第三行第二列，在 1 下方）
+                ];
+            }
+
+            // 针对展开图 10（索引 9），按照你给出的数字布局：
+            // ..54/.13./26.. 重新指定 1-6 的位置
+            // 以 1 所在格为原点：[0,0]（第二行第二列）
+            // 2 在 1 左下方一格，3 在 1 右侧一格，4 在 1 右上方两格，
+            // 5 在 1 右上方一格，6 在 1 下方一格。
+            // 对应模式 '..XX/.XX./XX..'：
+            // 第一行第三列为 5，第一行第四列为 4；
+            // 第二行第二列为 1，第二行第三列为 3；
+            // 第三行第一列为 2，第三行第二列为 6。
+            if (cubeNets[9]) {
+                cubeNets[9].positions = [
+                    [0, 0],    // 1 （第二行第二列）
+                    [-1, 1],   // 2 （第三行第一列，在 1 左下方）
+                    [1, 0],    // 3 （第二行第三列，在 1 右侧）
+                    [2, -1],   // 4 （第一行第四列，在 1 右上方两格）
+                    [1, -1],   // 5 （第一行第三列，在 1 右上方一格）
+                    [0, 1]     // 6 （第三行第二列，在 1 下方）
+                ];
+            }
+
+            // 针对展开图 11（索引 10），按照你给出的数字布局：
+            // ..XXX/XXX.. 为形状模式，对应数字为 .123/456
+            // 这里按如下方式放置数字：
+            //  第一行三个方块依次是 1、2、3（对应形状行 "..XXX" 的 3 个 X），
+            //  第二行三个方块依次是 4、5、6（对应形状行 "XXX.." 的 3 个 X）。
+            // 以 1 所在格为原点：[0,0]（第一行中最左的方块），
+            // 2 在 1 右侧一格，3 在 2 右侧一格，
+            // 4 在 1 下方一格且向左偏两格，5 在 4 右侧一格，6 在 5 右侧一格。
+            if (cubeNets[10]) {
+                cubeNets[10].positions = [
+                    [0, 0],     // 1
+                    [-1, 1],    // 2 在 1 左下方一格
+                    [1, 0],     // 3 在 1 右侧一格
+                    [2, 0],     // 4 在 3 右侧一格（同一行）
+                    [-2, 1],    // 5 在 2 左侧一格
+                    [0, 1]      // 6 在 2 右侧一格（在 1 下方）
+                ];
+            }
+
+            // 为每一个展开图准备对应的虚立方体面数字配置
+            // 索引 0 为展开图 1，使用当前已经调好的关系：
+            // 按 BoxGeometry 面顺序：[+X, -X, +Y, -Y, +Z, -Z] -> [2, 4, 3, 1, 6, 5]
+            netGhostConfigs = [];
+            netGhostConfigs[0] = [2, 4, 3, 1, 6, 5];
+            // 其它展开图暂时先沿用展开图 1 的配置，后续你提供具体要求再分别调整
+            for (let i = 1; i < netPatterns.length; i++) {
+                netGhostConfigs[i] = netGhostConfigs[0].slice();
+            }
+
+            // 针对展开图 2（索引 1），根据“现在的 4 变 2，2 变 3，3 变 4”的要求
+            // 在虚立方体上将数字重新对应为：[+X, -X, +Y, -Y, +Z, -Z] -> [3, 2, 4, 1, 6, 5]
+            if (netPatterns.length > 1) {
+                netGhostConfigs[1] = [3, 2, 4, 1, 6, 5];
+            }
+
+            // 针对展开图 3（索引 2），同样按照“4 变 2，2 变 3，3 变 4”的规则
+            // 从基础配置 [2, 4, 3, 1, 6, 5] 得到：[3, 2, 4, 1, 6, 5]
+            if (netPatterns.length > 2) {
+                netGhostConfigs[2] = [3, 2, 4, 1, 6, 5];
+            }
+
+            // 针对展开图 4（索引 3），根据“4 变 2，3 变 4，2 变 3”的要求
+            // 也是从基础配置 [2, 4, 3, 1, 6, 5] 得到：[3, 2, 4, 1, 6, 5]
+            if (netPatterns.length > 3) {
+                netGhostConfigs[3] = [3, 2, 4, 1, 6, 5];
+            }
+
+            // 针对展开图 5（索引 4），根据“4 变 2，3 变 4，2 变 3”的要求
+            // 同样从基础配置 [2, 4, 3, 1, 6, 5] 得到：[3, 2, 4, 1, 6, 5]
+            if (netPatterns.length > 4) {
+                netGhostConfigs[4] = [3, 2, 4, 1, 6, 5];
+            }
+
+            // 针对展开图 6（索引 5），根据同样“4 变 2，3 变 4，2 变 3”的要求
+            // 也从基础配置 [2, 4, 3, 1, 6, 5] 得到：[3, 2, 4, 1, 6, 5]
+            if (netPatterns.length > 5) {
+                netGhostConfigs[5] = [3, 2, 4, 1, 6, 5];
+            }
+
+            // 针对展开图 7（索引 6），同样使用“4 变 2，3 变 4，2 变 3”的规则
+            // 仍然从基础配置 [2, 4, 3, 1, 6, 5] 得到：[3, 2, 4, 1, 6, 5]
+            if (netPatterns.length > 6) {
+                netGhostConfigs[6] = [3, 2, 4, 1, 6, 5];
+            }
+
+            // 针对展开图 8（索引 7），也沿用“4 变 2，3 变 4，2 变 3”的规则
+            // 同样从基础配置 [2, 4, 3, 1, 6, 5] 得到：[3, 2, 4, 1, 6, 5]
+            if (netPatterns.length > 7) {
+                netGhostConfigs[7] = [3, 2, 4, 1, 6, 5];
+            }
+
+            // 针对展开图 9（索引 8），也根据“4 变 2，3 变 4，2 变 3”的规则
+            // 从基础配置 [2, 4, 3, 1, 6, 5] 得到：[3, 2, 4, 1, 6, 5]
+            if (netPatterns.length > 8) {
+                netGhostConfigs[8] = [3, 2, 4, 1, 6, 5];
+            }
+
+            // 针对展开图 10（索引 9），同样沿用“4 变 2，3 变 4，2 变 3”的规则
+            // 从基础配置 [2, 4, 3, 1, 6, 5] 得到：[3, 2, 4, 1, 6, 5]
+            if (netPatterns.length > 9) {
+                netGhostConfigs[9] = [3, 2, 4, 1, 6, 5];
+            }
+
+            // 针对展开图 11（索引 10），同样沿用“4 变 2，3 变 4，2 变 3”的规则
+            // 从基础配置 [2, 4, 3, 1, 6, 5] 得到：[3, 2, 4, 1, 6, 5]
+            if (netPatterns.length > 10) {
+                netGhostConfigs[10] = [3, 2, 4, 1, 6, 5];
+            }
+
+            const totalSpan = document.getElementById('net-total');
+            const totalDisplaySpan = document.getElementById('net-total-display');
+            const netCount = cubeNets.length;
+            if (totalSpan) totalSpan.textContent = netCount;
+            if (totalDisplaySpan) totalDisplaySpan.textContent = netCount;
+
+            netScene = new THREE.Scene();
+            netScene.background = new THREE.Color(0x000000);
+
+            const width = container.offsetWidth || 400;
+            const height = container.offsetHeight || 320;
+
+            netCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+            netCamera.position.set(4, 4, 6);
+            netCamera.lookAt(0, 0, 0);
+
+            netRenderer = new THREE.WebGLRenderer({ antialias: true });
+            netRenderer.setSize(width, height);
+            netRenderer.setPixelRatio(window.devicePixelRatio || 1);
+
+            while (container.firstChild) {
+                container.removeChild(container.firstChild);
+            }
+            container.appendChild(netRenderer.domElement);
+
+            netControls = new THREE.OrbitControls(netCamera, netRenderer.domElement);
+            netControls.enableDamping = true;
+            netControls.dampingFactor = 0.05;
+
+            const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+            netScene.add(ambient);
+            const dir = new THREE.DirectionalLight(0xffffff, 0.6);
+            dir.position.set(3, 4, 5);
+            netScene.add(dir);
+
+            // 创建 6 个带数字的正方形面（实）
+            createNetFaces();
+
+            // 创建虚拟立方体：每个面带“虚”的数字，底面与中心展开面重合
+            const cubeSize = 1.2;
+            const cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+
+            // BoxGeometry 6 个面的顺序：
+            // [0] +X, [1] -X, [2] +Y, [3] -Y, [4] +Z, [5] -Z
+            // 在原来的基础上，对数字整体做了一次替换：4→6, 6→3, 5→4, 2→5, 3→2（1 保持不变）
+            // 因此当前各面的数字为：
+            // 1: 底面   (-Y)
+            // 3: 顶面   (+Y)
+            // 4: 左侧   (-X)
+            // 2: 右侧   (+X)
+            // 6: 正面   (+Z)
+            // 5: 背面   (-Z)
+            const ghostTextures = [
+                createGhostNumberTexture(2), // [0] +X  右面  -> 2
+                createGhostNumberTexture(4), // [1] -X  左面  -> 4
+                createGhostNumberTexture(3), // [2] +Y  顶面  -> 3
+                createGhostNumberTexture(1), // [3] -Y  底面  -> 1（与展开图中心 1 对应）
+                createGhostNumberTexture(6), // [4] +Z  正面  -> 6
+                createGhostNumberTexture(5)  // [5] -Z  背面  -> 5
+            ];
+
+            const cubeMaterials = ghostTextures.map(tex => new THREE.MeshBasicMaterial({
+                map: tex,
+                transparent: true,
+                opacity: 0.6,
+                side: THREE.DoubleSide
+            }));
+
+            // 带数字的“虚”立方体
+            netCube = new THREE.Mesh(cubeGeometry, cubeMaterials);
+
+            // 为立方体添加一层线框边，模拟之前的虚线边效果
+            const edgeGeometry = new THREE.EdgesGeometry(cubeGeometry);
+            const edgeMaterial = new THREE.LineBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.4
+            });
+            const edgeLines = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+            netCube.add(edgeLines);
+
+            // 立方体中心抬高一半边长，使底面落在 y=0 平面，与中心展开面重合
+            netCube.position.set(0, cubeSize / 2, 0);
+            netScene.add(netCube);
+
+            // 默认展示第 1 种展开方式（只展示展开图，不做折叠动画）
+            netIsUnfolded = true;
+            applyNetLayout(0, true);
+
+            // 绑定按钮交互
+            setupNetUI();
+        }
+        
+        // 按钮点击事件
+        document.querySelectorAll('.shape-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                // 更新按钮状态
+                document.querySelectorAll('.shape-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                button.classList.add('active');
+                
+                // 根据按钮的data-shape属性创建相应几何体
+                const shape = button.getAttribute('data-shape');
+                switch(shape) {
+                    case 'cube':
+                        createCube();
+                        break;
+                    case 'cylinder':
+                        createCylinder();
+                        break;
+                    case 'cone':
+                        createCone();
+                        break;
+                }
+            });
+        });
+        
+        // 视图控制按钮
+        document.getElementById('front-view').addEventListener('click', () => {
+            camera.position.set(0, 0, 5);
+            camera.lookAt(0, 0, 0);
+        });
+        
+        document.getElementById('top-view').addEventListener('click', () => {
+            camera.position.set(0, 5, 0);
+            camera.lookAt(0, 0, 0);
+        });
+        
+        document.getElementById('side-view').addEventListener('click', () => {
+            camera.position.set(5, 0, 0);
+            camera.lookAt(0, 0, 0);
+        });
+        
+        document.getElementById('reset-view').addEventListener('click', () => {
+            camera.position.set(0, 0, 5);
+            controls.reset();
+        });
+        
+        // 初始化场景
+        init();
+    </script>
+    <script src="fullscreen-btn.js"></script>
+</body>
+</html>
+
+
+

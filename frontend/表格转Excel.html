@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>表格转Excel · 煜的工具站</title>
+    <link rel="icon" href="images/LOG.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Poppins:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --bg-gradient: radial-gradient(circle at top, #a4b9ff 0%, #6c7dff 35%, #3c2cb7 65%, #12073a 100%);
+            --text-primary: #fefcff;
+            --text-muted: rgba(255, 255, 255, 0.75);
+            --accent-1: #ffd166;
+            --accent-2: #70e4ff;
+            --accent-3: #ff8bd2;
+            --panel-bg: rgba(17, 14, 58, 0.6);
+            --glass-bg: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', 'Noto Sans SC', 'Segoe UI', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        @media (max-width: 720px) {
+            body {
+                padding: 1rem 0.5rem;
+            }
+            .section {
+                padding: 1.5rem;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+
+        .starfield {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.8), transparent),
+                radial-gradient(1px 1px at 40px 60px, rgba(255, 255, 255, 0.4), transparent),
+                radial-gradient(1px 1px at 130px 90px, rgba(255, 255, 255, 0.6), transparent),
+                radial-gradient(2px 2px at 200px 150px, rgba(255, 255, 255, 0.9), transparent);
+            animation: twinkle 12s linear infinite;
+            z-index: 0;
+            opacity: 0.35;
+        }
+
+        @keyframes twinkle {
+            0% { transform: translateY(0); }
+            50% { opacity: 0.55; }
+            100% { transform: translateY(-200px); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+
+        .section {
+            background: var(--panel-bg);
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(16px);
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent-2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="starfield" aria-hidden="true"></div>
+    <div class="container">
+        <div style="text-align: center; margin-bottom: 1rem;">
+            <a href="index1.html" style="color: var(--accent-2); text-decoration: none; font-size: 0.9rem;">
+                <i class="fas fa-arrow-left"></i> 返回工具站
+            </a>
+        </div>
+        <h1>📊 表格转Excel工具</h1>
+        
+        <!-- 图片上传区域 -->
+        <div class="section" id="upload-section">
+            <h2 class="section-title">步骤1: 上传图片</h2>
+            <div id="upload-area" style="border: 2px dashed rgba(255,255,255,0.3); border-radius: 16px; padding: 3rem; text-align: center; cursor: pointer; transition: all 0.3s;">
+                <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: var(--accent-2); margin-bottom: 1rem;"></i>
+                <p>点击或拖拽图片到这里上传</p>
+                <input type="file" id="image-input" accept="image/*" style="display: none;">
+            </div>
+            <div id="image-preview" style="margin-top: 1rem; display: none;">
+                <img id="preview-img" style="max-width: 100%; border-radius: 12px; max-height: 400px;">
+                <button id="auto-process-btn" style="margin-top: 1rem; padding: 1rem 2rem; border-radius: 999px; background: linear-gradient(120deg, #ffde6a, #ff9b6a); border: none; color: #1c1247; font-weight: 600; cursor: pointer; font-size: 1rem; display: none;">
+                    <i class="fas fa-external-link-alt"></i> 自动跳转
+                </button>
+            </div>
+        </div>
+
+        <!-- AI识别区域 -->
+        <div class="section" id="ai-section" style="display: none;">
+            <h2 class="section-title">步骤2: 等待AI识别结果</h2>
+            <div style="text-align: center; padding: 2rem;">
+                <p style="margin-bottom: 1rem;">已自动打开豆包对话，提示词已自动复制</p>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">请在豆包对话中上传图片，AI识别完成后：</p>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <button id="paste-html-btn" style="padding: 0.8rem 1.5rem; border-radius: 999px; background: var(--accent-3); border: none; color: white; font-weight: 600; cursor: pointer;">
+                        <i class="fas fa-paste"></i> 粘贴AI返回的HTML代码（自动解析）
+                    </button>
+                    <button id="check-clipboard-btn" style="padding: 0.8rem 1.5rem; border-radius: 999px; background: var(--accent-2); border: none; color: #1c1247; font-weight: 600; cursor: pointer;">
+                        <i class="fas fa-clipboard-check"></i> 检测剪贴板（需授权）
+                    </button>
+                </div>
+                <textarea id="html-input" placeholder="粘贴AI返回的HTML表格代码，或点击上方按钮自动检测剪贴板..." style="width: 100%; min-height: 150px; padding: 1rem; border-radius: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: var(--text-primary); font-family: monospace; resize: vertical; margin-top: 1.5rem;"></textarea>
+            </div>
+        </div>
+
+        <!-- 表格展示区域 -->
+        <div class="section" id="table-section" style="display: none;">
+            <h2 class="section-title">步骤4: 预览表格</h2>
+            <div style="margin-bottom: 1rem;">
+                <button id="show-iframe-btn" style="padding: 0.6rem 1.2rem; border-radius: 999px; background: var(--accent-2); border: none; color: #1c1247; font-weight: 600; cursor: pointer; margin-right: 1rem;">
+                    <i class="fas fa-window-maximize"></i> 显示完整HTML页面（使用AI的下载按钮）
+                </button>
+                <button id="show-table-btn" style="padding: 0.6rem 1.2rem; border-radius: 999px; background: var(--accent-3); border: none; color: white; font-weight: 600; cursor: pointer;">
+                    <i class="fas fa-table"></i> 仅显示表格（使用本页下载按钮）
+                </button>
+            </div>
+            <div id="iframe-container" style="display: none; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem;">
+                <iframe id="html-iframe" style="width: 100%; min-height: 500px; border: none; background: white;"></iframe>
+            </div>
+            <div id="table-container" style="overflow-x: auto; margin-bottom: 1.5rem;"></div>
+            <button id="download-btn" style="padding: 0.8rem 2rem; border-radius: 999px; background: linear-gradient(120deg, #ffde6a, #ff9b6a); border: none; color: #1c1247; font-weight: 600; cursor: pointer; font-size: 1rem;">
+                <i class="fas fa-download"></i> 下载Excel
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 提示词内容（要求返回完整HTML文件）
+        const promptText = `请识别这张图片中的表格内容，并生成一个完整的、可直接运行的HTML文件。
+
+要求：
+1. 识别所有行和列的数据，保持表格的原始结构，确保数据准确（包括数字、文字、日期等）
+2. 生成完整的HTML代码，必须包含：
+   - <!DOCTYPE html> 声明
+   - 引入SheetJS库：<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"><\/script>
+   - 完整的表格HTML代码（<table>标签及所有行列数据）
+   - 一个"下载Excel"按钮
+   - 完整的JavaScript下载功能代码
+3. 下载功能必须使用SheetJS库，将表格数据转换为Excel文件并下载
+4. 只返回HTML代码，不要任何其他说明文字、注释或解释
+5. HTML代码必须完整且可以直接在浏览器中运行
+
+示例格式：
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"><\/script>
+</head>
+<body>
+    <table>
+        <tr><th>列1</th><th>列2</th></tr>
+        <tr><td>数据1</td><td>数据2</td></tr>
+    </table>
+    <button onclick="downloadExcel()">下载Excel</button>
+    <script>
+        function downloadExcel() {
+            const table = document.querySelector('table');
+            const rows = [];
+            table.querySelectorAll('tr').forEach(tr => {
+                const row = [];
+                tr.querySelectorAll('th, td').forEach(cell => row.push(cell.textContent));
+                rows.push(row);
+            });
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(rows);
+            XLSX.utils.book_append_sheet(wb, ws, '表格数据');
+            XLSX.writeFile(wb, '表格数据.xlsx');
+        }
+    <\/script>
+</body>
+</html>`;
+
+        let tableData = null;
+        let doubaoWindow = null;
+
+        // 图片上传功能
+        const uploadArea = document.getElementById('upload-area');
+        const imageInput = document.getElementById('image-input');
+        const imagePreview = document.getElementById('image-preview');
+        const previewImg = document.getElementById('preview-img');
+        const autoProcessBtn = document.getElementById('auto-process-btn');
+
+        uploadArea.addEventListener('click', () => imageInput.click());
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'var(--accent-2)';
+            uploadArea.style.background = 'rgba(112, 228, 255, 0.1)';
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = 'rgba(255,255,255,0.3)';
+            uploadArea.style.background = 'transparent';
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'rgba(255,255,255,0.3)';
+            uploadArea.style.background = 'transparent';
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                handleImage(file);
+            }
+        });
+        imageInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                handleImage(e.target.files[0]);
+            }
+        });
+
+        function handleImage(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImg.src = e.target.result;
+                imagePreview.style.display = 'block';
+                autoProcessBtn.style.display = 'inline-block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 自动处理：打开豆包并输入提示词
+        document.getElementById('auto-process-btn').addEventListener('click', () => {
+            // 显示使用步骤提示
+            const stepsMessage = `📋 使用步骤：
+
+1. 打开豆包对话后，提示词已自动复制到剪贴板
+2. 在豆包对话中按 Ctrl+V（或 Cmd+V）粘贴提示词
+3. 上传刚才的图片到豆包对话
+4. 等待AI识别完成，AI会返回包含表格的完整HTML代码
+5. 复制AI返回的HTML代码，回到本页面粘贴
+6. 系统会自动解析并显示表格
+7. 点击"下载Excel"按钮即可下载
+
+点击"确定"开始处理，点击"取消"返回。`;
+
+            if (confirm(stepsMessage)) {
+                // 用户确认后执行
+                executeAutoProcess();
+            }
+        });
+
+        // 执行自动处理的实际逻辑
+        async function executeAutoProcess() {
+            // 自动复制提示词
+            await navigator.clipboard.writeText(promptText).catch(() => {
+                // 降级方案
+                const textarea = document.createElement('textarea');
+                textarea.value = promptText;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+            });
+            
+            // 打开豆包对话
+            doubaoWindow = window.open('https://www.doubao.com/chat', '_blank');
+            
+            // 显示AI识别区域
+            document.getElementById('ai-section').style.display = 'block';
+            document.getElementById('ai-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 粘贴HTML代码并自动解析
+        document.getElementById('paste-html-btn').addEventListener('click', async () => {
+            try {
+                const html = await navigator.clipboard.readText();
+                document.getElementById('html-input').value = html;
+                parseHTML(html);
+            } catch (error) {
+                alert('无法读取剪贴板，请手动粘贴HTML代码');
+            }
+        });
+
+        // 检测剪贴板
+        document.getElementById('check-clipboard-btn').addEventListener('click', async () => {
+            try {
+                const html = await navigator.clipboard.readText();
+                if (html.includes('<table') || html.includes('<TABLE')) {
+                    document.getElementById('html-input').value = html;
+                    parseHTML(html);
+                    alert('已自动检测并解析剪贴板中的HTML表格！');
+                } else {
+                    alert('剪贴板中没有检测到HTML表格代码');
+                }
+            } catch (error) {
+                alert('无法读取剪贴板，请手动粘贴HTML代码');
+            }
+        });
+
+        // HTML输入框变化时自动解析
+        let parseTimeout = null;
+        document.getElementById('html-input').addEventListener('input', (e) => {
+            const html = e.target.value.trim();
+            if (html.length > 50 && (html.includes('<table') || html.includes('<TABLE') || html.includes('<!DOCTYPE') || html.includes('<html'))) {
+                // 延迟解析，避免频繁触发
+                clearTimeout(parseTimeout);
+                parseTimeout = setTimeout(() => {
+                    parseHTML(html);
+                }, 500);
+            }
+        });
+
+        document.getElementById('html-input').addEventListener('paste', (e) => {
+            setTimeout(() => {
+                const html = e.target.value.trim();
+                if (html.length > 50 && (html.includes('<table') || html.includes('<TABLE') || html.includes('<!DOCTYPE') || html.includes('<html'))) {
+                    parseHTML(html);
+                }
+            }, 100);
+        });
+
+        // 存储原始HTML代码和Blob URL
+        let originalHTML = null;
+        let currentBlobURL = null;
+
+        // 解析HTML表格
+        function parseHTML(htmlText) {
+            if (!htmlText || !htmlText.trim()) {
+                alert('请先粘贴HTML代码！');
+                return;
+            }
+
+            try {
+                originalHTML = htmlText.trim();
+                
+                // 检测是否是完整HTML文件
+                const isFullHTML = htmlText.includes('<!DOCTYPE') || htmlText.includes('<html') || htmlText.includes('<HTML');
+                
+                if (isFullHTML) {
+                    // 完整HTML文件：在iframe中显示
+                    const iframe = document.getElementById('html-iframe');
+                    // 清理旧的Blob URL
+                    if (currentBlobURL) {
+                        URL.revokeObjectURL(currentBlobURL);
+                    }
+                    const blob = new Blob([originalHTML], { type: 'text/html' });
+                    currentBlobURL = URL.createObjectURL(blob);
+                    iframe.src = currentBlobURL;
+                    document.getElementById('iframe-container').style.display = 'block';
+                    document.getElementById('table-container').style.display = 'none';
+                    document.getElementById('download-btn').style.display = 'none';
+                } else {
+                    // 仅表格代码：提取数据并显示
+                    document.getElementById('iframe-container').style.display = 'none';
+                    document.getElementById('table-container').style.display = 'block';
+                    document.getElementById('download-btn').style.display = 'inline-block';
+                }
+
+                // 提取表格数据（用于本页下载按钮）
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = htmlText.trim();
+                const table = tempDiv.querySelector('table');
+                
+                if (!table) {
+                    throw new Error('未找到HTML表格，请确保粘贴的是完整的HTML代码');
+                }
+
+                // 提取表格数据
+                const rows = [];
+                const trs = table.querySelectorAll('tr');
+                
+                trs.forEach(tr => {
+                    const row = [];
+                    const cells = tr.querySelectorAll('th, td');
+                    cells.forEach(cell => {
+                        row.push(cell.textContent.trim() || '');
+                    });
+                    if (row.length > 0) {
+                        rows.push(row);
+                    }
+                });
+
+                if (rows.length === 0) {
+                    throw new Error('表格为空');
+                }
+
+                tableData = rows;
+                renderTable(tableData);
+                document.getElementById('table-section').style.display = 'block';
+                document.getElementById('table-section').scrollIntoView({ behavior: 'smooth' });
+            } catch (error) {
+                alert('HTML解析失败：' + error.message);
+            }
+        }
+
+        // 切换显示方式
+        document.getElementById('show-iframe-btn').addEventListener('click', () => {
+            if (originalHTML) {
+                const iframe = document.getElementById('html-iframe');
+                // 清理旧的Blob URL
+                if (currentBlobURL) {
+                    URL.revokeObjectURL(currentBlobURL);
+                }
+                const blob = new Blob([originalHTML], { type: 'text/html' });
+                currentBlobURL = URL.createObjectURL(blob);
+                iframe.src = currentBlobURL;
+                document.getElementById('iframe-container').style.display = 'block';
+                document.getElementById('table-container').style.display = 'none';
+                document.getElementById('download-btn').style.display = 'none';
+            }
+        });
+
+        document.getElementById('show-table-btn').addEventListener('click', () => {
+            document.getElementById('iframe-container').style.display = 'none';
+            document.getElementById('table-container').style.display = 'block';
+            document.getElementById('download-btn').style.display = 'inline-block';
+        });
+
+        // 渲染表格
+        function renderTable(rows) {
+            const container = document.getElementById('table-container');
+            let html = '<table style="width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden;">';
+            
+            rows.forEach((row, rowIndex) => {
+                html += '<tr>';
+                row.forEach((cell, cellIndex) => {
+                    const tag = rowIndex === 0 ? 'th' : 'td';
+                    const style = rowIndex === 0 
+                        ? 'background: rgba(112, 228, 255, 0.2); font-weight: 600; padding: 1rem; border: 1px solid rgba(255,255,255,0.2);'
+                        : 'padding: 0.8rem 1rem; border: 1px solid rgba(255,255,255,0.1);';
+                    html += `<${tag} style="${style}">${cell || ''}</${tag}>`;
+                });
+                html += '</tr>';
+            });
+            
+            html += '</table>';
+            container.innerHTML = html;
+        }
+
+        // 下载Excel
+        document.getElementById('download-btn').addEventListener('click', () => {
+            if (!tableData) {
+                alert('请先解析表格数据！');
+                return;
+            }
+
+            try {
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet(tableData);
+                XLSX.utils.book_append_sheet(wb, ws, '表格数据');
+                const fileName = `表格数据_${new Date().toISOString().slice(0, 10)}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+            } catch (error) {
+                alert('导出失败：' + error.message);
+            }
+        });
+
+        // 页面卸载时清理Blob URL
+        window.addEventListener('beforeunload', () => {
+            if (currentBlobURL) {
+                URL.revokeObjectURL(currentBlobURL);
+            }
+        });
+    </script>
+</body>
+
+</html>
+

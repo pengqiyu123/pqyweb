@@ -1,0 +1,962 @@
+/* 导航网站主要样式文件 */
+
+/* 全局样式 */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--body-bg);
+    padding-top: var(--header-height);
+}
+
+.neo-bg {
+    min-height: 100vh;
+    background: var(--page-bg);
+    position: relative;
+    overflow-x: hidden;
+    transition: background 0.3s ease;
+}
+
+.neo-bg::before {
+    content: "";
+    position: fixed;
+    top: -20%;
+    left: -20%;
+    width: 140%;
+    height: 140%;
+    background: var(--neo-glow);
+    filter: blur(60px);
+    animation: rotateGlow 30s linear infinite;
+    pointer-events: none;
+    opacity: var(--neo-glow-opacity, 0);
+    transition: opacity 0.3s ease;
+}
+
+[data-bs-theme="dark"] .neo-bg::before {
+    --neo-glow-opacity: 1;
+}
+
+@keyframes rotateGlow {
+    to { transform: rotate(360deg); }
+}
+
+/* 统一导航高度变量与基础偏移，保证固定顶部栏下的布局对齐 */
+:root {
+    --header-height: 64px;
+    --body-bg: #050816;
+    --text-color: #e5e7eb;
+    --muted-text-color: #9ca3af;
+    /* 浅色/默认主题下的科技感渐变背景 */
+    --page-bg:
+        radial-gradient(1200px 600px at 0% 0%, rgba(56,189,248,0.26) 0%, rgba(56,189,248,0) 55%),
+        radial-gradient(900px 500px at 100% 0%, rgba(129,140,248,0.22) 0%, rgba(129,140,248,0) 55%),
+        linear-gradient(135deg, #020617 0%, #020617 45%, #0b1120 100%);
+    --neo-glow: conic-gradient(from 180deg at 50% 50%, rgba(56,189,248,0.12), rgba(129,140,248,0.12), rgba(16,185,129,0.12), rgba(56,189,248,0.12));
+    --navbar-bg: rgba(255, 255, 255, 0.85);
+    --navbar-border: rgba(102, 126, 234, 0.15);
+    --sidebar-bg: rgba(255, 255, 255, 0.95);
+    --sidebar-border: rgba(102, 126, 234, 0.15);
+    --sidebar-link-color: #4b4f66;
+    --sidebar-link-hover-bg: rgba(102, 126, 234, 0.12);
+    --sidebar-link-hover-color: #4c5fd5;
+    --card-bg: #ffffff;
+    --card-border: rgba(102, 126, 234, 0.18);
+    --footer-bg: #ffffff;
+    --footer-text: #6c757d;
+    --tool-card-bg: linear-gradient(135deg, rgba(102,126,234,0.15) 0%, rgba(118,75,162,0.15) 100%);
+    --tool-card-color: #1f1f2d;
+    --tool-icon-color: #4c5fd5;
+    --nav-card-bg: #ffffff;
+    --nav-card-color: #1f1f2d;
+    --nav-card-icon-color: #667eea;
+    --brand-bg: rgba(255, 255, 255, 0.9);
+    --brand-border: rgba(102, 126, 234, 0.35);
+    --brand-tagline-color: #4c5fd5;
+}
+
+/* 浅色模式变量：保证文字和导航按钮在浅色背景下有足够对比度 */
+[data-bs-theme="light"] {
+    --body-bg: #eef2ff;
+    --text-color: #111827;
+    --muted-text-color: #6b7280;
+    /* 浅色模式下更柔和的科技渐变背景 */
+    --page-bg:
+        radial-gradient(1100px 600px at 0% 0%, rgba(59,130,246,0.18) 0%, rgba(59,130,246,0) 55%),
+        radial-gradient(900px 500px at 100% 0%, rgba(236,72,153,0.16) 0%, rgba(236,72,153,0) 55%),
+        linear-gradient(140deg, #e5f0ff 0%, #f9fafb 45%, #eef2ff 100%);
+    --navbar-bg: rgba(255, 255, 255, 0.94);
+    --navbar-border: rgba(148, 163, 184, 0.35);
+    --sidebar-bg: rgba(255, 255, 255, 0.9);
+    --sidebar-border: rgba(148, 163, 184, 0.4);
+    --card-bg: rgba(255, 255, 255, 0.97);
+    --card-border: rgba(148, 163, 184, 0.35);
+    --tool-card-bg: linear-gradient(135deg, rgba(129,140,248,0.18) 0%, rgba(56,189,248,0.18) 100%);
+    --tool-card-color: #111827;
+    --tool-icon-color: #4f46e5;
+    --nav-card-bg: rgba(255, 255, 255, 0.97);
+    --nav-card-color: #111827;
+    --nav-card-icon-color: #4f46e5;
+    --brand-bg: rgba(255, 255, 255, 0.96);
+    --brand-border: rgba(148, 163, 184, 0.55);
+}
+
+[data-bs-theme="dark"] {
+    --body-bg: #020617;
+    --text-color: #f9fafb;
+    --muted-text-color: #9ca3af;
+    /* 深色模式下更强的霓虹科技感渐变背景 */
+    --page-bg:
+        radial-gradient(1400px 700px at 0% 0%, rgba(56,189,248,0.32) 0%, rgba(56,189,248,0) 55%),
+        radial-gradient(1100px 600px at 100% 0%, rgba(129,140,248,0.32) 0%, rgba(129,140,248,0) 60%),
+        radial-gradient(900px 500px at 50% 100%, rgba(16,185,129,0.26) 0%, rgba(16,185,129,0) 60%),
+        linear-gradient(145deg, #020617 0%, #020617 40%, #020617 55%, #020617 70%, #020617 100%);
+    --neo-glow: conic-gradient(from 180deg at 50% 50%, rgba(56,189,248,0.14), rgba(129,140,248,0.16), rgba(16,185,129,0.14), rgba(56,189,248,0.14));
+    --navbar-bg: rgba(20, 20, 30, 0.6);
+    --navbar-border: rgba(102, 126, 234, 0.25);
+    --sidebar-bg: rgba(45, 45, 45, 0.95);
+    --sidebar-border: #404040;
+    --sidebar-link-color: rgba(255, 255, 255, 0.8);
+    --sidebar-link-hover-bg: rgba(255, 255, 255, 0.1);
+    --sidebar-link-hover-color: #ffffff;
+    --card-bg: #2d2d2d;
+    --card-border: #404040;
+    --footer-bg: #1a1a1a;
+    --footer-text: #a0a6c0;
+    --tool-card-bg: linear-gradient(135deg, rgba(102,126,234,0.25) 0%, rgba(118,75,162,0.25) 100%);
+    --tool-card-color: #eaf0ff;
+    --tool-icon-color: #eaf0ff;
+    --nav-card-bg: #2d2d2d;
+    --nav-card-color: #ffffff;
+    --nav-card-icon-color: #667eea;
+    --brand-bg: rgba(30, 30, 40, 0.85);
+    --brand-border: rgba(102, 126, 234, 0.45);
+    --brand-tagline-color: #cfd7ff;
+    --bs-body-bg: #1a1a1a;
+    --bs-body-color: #ffffff;
+    --bs-card-bg: #2d2d2d;
+    --bs-border-color: #404040;
+}
+
+.content-area {
+    padding-top: 1.5rem;
+    padding-bottom: 2rem;
+}
+
+.sidebar-sticky {
+    position: static;
+    height: 100%;
+}
+
+/* 桌面端将左侧侧边栏固定于视口，使其随界面移动始终保持位置 */
+@media (min-width: 992px) {
+    .site-aside {
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        height: calc(100vh - var(--header-height));
+        overflow-y: auto;
+        padding: 1.5rem 1rem;
+        box-sizing: border-box;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* 调整粘性定位的顶部偏移，避免与固定导航产生过大空白 */
+.sidebar-sticky {
+    top: var(--header-height) !important;
+}
+
+/* 收紧主内容区顶部留白，解决“工具直达”上方空白过大问题 */
+main.mt-3 { margin-top: 0 !important; }
+main.pt-5 { padding-top: 1rem !important; }
+
+/* 去除侧边栏内部额外的顶部留白 */
+.sidebar-sticky.mt-3 { margin-top: 0 !important; }
+.sidebar-sticky.pt-5 { padding-top: 0 !important; }
+
+/* 浅色模式下的侧边栏样式（玻璃磨砂） */
+.site-aside {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-right: 1px solid rgba(102, 126, 234, 0.22);
+    box-shadow: 0 0 32px rgba(15, 23, 42, 0.15);
+    box-sizing: border-box;
+}
+
+.aside-brand {
+    padding: 0.5rem 0.75rem;
+    border-radius: 12px;
+    background: rgba(102, 126, 234, 0.1);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.aside-brand-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.aside-brand-desc {
+    font-size: 0.875rem;
+    color: var(--muted-text-color);
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 14px;
+    background: var(--brand-bg);
+    border: 1px solid var(--brand-border);
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
+    color: var(--text-color);
+}
+
+.navbar-brand:hover {
+    color: var(--sidebar-link-hover-color);
+}
+
+.brand-logo {
+    height: 32px;
+    width: 32px;
+    border-radius: 8px;
+    object-fit: cover;
+    display: block;
+}
+
+.brand-copy {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+}
+
+.brand-title {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.brand-tagline {
+    font-size: 0.85rem;
+    color: var(--brand-tagline-color);
+    font-weight: 500;
+}
+
+.site-aside .nav-link {
+    color: #495057;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.site-aside .nav-link:hover, 
+.site-aside .nav-link.active {
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.site-aside .nav-link .menu-text {
+    color: #495057;
+}
+
+.site-aside .nav-link:hover .menu-text,
+.site-aside .nav-link.active .menu-text {
+    color: #667eea;
+}
+
+/* 深色模式样式 */
+[data-bs-theme="dark"] {
+    --bs-body-bg: #1a1a1a;
+    --bs-body-color: #ffffff;
+    /* 为卡片和玻璃面板提供半透明基色 */
+    --bs-card-bg: rgba(20, 20, 32, 0.85);
+    --bs-border-color: rgba(102, 126, 234, 0.5);
+}
+
+/* 通用卡片玻璃效果 */
+.card {
+    background: rgba(255, 255, 255, 0.78);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+}
+
+[data-bs-theme="dark"] .card {
+    background-color: var(--bs-card-bg);
+    border-color: var(--bs-border-color);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+}
+
+/* “工具直达”外层卡片背景透明化，让内部工具按钮更突出 */
+.tools-section-card {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.tools-section-card .card-header {
+    background: transparent;
+    border-bottom-color: transparent;
+}
+
+.tools-section-card .card-body {
+    background: transparent !important;
+}
+
+[data-bs-theme="dark"] .navbar {
+    background-color: #1a1a1a !important;
+}
+
+/* 顶部导航玻璃磨砂效果，使用主题变量 */
+.glass-nav {
+    background: var(--navbar-bg) !important;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--navbar-border);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.26);
+}
+
+.glass-nav.navbar {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.glass-nav .container-fluid {
+    display: flex;
+    align-items: center;
+    padding-left: 0;
+    padding-right: 1rem;
+    gap: 1rem;
+}
+
+.glass-nav .navbar-toggler {
+    margin-left: 0.5rem;
+}
+
+/* 浅色模式下，提升顶部 Logo 与按钮的可读性 */
+[data-bs-theme="light"] .navbar-brand,
+[data-bs-theme="light"] .navbar-brand .brand-title,
+[data-bs-theme="light"] .navbar-brand .brand-tagline {
+    color: #111827;
+}
+
+[data-bs-theme="light"] .navbar-actions .btn-outline-light {
+    color: #111827;
+    border-color: rgba(148, 163, 184, 0.9);
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+[data-bs-theme="light"] .navbar-actions .btn-outline-light:hover {
+    background-color: #4f46e5;
+    color: #f9fafb;
+}
+
+[data-bs-theme="light"] #themeDropdown {
+    color: #111827;
+}
+
+/* 浅色模式下侧边栏文字颜色适配主题变量，保证与背景有对比度 */
+[data-bs-theme="light"] .site-aside .nav-link,
+[data-bs-theme="light"] .site-aside .nav-link .menu-text {
+    color: var(--text-color);
+}
+
+@media (min-width: 992px) {
+    .glass-nav .container-fluid {
+        flex-wrap: nowrap;
+    }
+    .glass-nav .navbar-collapse {
+        display: flex !important;
+        align-items: center;
+        gap: 1rem;
+        width: 100%;
+    }
+    .nav-search-wrapper {
+        flex: 1 1 auto;
+        max-width: 640px;
+    }
+    .nav-search-wrapper .input-group {
+        width: 100%;
+    }
+    .navbar-actions {
+        margin-left: auto !important;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .glass-nav .container-fluid {
+        flex-wrap: wrap;
+        padding-right: 0.75rem;
+    }
+    .glass-nav .navbar-collapse {
+        width: 100%;
+        margin-top: 0.75rem;
+    }
+    .nav-search-wrapper {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+    }
+    .nav-search-wrapper .input-group {
+        width: 100%;
+    }
+    .navbar-actions {
+        width: 100%;
+        margin-left: 0 !important;
+        justify-content: flex-start;
+    }
+}
+
+/* 侧边栏深色主题样式（玻璃磨砂） */
+[data-bs-theme="dark"] .site-aside {
+    background: rgba(15, 15, 25, 0.72) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(102, 126, 234, 0.4) !important;
+}
+
+[data-bs-theme="dark"] .site-aside .nav-link {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* 深色模式下的导航链接卡片（玻璃磨砂） */
+[data-bs-theme="dark"] .nav-link-card {
+    background: rgba(20, 20, 32, 0.8) !important;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    color: #ffffff !important;
+    border: 1px solid rgba(102, 126, 234, 0.55);
+}
+
+[data-bs-theme="dark"] .nav-link-card:hover {
+    background: rgba(30, 30, 45, 0.9) !important;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+    color: #cfd7ff !important;
+    border-color: #667eea;
+}
+
+[data-bs-theme="dark"] .nav-link-card i {
+    color: #667eea !important;
+}
+
+[data-bs-theme="dark"] .nav-link-card span {
+    color: #ffffff !important;
+}
+
+/* 深色模式下的页脚 */
+[data-bs-theme="dark"] .footer {
+    background-color: #1a1a1a !important;
+    border-top: 1px solid #404040;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    .navbar-brand {
+        font-size: 1rem;
+    }
+}
+
+/* 动画效果 */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 工具提示样式 */
+.tooltip-custom {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip-custom .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltip-custom:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* 主题切换过渡效果 */
+body, .site-aside, .navbar, .card, .nav-link-card {
+    transition: all 0.3s ease;
+}
+
+.tool-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    background: linear-gradient(135deg, rgba(102,126,234,0.25) 0%, rgba(118,75,162,0.25) 100%);
+    border: 1px solid rgba(102,126,234,0.35);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35), inset 0 0 30px rgba(102,126,234,0.15);
+}
+
+.tool-card.neon:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 20px rgba(0,255,255,0.4), 0 0 40px rgba(102,126,234,0.3);
+    border-color: rgba(0,255,255,0.5);
+}
+
+.tool-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #eaf0ff;
+    text-shadow: 0 0 12px rgba(102,126,234,0.6);
+    animation: pulseIcon 3s ease-in-out infinite;
+}
+
+@keyframes pulseIcon {
+    0%,100% { filter: drop-shadow(0 0 0 rgba(0,255,255,0)); }
+    50% { filter: drop-shadow(0 0 8px rgba(0,255,255,0.5)); }
+}
+
+.tool-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #eaf0ff;
+}
+
+/* 深色模式下的额外样式 */
+[data-bs-theme="dark"] .card-header {
+    background-color: #3d3d3d !important;
+    border-bottom-color: #404040 !important;
+    color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .card-header h5 {
+    color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .card-body {
+    background-color: #2d2d2d !important;
+    color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .dropdown-menu {
+    background-color: #2d2d2d !important;
+    border-color: #404040 !important;
+}
+
+[data-bs-theme="dark"] .dropdown-item {
+    color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .dropdown-item:hover {
+    background-color: #3d3d3d !important;
+    color: #667eea !important;
+}
+
+[data-bs-theme="dark"] .modal-content {
+    background-color: #2d2d2d !important;
+    border-color: #404040 !important;
+}
+
+[data-bs-theme="dark"] .modal-header {
+    border-bottom-color: #404040 !important;
+}
+
+[data-bs-theme="dark"] .modal-title {
+    color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .form-control {
+    background-color: #3d3d3d !important;
+    border-color: #404040 !important;
+    color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .form-control:focus {
+    background-color: #3d3d3d !important;
+    border-color: #667eea !important;
+    color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .form-label {
+    color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .nav-tabs {
+    border-bottom-color: #404040 !important;
+}
+
+[data-bs-theme="dark"] .nav-tabs .nav-link {
+    color: rgba(255, 255, 255, 0.8) !important;
+    border-color: transparent !important;
+}
+
+[data-bs-theme="dark"] .nav-tabs .nav-link.active {
+    color: #667eea !important;
+    background-color: transparent !important;
+    border-color: #667eea #404040 #2d2d2d !important;
+}
+
+[data-bs-theme="dark"] .nav-tabs .nav-link:hover {
+    color: #ffffff !important;
+    border-color: transparent !important;
+}
+
+/* ===== 设备适配和响应式设计 ===== */
+
+/* 超小屏幕设备 (手机竖屏) */
+@media (max-width: 575.98px) {
+    .container-fluid {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+    
+    .navbar-brand {
+        font-size: 0.9rem;
+    }
+    
+    .navbar-brand img {
+        height: 25px;
+    }
+    
+    .tool-card, .nav-link-card {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .tool-icon {
+        font-size: 2rem !important;
+    }
+    
+    .tool-name {
+        font-size: 0.9rem !important;
+    }
+    
+    .card-header h5 {
+        font-size: 1rem;
+    }
+    
+    .search-container {
+        order: 3;
+        margin-top: 1rem;
+        width: 100%;
+    }
+    
+    .navbar-nav {
+        margin-top: 0.5rem;
+    }
+    
+    .modal-dialog {
+        margin: 0.5rem;
+        max-width: calc(100% - 1rem);
+    }
+    
+    .sidebar-sticky {
+        position: static;
+        top: auto;
+    }
+    
+    .site-aside {
+        display: none !important;
+    }
+    
+    main {
+        margin-left: 0 !important;
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }
+}
+
+/* 小屏幕设备 (手机横屏) */
+@media (min-width: 576px) and (max-width: 767.98px) {
+    .tool-card, .nav-link-card {
+        padding: 1.5rem;
+    }
+    
+    .tool-icon {
+        font-size: 2.5rem !important;
+    }
+    
+    .navbar-brand {
+        font-size: 1rem;
+    }
+    
+    .search-container {
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+    
+    .site-aside {
+        display: none !important;
+    }
+    
+    main {
+        margin-left: 0 !important;
+    }
+}
+
+/* 中等屏幕设备 (平板) */
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .tool-card, .nav-link-card {
+        padding: 1.8rem;
+    }
+    
+    .tool-icon {
+        font-size: 2.8rem !important;
+    }
+    
+    .site-aside {
+        width: 200px;
+    }
+    
+    main {
+        margin-left: 200px !important;
+    }
+    
+    .navbar-collapse {
+        flex-grow: 1;
+    }
+}
+
+/* 大屏幕设备 (桌面) */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .site-aside {
+        width: 220px;
+    }
+    
+    main {
+        margin-left: 220px !important;
+    }
+}
+
+/* 超大屏幕设备 (大桌面) */
+@media (min-width: 1200px) {
+    .site-aside {
+        width: 250px;
+    }
+    
+    main {
+        margin-left: 250px !important;
+    }
+    
+    .container-fluid {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* 顶部导航栏的 container 不限宽，保证 Logo 贴边 */
+    .glass-nav .container-fluid {
+        max-width: 100% !important;
+        margin: 0 !important;
+    }
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+    .tool-card:hover, .nav-link-card:hover {
+        transform: none;
+    }
+    
+    .nav-link {
+        padding: 1rem 1.5rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    .form-control {
+        padding: 0.75rem;
+        font-size: 16px; /* 防止iOS缩放 */
+    }
+    
+    .dropdown-menu {
+        min-width: 200px;
+    }
+    
+    .dropdown-item {
+        padding: 0.75rem 1rem;
+    }
+}
+
+/* 高分辨率屏幕优化 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .tool-icon, .nav-link-card i {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* 打印样式 */
+@media print {
+    .navbar, .site-aside, .footer, .modal {
+        display: none !important;
+    }
+    
+    .container-fluid {
+        max-width: none;
+        padding: 0;
+    }
+    
+    main {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .card {
+        border: 1px solid #000;
+        box-shadow: none;
+    }
+    
+    .tool-card, .nav-link-card {
+        border: 1px solid #ccc;
+        background: white !important;
+        color: black !important;
+    }
+}
+
+/* 无障碍访问优化 */
+@media (prefers-reduced-motion: reduce) {
+    .tool-card, .nav-link-card, .nav-link {
+        transition: none;
+    }
+    
+    .loading-spinner {
+        animation: none;
+    }
+}
+
+/* 深色模式下的响应式优化 */
+@media (max-width: 575.98px) {
+    [data-bs-theme="dark"] .navbar {
+        background-color: #000000 !important;
+    }
+    
+    [data-bs-theme="dark"] .card {
+        background-color: #1a1a1a !important;
+    }
+}
+
+/* 横屏模式优化 */
+@media (orientation: landscape) and (max-height: 500px) {
+    .navbar {
+        padding: 0.25rem 1rem;
+    }
+    
+    .navbar-brand {
+        font-size: 0.9rem;
+    }
+    
+    .navbar-brand img {
+        height: 25px;
+    }
+    
+    .tool-card, .nav-link-card {
+        padding: 1rem;
+    }
+    
+    .card-header {
+        padding: 0.5rem 1rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+/* 折叠菜单优化 */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        background-color: rgba(0, 0, 0, 0.95);
+        border-radius: 8px;
+        margin-top: 0.5rem;
+        padding: 1rem;
+    }
+    
+    [data-bs-theme="dark"] .navbar-collapse {
+        background-color: rgba(26, 26, 26, 0.95);
+    }
+    
+    .navbar-nav .nav-item {
+        margin-bottom: 0.5rem;
+    }
+    
+    .navbar-nav .nav-item:last-child {
+        margin-bottom: 0;
+    }
+}
+
+/* 搜索栏响应式优化（仅作用于主内容区，避免影响导航栏搜索） */
+@media (max-width: 767.98px) {
+    .content-area .input-group {
+        flex-direction: column;
+    }
+    
+    .content-area .input-group > * {
+        margin-bottom: 0.5rem;
+        width: 100%;
+    }
+    
+    .content-area .input-group > *:last-child {
+        margin-bottom: 0;
+    }
+    
+    .content-area .dropdown-toggle {
+        border-radius: 0.375rem 0.375rem 0 0 !important;
+    }
+    
+    .content-area .form-control {
+        border-radius: 0 !important;
+    }
+    
+    .content-area .btn {
+        border-radius: 0 0 0.375rem 0.375rem !important;
+    }
+}

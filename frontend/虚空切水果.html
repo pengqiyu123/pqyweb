@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>虚空切水果 - 手势控制</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #050505;
+            font-family: 'Microsoft YaHei', sans-serif;
+            color: white;
+            user-select: none;
+        }
+
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        #video-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 160px;
+            height: 120px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 2;
+            opacity: 0.7;
+            /* transform: scaleX(-1); Mirror effect removed per user request */
+        }
+
+        #safe-zone {
+            position: absolute;
+            border: 2px dashed rgba(0, 255, 204, 0.8);
+            box-sizing: border-box;
+            pointer-events: none;
+            box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
+        }
+
+        #game-border {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 4px solid rgba(0, 255, 204, 0.3);
+            box-sizing: border-box;
+            pointer-events: none;
+            z-index: 10;
+            box-shadow: inset 0 0 50px rgba(0, 255, 204, 0.2);
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .score-board {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 32px;
+            font-weight: bold;
+            color: #00ffcc;
+            text-shadow: 0 0 10px #00ffcc;
+        }
+
+        .lives {
+            position: absolute;
+            top: 60px;
+            left: 20px;
+            font-size: 24px;
+            color: #ff3366;
+        }
+
+        .screen {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid #00ffcc;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.3);
+            pointer-events: auto;
+            transition: opacity 0.3s;
+        }
+
+        h1 {
+            margin: 0 0 20px 0;
+            font-size: 48px;
+            background: linear-gradient(45deg, #00ffcc, #0099ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #ccc;
+        }
+
+        .btn {
+            margin-top: 30px;
+            padding: 15px 40px;
+            font-size: 24px;
+            background: linear-gradient(90deg, #00ffcc, #0099ff);
+            border: none;
+            border-radius: 50px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.6);
+        }
+
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .fullscreen-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: white;
+            cursor: pointer;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+            transition: all 0.2s;
+        }
+
+        .fullscreen-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        /* 成就系统样式 */
+        .achievement-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 70px;
+            background: rgba(255, 215, 0, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: #ffd700;
+            cursor: pointer;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+            transition: all 0.2s;
+            font-size: 18px;
+        }
+
+        .achievement-btn:hover {
+            background: rgba(255, 215, 0, 0.4);
+            transform: scale(1.1);
+        }
+
+        .achievement-panel {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #ffd700;
+            border-radius: 20px;
+            padding: 30px;
+            z-index: 100;
+            max-width: 500px;
+            width: 90%;
+            max-height: 70vh;
+            overflow-y: auto;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        }
+
+        .achievement-panel h2 {
+            margin: 0 0 20px 0;
+            color: #ffd700;
+            text-align: center;
+            font-size: 28px;
+        }
+
+        .achievement-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .achievement-item.unlocked {
+            background: rgba(255, 215, 0, 0.1);
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .achievement-item.locked {
+            opacity: 0.5;
+        }
+
+        .achievement-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: rgba(255, 215, 0, 0.2);
+            flex-shrink: 0;
+        }
+
+        .achievement-item.locked .achievement-icon {
+            background: rgba(128, 128, 128, 0.3);
+        }
+
+        .achievement-info {
+            flex: 1;
+        }
+
+        .achievement-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .achievement-desc {
+            font-size: 13px;
+            color: #aaa;
+        }
+
+        .achievement-progress {
+            font-size: 12px;
+            color: #ffd700;
+            margin-top: 4px;
+        }
+
+        .achievement-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .achievement-close:hover {
+            opacity: 1;
+        }
+
+        .achievement-toast {
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.9), rgba(255, 180, 0, 0.9));
+            color: #000;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 18px;
+            z-index: 200;
+            opacity: 0;
+            transition: all 0.5s ease;
+            box-shadow: 0 5px 30px rgba(255, 215, 0, 0.5);
+            pointer-events: none;
+        }
+
+        .achievement-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .combo-display {
+            position: absolute;
+            top: 100px;
+            left: 20px;
+            font-size: 20px;
+            color: #ffcc00;
+            text-shadow: 0 0 10px #ffcc00;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .combo-display.active {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .fullscreen-btn {
+                bottom: 10px;
+                right: 10px;
+            }
+
+            #video-container {
+                width: 120px;
+                height: 90px;
+            }
+
+            .achievement-btn {
+                bottom: 10px;
+                right: 60px;
+            }
+
+            h1 {
+                font-size: 32px;
+            }
+
+            p {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-border"></div>
+
+    <div id="video-container">
+        <video id="input_video"></video>
+        <div id="safe-zone"></div>
+    </div>
+
+    <canvas id="game_canvas"></canvas>
+
+    <div id="ui-layer">
+        <div class="score-board">分数: <span id="score">0</span></div>
+        <div class="lives" id="lives">❤️❤️❤️</div>
+
+        <div id="start-screen" class="screen">
+            <h1>虚空切水果</h1>
+            <p>使用你的食指作为光剑来切开飞出的几何体！<br>
+                避开红色的炸弹。<br>
+                请确保你的手在右上角视频的<span style="color:#00ffcc">虚线框内</span>操作。<br>
+                框外区域为缓冲保护区。<br>
+                举起手准备开始...<br>
+                <span style="font-size: 16px; color: #aaa;">(建议距离摄像头 0.5 - 1 米)</span>
+            </p>
+            <button class="btn" id="start-btn">开始游戏</button>
+        </div>
+
+        <div id="game-over-screen" class="screen hidden">
+            <h1>游戏结束</h1>
+            <p>最终得分: <span id="final-score">0</span></p>
+            <button class="btn" id="restart-btn">再玩一次</button>
+        </div>
+    </div>
+
+    <button class="fullscreen-btn" id="fullscreen-btn" title="全屏模式">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3">
+            </path>
+        </svg>
+    </button>
+
+    <button class="achievement-btn" id="achievement-btn" title="成就">🏆</button>
+
+    <div class="combo-display" id="combo-display">连击: <span id="combo-count">0</span></div>
+
+    <div class="achievement-toast" id="achievement-toast">🏆 成就解锁!</div>
+
+    <div id="achievement-panel" class="achievement-panel hidden">
+        <button class="achievement-close" id="achievement-close">&times;</button>
+        <h2>🏆 成就殿堂</h2>
+        <div id="achievement-list"></div>
+    </div>
+
+    <script>
+        // --- 成就系统 ---
+        const ACHIEVEMENTS = [
+            { id: 'first_slice', name: '初次尝试', desc: '切开第一个水果', icon: '🍎', condition: (stats) => stats.totalSliced >= 1 },
+            { id: 'slice_10', name: '小试牛刀', desc: '累计切开10个水果', icon: '🔪', condition: (stats) => stats.totalSliced >= 10 },
+            { id: 'slice_50', name: '水果杀手', desc: '累计切开50个水果', icon: '⚔️', condition: (stats) => stats.totalSliced >= 50 },
+            { id: 'slice_100', name: '切片大师', desc: '累计切开100个水果', icon: '🗡️', condition: (stats) => stats.totalSliced >= 100 },
+            { id: 'slice_500', name: '虚空收割者', desc: '累计切开500个水果', icon: '👑', condition: (stats) => stats.totalSliced >= 500 },
+            { id: 'score_100', name: '百分新手', desc: '单局得分达到100分', icon: '💯', condition: (stats) => stats.highScore >= 100 },
+            { id: 'score_300', name: '三百勇士', desc: '单局得分达到300分', icon: '🌟', condition: (stats) => stats.highScore >= 300 },
+            { id: 'score_500', name: '五百壮士', desc: '单局得分达到500分', icon: '⭐', condition: (stats) => stats.highScore >= 500 },
+            { id: 'score_1000', name: '千分王者', desc: '单局得分达到1000分', icon: '👸', condition: (stats) => stats.highScore >= 1000 },
+            { id: 'combo_3', name: '三连斩', desc: '达成3连击', icon: '🔥', condition: (stats) => stats.maxCombo >= 3 },
+            { id: 'combo_5', name: '五连绝世', desc: '达成5连击', icon: '💥', condition: (stats) => stats.maxCombo >= 5 },
+            { id: 'combo_10', name: '十连超神', desc: '达成10连击', icon: '🌈', condition: (stats) => stats.maxCombo >= 10 },
+            { id: 'no_bomb', name: '火眼金睛', desc: '单局切30+水果且不碰炸弹', icon: '👁️', condition: (stats) => stats.perfectRound && stats.roundSliced >= 30 },
+            { id: 'games_10', name: '常客', desc: '累计游戏10局', icon: '🎮', condition: (stats) => stats.gamesPlayed >= 10 },
+            { id: 'games_50', name: '忠实玩家', desc: '累计游戏50局', icon: '🎯', condition: (stats) => stats.gamesPlayed >= 50 },
+            { id: 'survivor', name: '幸存者', desc: '在只剩1条命时存活到200分', icon: '💪', condition: (stats) => stats.survivorAchieved }
+        ];
+
+        class AchievementSystem {
+            constructor() {
+                this.stats = this.loadStats();
+                this.unlocked = this.loadUnlocked();
+                this.toastQueue = [];
+                this.isShowingToast = false;
+            }
+
+            loadStats() {
+                const saved = localStorage.getItem('fruitSlice_stats');
+                return saved ? JSON.parse(saved) : {
+                    totalSliced: 0,
+                    highScore: 0,
+                    maxCombo: 0,
+                    gamesPlayed: 0,
+                    perfectRound: false,
+                    roundSliced: 0,
+                    survivorAchieved: false
+                };
+            }
+
+            loadUnlocked() {
+                const saved = localStorage.getItem('fruitSlice_achievements');
+                return saved ? JSON.parse(saved) : [];
+            }
+
+            saveStats() {
+                localStorage.setItem('fruitSlice_stats', JSON.stringify(this.stats));
+            }
+
+            saveUnlocked() {
+                localStorage.setItem('fruitSlice_achievements', JSON.stringify(this.unlocked));
+            }
+
+            onSlice() {
+                this.stats.totalSliced++;
+                this.stats.roundSliced++;
+                this.saveStats();
+                this.checkAchievements();
+            }
+
+            onCombo(combo) {
+                if (combo > this.stats.maxCombo) {
+                    this.stats.maxCombo = combo;
+                    this.saveStats();
+                    this.checkAchievements();
+                }
+            }
+
+            onGameEnd(score, hitBomb, livesLeft) {
+                this.stats.gamesPlayed++;
+                if (score > this.stats.highScore) {
+                    this.stats.highScore = score;
+                }
+                if (!hitBomb && this.stats.roundSliced >= 30) {
+                    this.stats.perfectRound = true;
+                }
+                if (livesLeft === 1 && score >= 200) {
+                    this.stats.survivorAchieved = true;
+                }
+                this.saveStats();
+                this.checkAchievements();
+            }
+
+            onGameStart() {
+                this.stats.roundSliced = 0;
+                this.stats.perfectRound = false;
+            }
+
+            checkAchievements() {
+                ACHIEVEMENTS.forEach(ach => {
+                    if (!this.unlocked.includes(ach.id) && ach.condition(this.stats)) {
+                        this.unlock(ach);
+                    }
+                });
+            }
+
+            unlock(achievement) {
+                this.unlocked.push(achievement.id);
+                this.saveUnlocked();
+                this.showToast(achievement);
+            }
+
+            showToast(achievement) {
+                this.toastQueue.push(achievement);
+                if (!this.isShowingToast) {
+                    this.processToastQueue();
+                }
+            }
+
+            processToastQueue() {
+                if (this.toastQueue.length === 0) {
+                    this.isShowingToast = false;
+                    return;
+                }
+                this.isShowingToast = true;
+                const ach = this.toastQueue.shift();
+                const toast = document.getElementById('achievement-toast');
+                toast.innerHTML = `${ach.icon} 成就解锁: ${ach.name}`;
+                toast.classList.add('show');
+                playSound('start');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => this.processToastQueue(), 300);
+                }, 2500);
+            }
+
+            renderPanel() {
+                const list = document.getElementById('achievement-list');
+                list.innerHTML = ACHIEVEMENTS.map(ach => {
+                    const isUnlocked = this.unlocked.includes(ach.id);
+                    return `
+                        <div class="achievement-item ${isUnlocked ? 'unlocked' : 'locked'}">
+                            <div class="achievement-icon">${isUnlocked ? ach.icon : '🔒'}</div>
+                            <div class="achievement-info">
+                                <div class="achievement-name">${ach.name}</div>
+                                <div class="achievement-desc">${ach.desc}</div>
+                                ${isUnlocked ? '<div class="achievement-progress">✓ 已解锁</div>' : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            getProgress() {
+                return `${this.unlocked.length}/${ACHIEVEMENTS.length}`;
+            }
+        }
+
+        const achievementSystem = new AchievementSystem();
+
+        // --- 游戏配置 ---
+        const CONFIG = {
+            gravity: 0.1,
+            spawnRate: 80,
+            trailLength: 10,
+            bombChance: 0.2,
+            colors: ['#00ffcc', '#ff00cc', '#ffff00', '#00ccff'],
+            safeZoneMargin: 0.15,
+            smoothing: 0.3, // Slightly faster lerp since we average first
+            historySize: 5 // Number of frames to average
+        };
+
+        // --- 音效系统 ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'slice') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'bomb') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.exponentialRampToValueAtTime(50, now + 0.5);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            } else if (type === 'start') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.exponentialRampToValueAtTime(880, now + 0.3);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+        }
+
+        // --- 游戏类 ---
+        class Game {
+            constructor() {
+                this.canvas = document.getElementById('game_canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.width = window.innerWidth;
+                this.height = window.innerHeight;
+                this.canvas.width = this.width;
+                this.canvas.height = this.height;
+
+                this.score = 0;
+                this.lives = 3;
+                this.isPlaying = false;
+                this.entities = [];
+                this.particles = [];
+                this.handPos = { x: -100, y: -100 };
+                this.targetHandPos = { x: -100, y: -100 };
+                this.prevHandPos = { x: -100, y: -100 };
+                this.handHistory = []; // For moving average
+                this.handLandmarks = [];
+                this.trail = [];
+                this.frameCount = 0;
+                this.combo = 0;
+                this.comboTimer = null;
+                this.hitBomb = false;
+
+                this.ui = {
+                    score: document.getElementById('score'),
+                    lives: document.getElementById('lives'),
+                    startScreen: document.getElementById('start-screen'),
+                    gameOverScreen: document.getElementById('game-over-screen'),
+                    finalScore: document.getElementById('final-score'),
+                    comboDisplay: document.getElementById('combo-display'),
+                    comboCount: document.getElementById('combo-count')
+                };
+
+                this.initSafeZone();
+
+                window.addEventListener('resize', () => this.resize());
+
+                document.getElementById('start-btn').addEventListener('click', () => this.start());
+                document.getElementById('restart-btn').addEventListener('click', () => this.start());
+
+                // Fullscreen button logic
+                document.getElementById('fullscreen-btn').addEventListener('click', () => this.toggleFullscreen());
+
+                // Achievement panel logic
+                document.getElementById('achievement-btn').addEventListener('click', () => this.showAchievements());
+                document.getElementById('achievement-close').addEventListener('click', () => this.hideAchievements());
+            }
+
+            showAchievements() {
+                achievementSystem.renderPanel();
+                document.getElementById('achievement-panel').classList.remove('hidden');
+            }
+
+            hideAchievements() {
+                document.getElementById('achievement-panel').classList.add('hidden');
+            }
+
+            toggleFullscreen() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().then(() => {
+                        // Check if mobile (simple check)
+                        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                        if (isMobile && screen.orientation && screen.orientation.lock) {
+                            screen.orientation.lock('landscape').catch(err => {
+                                console.log('Orientation lock failed (likely not supported or permission denied):', err);
+                            });
+                        }
+                    }).catch(err => {
+                        console.log('Error attempting to enable fullscreen:', err);
+                    });
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    }
+                    if (screen.orientation && screen.orientation.unlock) {
+                        screen.orientation.unlock();
+                    }
+                }
+            }
+
+            initSafeZone() {
+                const safeZone = document.getElementById('safe-zone');
+                const marginPct = CONFIG.safeZoneMargin * 100;
+                safeZone.style.top = `${marginPct}%`;
+                safeZone.style.left = `${marginPct}%`;
+                safeZone.style.width = `${100 - marginPct * 2}%`;
+                safeZone.style.height = `${100 - marginPct * 2}%`;
+            }
+
+            resize() {
+                this.width = window.innerWidth;
+                this.height = window.innerHeight;
+                this.canvas.width = this.width;
+                this.canvas.height = this.height;
+            }
+
+            start() {
+                this.score = 0;
+                this.lives = 3;
+                this.entities = [];
+                this.particles = [];
+                this.isPlaying = true;
+                this.combo = 0;
+                this.hitBomb = false;
+                this.ui.score.innerText = '0';
+                this.updateLives();
+                this.updateCombo();
+                this.ui.startScreen.classList.add('hidden');
+                this.ui.gameOverScreen.classList.add('hidden');
+                achievementSystem.onGameStart();
+                playSound('start');
+                loop();
+            }
+
+            gameOver() {
+                this.isPlaying = false;
+                this.ui.finalScore.innerText = this.score;
+                this.ui.gameOverScreen.classList.remove('hidden');
+                achievementSystem.onGameEnd(this.score, this.hitBomb, this.lives);
+                playSound('bomb');
+            }
+
+            updateLives() {
+                this.ui.lives.innerText = '❤️'.repeat(this.lives);
+            }
+
+            updateCombo() {
+                this.ui.comboCount.innerText = this.combo;
+                if (this.combo >= 2) {
+                    this.ui.comboDisplay.classList.add('active');
+                } else {
+                    this.ui.comboDisplay.classList.remove('active');
+                }
+            }
+
+            addCombo() {
+                this.combo++;
+                this.updateCombo();
+                achievementSystem.onCombo(this.combo);
+                
+                // Reset combo timer
+                if (this.comboTimer) clearTimeout(this.comboTimer);
+                this.comboTimer = setTimeout(() => {
+                    this.combo = 0;
+                    this.updateCombo();
+                }, 1500);
+            }
+
+            resetCombo() {
+                this.combo = 0;
+                this.updateCombo();
+                if (this.comboTimer) clearTimeout(this.comboTimer);
+            }
+
+            spawnEntity() {
+                const x = Math.random() * (this.width - 100) + 50;
+                const y = this.height + 50;
+                const isBomb = Math.random() < CONFIG.bombChance;
+                const type = isBomb ? 'bomb' : 'fruit';
+
+                const vx = (this.width / 2 - x) * (Math.random() * 0.01 + 0.005);
+                const vy = -(Math.random() * 5 + 10);
+
+                this.entities.push(new Entity(x, y, vx, vy, type));
+            }
+
+            update() {
+                // Smooth hand movement
+                this.prevHandPos = { ...this.handPos };
+
+                if (this.targetHandPos.x !== -100) {
+                    this.handPos.x += (this.targetHandPos.x - this.handPos.x) * CONFIG.smoothing;
+                    this.handPos.y += (this.targetHandPos.y - this.handPos.y) * CONFIG.smoothing;
+                }
+
+                if (!this.isPlaying) return;
+
+                this.frameCount++;
+                if (this.frameCount % CONFIG.spawnRate === 0) {
+                    this.spawnEntity();
+                }
+
+                for (let i = this.entities.length - 1; i >= 0; i--) {
+                    const e = this.entities[i];
+                    e.update();
+
+                    if (this.checkSlice(e)) {
+                        if (e.type === 'bomb') {
+                            this.lives--;
+                            this.hitBomb = true;
+                            this.updateLives();
+                            this.resetCombo();
+                            this.createExplosion(e.x, e.y, '#ff0000');
+                            playSound('bomb');
+                            this.entities.splice(i, 1);
+                            if (this.lives <= 0) this.gameOver();
+                        } else {
+                            this.addCombo();
+                            // Combo bonus: +2 per combo level
+                            const comboBonus = Math.max(0, (this.combo - 1) * 2);
+                            this.score += 10 + comboBonus;
+                            this.ui.score.innerText = this.score;
+                            this.createExplosion(e.x, e.y, e.color);
+                            playSound('slice');
+                            achievementSystem.onSlice();
+                            this.entities.splice(i, 1);
+                        }
+                    } else if (e.y > this.height + 100) {
+                        this.entities.splice(i, 1);
+                    }
+                }
+
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    const p = this.particles[i];
+                    p.update();
+                    if (p.life <= 0) this.particles.splice(i, 1);
+                }
+
+                this.trail.push({ x: this.handPos.x, y: this.handPos.y });
+                if (this.trail.length > CONFIG.trailLength) {
+                    this.trail.shift();
+                }
+            }
+
+            checkSlice(entity) {
+                const dx = this.handPos.x - entity.x;
+                const dy = this.handPos.y - entity.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                const speed = Math.sqrt(
+                    Math.pow(this.handPos.x - this.prevHandPos.x, 2) +
+                    Math.pow(this.handPos.y - this.prevHandPos.y, 2)
+                );
+
+                return dist < entity.size + 10 && speed > 2;
+            }
+
+            createExplosion(x, y, color) {
+                for (let i = 0; i < 15; i++) {
+                    this.particles.push(new Particle(x, y, color));
+                }
+            }
+
+            draw() {
+                this.ctx.clearRect(0, 0, this.width, this.height);
+
+                this.drawHandSkeleton();
+
+                if (this.trail.length > 1) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.trail[0].x, this.trail[0].y);
+                    for (let i = 1; i < this.trail.length; i++) {
+                        const xc = (this.trail[i].x + this.trail[i - 1].x) / 2;
+                        const yc = (this.trail[i].y + this.trail[i - 1].y) / 2;
+                        this.ctx.quadraticCurveTo(this.trail[i - 1].x, this.trail[i - 1].y, xc, yc);
+                    }
+                    this.ctx.lineTo(this.trail[this.trail.length - 1].x, this.trail[this.trail.length - 1].y);
+
+                    this.ctx.lineCap = 'round';
+                    this.ctx.lineJoin = 'round';
+
+                    this.ctx.shadowBlur = 20;
+                    this.ctx.shadowColor = '#00ffff';
+                    this.ctx.strokeStyle = 'rgba(0, 255, 255, 0.5)';
+                    this.ctx.lineWidth = 10;
+                    this.ctx.stroke();
+
+                    this.ctx.shadowBlur = 10;
+                    this.ctx.shadowColor = '#ffffff';
+                    this.ctx.strokeStyle = '#ffffff';
+                    this.ctx.lineWidth = 4;
+                    this.ctx.stroke();
+
+                    this.ctx.shadowBlur = 0;
+                }
+
+                if (this.handPos.x > 0) {
+                    this.ctx.beginPath();
+                    this.ctx.arc(this.handPos.x, this.handPos.y, 8, 0, Math.PI * 2);
+                    this.ctx.fillStyle = '#ffffff';
+                    this.ctx.shadowBlur = 15;
+                    this.ctx.shadowColor = '#00ffff';
+                    this.ctx.fill();
+                    this.ctx.shadowBlur = 0;
+                }
+
+                this.entities.forEach(e => e.draw(this.ctx));
+                this.particles.forEach(p => p.draw(this.ctx));
+            }
+
+            drawHandSkeleton() {
+                if (!this.handLandmarks || this.handLandmarks.length === 0) return;
+
+                const ctx = this.ctx;
+                const points = this.handLandmarks;
+
+                ctx.save();
+                ctx.strokeStyle = 'rgba(0, 255, 204, 0.3)';
+                ctx.lineWidth = 2;
+                ctx.fillStyle = 'rgba(0, 255, 204, 0.5)';
+
+                const connections = [
+                    [0, 1], [1, 2], [2, 3], [3, 4], // Thumb
+                    [0, 5], [5, 6], [6, 7], [7, 8], // Index
+                    [5, 9], [9, 10], [10, 11], [11, 12], // Middle
+                    [9, 13], [13, 14], [14, 15], [15, 16], // Ring
+                    [13, 17], [17, 18], [18, 19], [19, 20], // Pinky
+                    [0, 17] // Palm base
+                ];
+
+                ctx.beginPath();
+                connections.forEach(([i, j]) => {
+                    if (points[i] && points[j]) {
+                        ctx.moveTo(points[i].x, points[i].y);
+                        ctx.lineTo(points[j].x, points[j].y);
+                    }
+                });
+                ctx.stroke();
+
+                // Joints
+                points.forEach(p => {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+
+                ctx.restore();
+            }
+        }
+
+        class Entity {
+            constructor(x, y, vx, vy, type) {
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+                this.type = type;
+                this.size = 30;
+                this.rotation = 0;
+                this.rotSpeed = (Math.random() - 0.5) * 0.2;
+                this.color = type === 'bomb' ? '#ff0000' : CONFIG.colors[Math.floor(Math.random() * CONFIG.colors.length)];
+                this.shapeType = Math.floor(Math.random() * 4);
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += CONFIG.gravity;
+                this.rotation += this.rotSpeed;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+
+                if (this.type === 'bomb') {
+                    ctx.fillStyle = '#000';
+                    ctx.strokeStyle = '#ff0000';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    for (let i = 0; i < 8; i++) {
+                        const angle = (i / 8) * Math.PI * 2;
+                        const r = i % 2 === 0 ? this.size : this.size * 0.6;
+                        ctx.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#ff0000';
+                    ctx.beginPath();
+                    ctx.arc(0, -5, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.rect(-6, 5, 12, 6);
+                    ctx.fill();
+
+                } else {
+                    ctx.strokeStyle = this.color;
+                    ctx.lineWidth = 4;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = this.color;
+                    ctx.fillStyle = this.color + '33';
+
+                    ctx.beginPath();
+
+                    switch (this.shapeType) {
+                        case 0: // Square
+                            ctx.rect(-this.size / 2, -this.size / 2, this.size, this.size);
+                            break;
+                        case 1: // Circle
+                            ctx.arc(0, 0, this.size / 2, 0, Math.PI * 2);
+                            break;
+                        case 2: // Triangle
+                            ctx.moveTo(0, -this.size / 2);
+                            ctx.lineTo(this.size / 2, this.size / 2);
+                            ctx.lineTo(-this.size / 2, this.size / 2);
+                            ctx.closePath();
+                            break;
+                        case 3: // Pentagon
+                            for (let i = 0; i < 5; i++) {
+                                const angle = (i / 5) * Math.PI * 2 - Math.PI / 2;
+                                const r = this.size / 2;
+                                if (i === 0) ctx.moveTo(Math.cos(angle) * r, Math.sin(angle) * r);
+                                else ctx.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+                            }
+                            ctx.closePath();
+                            break;
+                    }
+
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                }
+
+                ctx.restore();
+            }
+        }
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 5 + 2;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.life = 1.0;
+                this.decay = Math.random() * 0.03 + 0.02;
+                this.color = color;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= this.decay;
+            }
+
+            draw(ctx) {
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        // --- 初始化 & MediaPipe ---
+        const game = new Game();
+        const videoElement = document.getElementById('input_video');
+
+        function onResults(results) {
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const landmarks = results.multiHandLandmarks[0];
+                const margin = CONFIG.safeZoneMargin;
+
+                // Process all landmarks
+                game.handLandmarks = landmarks.map(point => {
+                    let rawX = point.x;
+                    let rawY = point.y;
+
+                    // Remap
+                    let normX = (rawX - margin) / (1 - 2 * margin);
+                    let normY = (rawY - margin) / (1 - 2 * margin);
+
+                    // Clamp
+                    normX = Math.max(0, Math.min(1, normX));
+                    normY = Math.max(0, Math.min(1, normY));
+
+                    // Un-mirrored X
+                    return {
+                        x: normX * game.width,
+                        y: normY * game.height
+                    };
+                });
+
+                // Use Index Tip (8) for interaction
+                const indexTip = game.handLandmarks[8];
+
+                // --- Advanced Stabilization ---
+
+                // 1. Add to history
+                game.handHistory.push({ x: indexTip.x, y: indexTip.y });
+                if (game.handHistory.length > CONFIG.historySize) {
+                    game.handHistory.shift();
+                }
+
+                // 2. Calculate Average
+                let sumX = 0;
+                let sumY = 0;
+                game.handHistory.forEach(pos => {
+                    sumX += pos.x;
+                    sumY += pos.y;
+                });
+                const avgX = sumX / game.handHistory.length;
+                const avgY = sumY / game.handHistory.length;
+
+                // 3. Set Target
+                game.targetHandPos = { x: avgX, y: avgY };
+
+                // Initialize handPos if it's the first detection
+                if (game.handPos.x === -100) {
+                    game.handPos = { ...game.targetHandPos };
+                }
+
+            } else {
+                game.handLandmarks = [];
+                // Clear history on loss to prevent stale averaging
+                game.handHistory = [];
+            }
+        }
+
+        const hands = new Hands({
+            locateFile: (file) => {
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+            }
+        });
+
+        // Increased confidence to reduce jumping/jitter
+        hands.setOptions({
+            maxNumHands: 1,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.8, // Increased from 0.5
+            minTrackingConfidence: 0.8   // Increased from 0.5
+        });
+
+        hands.onResults(onResults);
+
+        const camera = new Camera(videoElement, {
+            onFrame: async () => {
+                await hands.send({ image: videoElement });
+            },
+            width: 640,
+            height: 480
+        });
+
+        camera.start();
+
+        function loop() {
+            game.update();
+            game.draw();
+            if (game.isPlaying) {
+                requestAnimationFrame(loop);
+            }
+        }
+
+        // 初始绘制背景
+        game.draw();
+
+    </script>
+</body>
+
+</html>

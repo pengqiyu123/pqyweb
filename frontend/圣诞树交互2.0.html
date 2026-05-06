@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>疯狂动物城互动圣诞树 2.0</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            background: radial-gradient(ellipse at bottom, #1B2838 0%, #090A0F 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #video-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 280px;
+            height: 210px;
+            z-index: 100;
+            border: 3px solid rgba(255, 215, 0, 0.6);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow:
+                0 0 20px rgba(255, 215, 0, 0.3),
+                0 0 40px rgba(255, 100, 100, 0.2),
+                inset 0 0 20px rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        #output-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ffd700;
+            font-size: 28px;
+            text-align: center;
+            text-shadow:
+                0 0 20px rgba(255, 215, 0, 0.8),
+                0 0 40px rgba(255, 100, 100, 0.5);
+            transition: opacity 0.5s;
+        }
+
+        #loading .subtitle {
+            font-size: 16px;
+            opacity: 0.7;
+            margin-top: 10px;
+        }
+
+        #instructions {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            pointer-events: none;
+            user-select: none;
+            font-size: 16px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+            background: linear-gradient(135deg, rgba(139, 0, 0, 0.7), rgba(0, 100, 0, 0.7));
+            padding: 15px 30px;
+            border-radius: 20px;
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+        }
+
+        #instructions .highlight {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        #gesture-indicator {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 15px 25px;
+            border-radius: 15px;
+            background: linear-gradient(135deg, rgba(0, 100, 0, 0.8), rgba(139, 0, 0, 0.8));
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 100;
+            box-shadow:
+                0 0 20px rgba(255, 215, 0, 0.3),
+                inset 0 0 10px rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        #gesture-indicator .icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+
+        /* Snowfall effect */
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            color: white;
+            font-size: 1em;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+            pointer-events: none;
+            z-index: 1;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+
+        #photo-preview {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            max-width: 70vw;
+            max-height: 70vh;
+            border-radius: 20px;
+            border: 5px solid rgba(255, 215, 0, 0.8);
+            box-shadow:
+                0 0 50px rgba(255, 215, 0, 0.5),
+                0 0 100px rgba(255, 100, 100, 0.3);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 200;
+            pointer-events: none;
+        }
+
+        #photo-preview.active {
+            transform: translate(-50%, -50%) scale(1);
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div id="loading">
+        🎄 正在启动圣诞魔法...
+        <div class="subtitle">请允许摄像头权限</div>
+    </div>
+
+    <div id="gesture-indicator">
+        <span class="icon">✋</span>
+        <span id="gesture-text">等待手势...</span>
+    </div>
+
+    <div id="instructions">
+        <span class="highlight">✊ 握拳</span> = 凝聚圣诞树 |
+        <span class="highlight">✋ 张开</span> = 分散粒子 |
+        <span class="highlight">👌 捏合</span> = 放大照片 |
+        <span class="highlight">↔️ 左右移动</span> = 旋转
+    </div>
+
+    <div id="video-container">
+        <video id="input_video"></video>
+        <canvas id="output-canvas"></canvas>
+    </div>
+
+    <img id="photo-preview" src="" alt="Photo Preview">
+
+    <script type="module">
+        import * as THREE from 'https://cdn.skypack.dev/three@0.136.0';
+        import { OrbitControls } from 'https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js';
+
+        console.log('🎄 Christmas Tree 2.0 Starting...');
+
+        // Photo paths - using the images from zootopia_batch
+        const photoPaths = [
+            'images/zootopia_batch/10001.jpg',
+            'images/zootopia_batch/10002.jpg',
+            'images/zootopia_batch/10003.jpg',
+            'images/zootopia_batch/10004.jpg',
+            'images/zootopia_batch/10005.jpg',
+            'images/zootopia_batch/10006.jpg',
+            'images/zootopia_batch/10007.jpg',
+            'images/zootopia_batch/10008.jpg',
+            'images/zootopia_batch/10009.jpg',
+            'images/zootopia_batch/10010.jpg',
+            'images/zootopia_batch/10011.jpg',
+            'images/zootopia_batch/【哲风壁纸】4K-动漫-动物拟人.png'
+        ];
+
+        // Preload images
+        const photoPreview = document.getElementById('photo-preview');
+        const preloadedImages = [];
+        photoPaths.forEach((path, index) => {
+            const img = new Image();
+            img.src = path;
+            img.onload = () => console.log(`✅ Loaded: ${path}`);
+            img.onerror = () => console.error(`❌ Failed: ${path}`);
+            preloadedImages.push(img);
+        });
+
+        // Create snowfall effect
+        function createSnowflake() {
+            const snowflake = document.createElement('div');
+            snowflake.className = 'snowflake';
+            snowflake.innerHTML = '❄';
+            snowflake.style.left = Math.random() * 100 + 'vw';
+            snowflake.style.fontSize = (Math.random() * 10 + 10) + 'px';
+            snowflake.style.opacity = Math.random() * 0.5 + 0.5;
+            snowflake.style.animationDuration = (Math.random() * 3 + 5) + 's';
+            document.body.appendChild(snowflake);
+
+            setTimeout(() => snowflake.remove(), 8000);
+        }
+        setInterval(createSnowflake, 200);
+
+        // Three.js Setup
+        const scene = new THREE.Scene();
+        // Reduced fog density so photos are more visible
+        scene.fog = new THREE.FogExp2(0x1B2838, 0.008);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 55;
+        camera.position.y = 5;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.sortObjects = true; // Enable proper render order sorting
+        document.body.appendChild(renderer.domElement);
+
+        // Orbit controls (disabled for gesture control)
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.enableRotate = false; // Disable mouse rotation
+        controls.enablePan = false;
+        controls.enableZoom = true;
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xffcc00, 1.5, 100);
+        pointLight.position.set(0, 25, 15);
+        scene.add(pointLight);
+
+        const redLight = new THREE.PointLight(0xff4444, 0.5, 80);
+        redLight.position.set(-20, 0, 10);
+        scene.add(redLight);
+
+        const greenLight = new THREE.PointLight(0x44ff44, 0.5, 80);
+        greenLight.position.set(20, 0, 10);
+        scene.add(greenLight);
+
+        // Particle system - reduced count for performance
+        const PARTICLE_COUNT = 2000;
+        const TREE_HEIGHT = 45;
+        const TREE_RADIUS = 18;
+
+        function createParticleTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            gradient.addColorStop(0.1, 'rgba(255, 255, 255, 0.9)');
+            gradient.addColorStop(0.4, 'rgba(255, 255, 255, 0.4)');
+            gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 64, 64);
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        const particleTexture = createParticleTexture();
+        const geometry = new THREE.BufferGeometry();
+        const positions = [];
+        const colors = [];
+        const targetPositionsTree = [];
+        const targetPositionsDispersed = [];
+
+        const colorPalette = [
+            new THREE.Color(0x0d5e1a), // Dark green
+            new THREE.Color(0x166b2a), // Medium green
+            new THREE.Color(0x228b22), // Forest green
+            new THREE.Color(0x2e8b57), // Sea green
+            new THREE.Color(0xff0000), // Red ornament
+            new THREE.Color(0xff4500), // Orange red
+            new THREE.Color(0xffd700), // Gold
+            new THREE.Color(0xffffff), // White lights
+            new THREE.Color(0x87ceeb), // Sky blue
+        ];
+
+        // Create smooth cone tree particles
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            // Dispersed position (random in space)
+            const x = (Math.random() - 0.5) * 120;
+            const y = (Math.random() - 0.5) * 120;
+            const z = (Math.random() - 0.5) * 120;
+            positions.push(x, y, z);
+            targetPositionsDispersed.push(x, y, z);
+
+            // Tree position (smooth cone)
+            const t = Math.random();
+            const h = t * TREE_HEIGHT - TREE_HEIGHT / 2;
+            const radiusAtHeight = (1 - t) * TREE_RADIUS;
+            const angle = Math.random() * Math.PI * 2;
+            const r = Math.sqrt(Math.random()) * radiusAtHeight;
+
+            targetPositionsTree.push(
+                Math.cos(angle) * r,
+                h,
+                Math.sin(angle) * r
+            );
+
+            // Color assignment
+            let color;
+            const rand = Math.random();
+            if (rand < 0.65) {
+                color = colorPalette[Math.floor(Math.random() * 4)]; // Greens
+            } else if (rand < 0.80) {
+                color = colorPalette[4 + Math.floor(Math.random() * 2)]; // Red/Orange
+            } else if (rand < 0.90) {
+                color = colorPalette[6]; // Gold
+            } else {
+                color = colorPalette[7 + Math.floor(Math.random() * 2)]; // White/Blue lights
+            }
+            colors.push(color.r, color.g, color.b);
+        }
+
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+        const material = new THREE.PointsMaterial({
+            size: 1.0,
+            vertexColors: true,
+            map: particleTexture,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            transparent: true,
+            opacity: 0.95
+        });
+
+        const particles = new THREE.Points(geometry, material);
+        scene.add(particles);
+
+        // Create 5-pointed star with particles
+        const starParticleCount = 300;
+        const starPositions = [];
+        const starColors = [];
+        const outerRadius = 4;
+        const innerRadius = 1.6;
+
+        for (let i = 0; i < starParticleCount; i++) {
+            const pointIndex = i % 10;
+            const isOuter = pointIndex % 2 === 0;
+            const baseAngle = (Math.floor(pointIndex / 2) * Math.PI * 2) / 5 - Math.PI / 2;
+            const actualAngle = isOuter ? baseAngle : baseAngle + Math.PI / 5;
+            const radius = isOuter ? outerRadius : innerRadius;
+
+            const randomOffset = (Math.random() - 0.5) * 0.4;
+            const randomAngle = actualAngle + randomOffset;
+            const r = radius * (0.2 + Math.random() * 0.8);
+
+            starPositions.push(
+                Math.cos(randomAngle) * r,
+                Math.sin(randomAngle) * r,
+                (Math.random() - 0.5) * 0.4
+            );
+
+            // Gradient from gold to white
+            const brightness = 0.8 + Math.random() * 0.2;
+            starColors.push(brightness, brightness * 0.85, brightness * 0.2);
+        }
+
+        const starGeometry = new THREE.BufferGeometry();
+        starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
+        starGeometry.setAttribute('color', new THREE.Float32BufferAttribute(starColors, 3));
+
+        const starMaterial = new THREE.PointsMaterial({
+            size: 0.8,
+            vertexColors: true,
+            map: particleTexture,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            transparent: true,
+            opacity: 1
+        });
+
+        const star = new THREE.Points(starGeometry, starMaterial);
+        star.position.set(0, TREE_HEIGHT / 2 + 4, 0);
+        scene.add(star);
+
+        const starLight = new THREE.PointLight(0xffff00, 2, 30);
+        starLight.position.set(0, TREE_HEIGHT / 2 + 4, 0);
+        scene.add(starLight);
+
+        // Photo sprites as ornaments - using Sprite for reliable texture display
+        const textureLoader = new THREE.TextureLoader();
+        const photoGroup = new THREE.Group();
+        const photoSprites = [];
+        const PHOTO_SIZE = 3; // Small ornament size like real decorations
+
+        console.log('🖼️ Starting to create photo ornaments...');
+
+        photoPaths.forEach((path, i) => {
+            // Load texture directly with TextureLoader
+            const texture = textureLoader.load(path);
+
+            // Create sprite material with the texture
+            const spriteMaterial = new THREE.SpriteMaterial({
+                map: texture,
+                transparent: true
+            });
+
+            const sprite = new THREE.Sprite(spriteMaterial);
+
+            // Each photo placed at different height on tree cone (like real ornaments)
+            // t goes from 0.1 (bottom) to 0.9 (top)
+            const t = 0.1 + (i / photoPaths.length) * 0.8;
+
+            // Calculate height and radius at that height (cone shape)
+            const h = t * TREE_HEIGHT - TREE_HEIGHT / 2;
+            const radiusAtHeight = (1 - t) * (TREE_RADIUS - 2);
+
+            // Each photo at different angle position
+            const angle = (i / photoPaths.length) * Math.PI * 2 + (i % 2) * 0.3; // Slight offset for variety
+
+            // Tree position: distributed like real ornaments
+            const treePos = new THREE.Vector3(
+                Math.cos(angle) * radiusAtHeight,
+                h,
+                Math.sin(angle) * radiusAtHeight
+            );
+
+            // Dispersed position - 360 degree distribution around camera
+            // Each photo at a different angle (30 degrees apart for 12 photos)
+            const dispersedAngle = (i / photoPaths.length) * Math.PI * 2;
+            const dispersedRadius = 30; // Distance from center
+            const dispersedHeight = (Math.random() - 0.5) * 40; // Random vertical position
+
+            const dispersedPos = new THREE.Vector3(
+                Math.cos(dispersedAngle) * dispersedRadius,
+                dispersedHeight,
+                Math.sin(dispersedAngle) * dispersedRadius
+            );
+
+            sprite.position.copy(dispersedPos);
+            sprite.scale.set(PHOTO_SIZE, PHOTO_SIZE, 1);
+
+            sprite.userData = {
+                treePos: treePos,
+                dispersedPos: dispersedPos,
+                originalScale: new THREE.Vector3(PHOTO_SIZE, PHOTO_SIZE, 1),
+                angle: angle,
+                dispersedAngle: dispersedAngle, // For selection in dispersed mode
+                index: i,
+                imagePath: path
+            };
+
+            photoGroup.add(sprite);
+            photoSprites.push(sprite);
+
+            console.log(`📍 Ornament ${i} at height ${h.toFixed(1)}, angle ${Math.round(angle * 180 / Math.PI)}°`);
+        });
+
+        scene.add(photoGroup);
+
+        console.log(`🖼️ Created ${photoSprites.length} photo sprites around tree`);
+
+
+
+        // State management
+        let mode = 'DISPERSED'; // TREE or DISPERSED
+        let currentRotation = 0;
+        let targetRotation = 0;
+        let lastHandX = 0.5;
+        let isPinching = false;
+        let selectedPhotoIndex = -1;
+        let rotationVelocity = 0;
+
+        // Gesture indicator
+        const gestureIndicator = document.getElementById('gesture-indicator');
+        const gestureText = document.getElementById('gesture-text');
+
+        function updateGestureIndicator(gesture, icon) {
+            gestureText.textContent = gesture;
+            gestureIndicator.querySelector('.icon').textContent = icon;
+        }
+
+        // Track hand position for photo selection
+        let handXPosition = 0.5;
+
+        // Function to find the front-facing photo based on mode and rotation
+        function getFrontPhotoIndex() {
+            let closestIndex = 0;
+
+            // Normalize current rotation to 0-2π range
+            let normalizedRotation = currentRotation % (Math.PI * 2);
+            if (normalizedRotation < 0) normalizedRotation += Math.PI * 2;
+
+            let minDiff = Infinity;
+
+            if (mode === 'TREE') {
+                // In TREE mode: use tree angle for selection
+                photoSprites.forEach((sprite, index) => {
+                    const photoAngle = sprite.userData.angle;
+                    let effectiveAngle = (photoAngle + normalizedRotation) % (Math.PI * 2);
+                    let diff = Math.min(effectiveAngle, Math.PI * 2 - effectiveAngle);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        closestIndex = index;
+                    }
+                });
+            } else {
+                // In DISPERSED mode: use dispersed angle for selection (same logic)
+                photoSprites.forEach((sprite, index) => {
+                    const photoAngle = sprite.userData.dispersedAngle;
+                    let effectiveAngle = (photoAngle + normalizedRotation) % (Math.PI * 2);
+                    let diff = Math.min(effectiveAngle, Math.PI * 2 - effectiveAngle);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        closestIndex = index;
+                    }
+                });
+            }
+
+            return closestIndex;
+        }
+
+        // Track current front photo for display
+        let currentFrontPhoto = 0;
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const positionsAttribute = geometry.attributes.position;
+            const currentPositions = positionsAttribute.array;
+            const target = mode === 'TREE' ? targetPositionsTree : targetPositionsDispersed;
+            const speed = 0.04;
+
+            // Update particle positions
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                const ix = i * 3;
+                currentPositions[ix] += (target[ix] - currentPositions[ix]) * speed;
+                currentPositions[ix + 1] += (target[ix + 1] - currentPositions[ix + 1]) * speed;
+                currentPositions[ix + 2] += (target[ix + 2] - currentPositions[ix + 2]) * speed;
+            }
+            positionsAttribute.needsUpdate = true;
+
+            // Find front photo (only in dispersed mode for selection)
+            if (mode === 'DISPERSED') {
+                currentFrontPhoto = getFrontPhotoIndex();
+            }
+
+            // Update photo sprite positions
+            const time = Date.now() * 0.005;
+
+            photoSprites.forEach((sprite, index) => {
+                const targetPos = mode === 'TREE' ? sprite.userData.treePos : sprite.userData.dispersedPos;
+                sprite.position.lerp(targetPos, speed);
+
+                // Scale based on mode and state
+                if (mode === 'DISPERSED') {
+                    // In dispersed mode: allow pinch zoom and highlight front photo
+                    if (isPinching && index === selectedPhotoIndex) {
+                        // Zoomed photo - large size
+                        sprite.scale.lerp(new THREE.Vector3(20, 20, 1), 0.1);
+                    } else if (index === currentFrontPhoto) {
+                        // Selected photo - pulsing animation
+                        const pulse = 5 + Math.sin(time) * 1.5;
+                        sprite.scale.set(pulse, pulse, 1);
+                    } else {
+                        sprite.scale.lerp(sprite.userData.originalScale, 0.1);
+                    }
+                } else {
+                    // In tree mode: all photos stay at ornament size
+                    sprite.scale.lerp(sprite.userData.originalScale, 0.1);
+                }
+            });
+
+            // Smooth rotation
+            rotationVelocity *= 0.95; // Damping
+            currentRotation += rotationVelocity;
+
+            particles.rotation.y = currentRotation;
+            photoGroup.rotation.y = currentRotation;
+
+            // Star always rotates
+            star.rotation.z += 0.015;
+
+            // Star pulsing effect
+            const pulse = 1 + Math.sin(Date.now() * 0.003) * 0.1;
+            starLight.intensity = 2 * pulse;
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // MediaPipe Hands setup
+        const videoElement = document.getElementById('input_video');
+        const canvasElement = document.getElementById('output-canvas');
+        const canvasCtx = canvasElement.getContext('2d');
+
+        const hands = new Hands({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+        });
+
+        hands.setOptions({
+            maxNumHands: 1, // Single hand control
+            modelComplexity: 1,
+            minDetectionConfidence: 0.7,
+            minTrackingConfidence: 0.7
+        });
+
+        const HAND_CONNECTIONS = [
+            [0, 1], [1, 2], [2, 3], [3, 4],
+            [0, 5], [5, 6], [6, 7], [7, 8],
+            [0, 9], [9, 10], [10, 11], [11, 12],
+            [0, 13], [13, 14], [14, 15], [15, 16],
+            [0, 17], [17, 18], [18, 19], [19, 20],
+            [5, 9], [9, 13], [13, 17]
+        ];
+
+        // Calculate if fingers are extended
+        function isFingerExtended(landmarks, fingerTip, fingerPip) {
+            return landmarks[fingerTip].y < landmarks[fingerPip].y;
+        }
+
+        // Calculate pinch distance (thumb tip to index tip)
+        function getPinchDistance(landmarks) {
+            const thumbTip = landmarks[4];
+            const indexTip = landmarks[8];
+            return Math.sqrt(
+                Math.pow(thumbTip.x - indexTip.x, 2) +
+                Math.pow(thumbTip.y - indexTip.y, 2)
+            );
+        }
+
+        // Detect if hand is making a fist
+        function isFist(landmarks) {
+            const wrist = landmarks[0];
+            const tips = [8, 12, 16, 20]; // Index, middle, ring, pinky tips
+
+            let closedFingers = 0;
+            tips.forEach(tipIndex => {
+                const tip = landmarks[tipIndex];
+                const dist = Math.sqrt(
+                    Math.pow(tip.x - wrist.x, 2) +
+                    Math.pow(tip.y - wrist.y, 2)
+                );
+                if (dist < 0.18) closedFingers++;
+            });
+
+            return closedFingers >= 3;
+        }
+
+        // Detect if hand is open
+        function isOpenHand(landmarks) {
+            const wrist = landmarks[0];
+            const tips = [8, 12, 16, 20];
+
+            let extendedFingers = 0;
+            tips.forEach(tipIndex => {
+                const tip = landmarks[tipIndex];
+                const dist = Math.sqrt(
+                    Math.pow(tip.x - wrist.x, 2) +
+                    Math.pow(tip.y - wrist.y, 2)
+                );
+                if (dist > 0.25) extendedFingers++;
+            });
+
+            return extendedFingers >= 3;
+        }
+
+        // Find front-facing photo (uses the front photo tracked by animation loop)
+        function findFrontPhoto() {
+            return currentFrontPhoto;
+        }
+
+        hands.onResults((results) => {
+            document.getElementById('loading').style.opacity = 0;
+
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const hand = results.multiHandLandmarks[0];
+
+                // Draw hand skeleton
+                const color = '#ffd700';
+                canvasCtx.strokeStyle = color;
+                canvasCtx.lineWidth = 2;
+
+                HAND_CONNECTIONS.forEach(([start, end]) => {
+                    const startPoint = hand[start];
+                    const endPoint = hand[end];
+                    canvasCtx.beginPath();
+                    canvasCtx.moveTo(startPoint.x * canvasElement.width, startPoint.y * canvasElement.height);
+                    canvasCtx.lineTo(endPoint.x * canvasElement.width, endPoint.y * canvasElement.height);
+                    canvasCtx.stroke();
+                });
+
+                canvasCtx.fillStyle = color;
+                hand.forEach((landmark) => {
+                    canvasCtx.beginPath();
+                    canvasCtx.arc(
+                        landmark.x * canvasElement.width,
+                        landmark.y * canvasElement.height,
+                        4, 0, 2 * Math.PI
+                    );
+                    canvasCtx.fill();
+                });
+
+                // Gesture detection
+                const wrist = hand[0];
+                const currentHandX = wrist.x;
+                const handMovement = currentHandX - lastHandX;
+
+                const pinchDist = getPinchDistance(hand);
+                const fist = isFist(hand);
+                const openHand = isOpenHand(hand);
+                const pinching = pinchDist < 0.12; // Increased threshold for easier detection
+
+                // Gesture logic - priority: fist > pinching (in dispersed) > open hand
+                if (fist) {
+                    // Fist: form Christmas tree + control rotation (no zoom allowed)
+                    mode = 'TREE';
+                    rotationVelocity += handMovement * 0.8;
+                    updateGestureIndicator('圣诞树模式 - 旋转中', '✊');
+
+                    isPinching = false;
+                    selectedPhotoIndex = -1;
+                    photoPreview.classList.remove('active');
+                } else if (pinching && mode === 'DISPERSED') {
+                    // Pinch/OK gesture: zoom in on selected photo
+                    // Check pinching FIRST - thumb and index touching means zoom
+                    isPinching = true;
+                    selectedPhotoIndex = findFrontPhoto();
+
+                    if (selectedPhotoIndex >= 0) {
+                        photoPreview.src = photoPaths[selectedPhotoIndex];
+                        photoPreview.classList.add('active');
+                        updateGestureIndicator(`放大查看照片 ${selectedPhotoIndex + 1}`, '👌');
+                    }
+                } else if (openHand) {
+                    // Open hand: disperse particles + control rotation to select photos
+                    mode = 'DISPERSED';
+                    rotationVelocity += handMovement * 0.8;
+
+                    // Show which photo is currently selected (based on rotation)
+                    const frontPhoto = getFrontPhotoIndex();
+                    updateGestureIndicator(`分散模式 - 照片 ${frontPhoto + 1}/12`, '✋');
+
+                    isPinching = false;
+                    photoPreview.classList.remove('active');
+                } else if (pinching) {
+                    // Pinching but not in dispersed mode yet - switch to dispersed
+                    mode = 'DISPERSED';
+                    updateGestureIndicator('切换到分散模式', '👌');
+                    isPinching = false;
+                    photoPreview.classList.remove('active');
+                } else {
+                    updateGestureIndicator('识别中...', '👋');
+                    isPinching = false;
+                    photoPreview.classList.remove('active');
+                }
+
+                lastHandX = currentHandX;
+            } else {
+                updateGestureIndicator('等待手势...', '👋');
+                isPinching = false;
+                photoPreview.classList.remove('active');
+            }
+
+            canvasCtx.restore();
+        });
+
+        // Camera setup
+        const cameraUtils = new Camera(videoElement, {
+            onFrame: async () => {
+                await hands.send({ image: videoElement });
+            },
+            width: 640,
+            height: 480
+        });
+
+        canvasElement.width = 640;
+        canvasElement.height = 480;
+        cameraUtils.start();
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        console.log('🎄 Christmas Tree 2.0 Ready!');
+    </script>
+</body>
+
+</html>

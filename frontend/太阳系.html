@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动态太阳系模型</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 100%;
+            padding: 8px 0 16px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .title {
+            margin-bottom: 8px;
+            font-size: 24px;
+        }
+
+        .subtitle {
+            margin-bottom: 16px;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .canvas-wrapper {
+            width: 100%;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            background: radial-gradient(ellipse at center, #1C2837 0%, #050608 100%);
+        }
+
+        /* 速度控制按钮样式 */
+        .speed-controls {
+            margin: 16px 0;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .speed-btn {
+            padding: 8px 16px;
+            border: 1px solid #444;
+            background: #1a1a1a;
+            color: #fff;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            min-width: 60px;
+        }
+
+        .speed-btn:hover {
+            background: #333;
+            border-color: #666;
+        }
+
+        .speed-btn.active {
+            background: #4a90e2;
+            border-color: #4a90e2;
+            color: #fff;
+        }
+
+        .speed-btn.stop {
+            background: #dc2626;
+            border-color: #dc2626;
+        }
+
+        .speed-btn.stop.active {
+            background: #b91c1c;
+            border-color: #b91c1c;
+        }
+
+        .achieve-btn {
+            padding: 8px 16px;
+            border: 1px solid #fbbf24;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1f2937;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .achieve-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+        }
+
+        /* 星球介绍弹窗 */
+        .planet-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .planet-modal.show {
+            display: flex;
+        }
+
+        .planet-content {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            padding: 24px;
+            text-align: center;
+            border: 2px solid #3b82f6;
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.3);
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .planet-image {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 16px;
+        }
+
+        .planet-name {
+            font-size: 1.5em;
+            color: #60a5fa;
+            margin-bottom: 12px;
+        }
+
+        .planet-desc {
+            font-size: 0.95em;
+            color: #cbd5e1;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .planet-close-btn {
+            padding: 10px 30px;
+            border: none;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* 成就弹窗 */
+        .achievement-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .achievement-modal.show {
+            display: flex;
+        }
+
+        .achievement-content {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 420px;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid #fbbf24;
+        }
+
+        .achievement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1f2937;
+        }
+
+        .achievement-header h2 {
+            margin: 0;
+            font-size: 1.2em;
+        }
+
+        .achievement-header .close-btn {
+            background: none;
+            border: none;
+            color: #1f2937;
+            font-size: 1.6em;
+            cursor: pointer;
+        }
+
+        .achievement-progress {
+            padding: 12px 20px;
+            background: #0f172a;
+            text-align: center;
+            border-bottom: 1px solid #334155;
+        }
+
+        .achievement-progress span {
+            color: #60a5fa;
+            font-weight: 700;
+            font-size: 1.2em;
+        }
+
+        .achievement-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        .achievement-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            background: #1e293b;
+            border: 1px solid #334155;
+        }
+
+        .achievement-item.unlocked {
+            background: rgba(34, 197, 94, 0.15);
+            border-color: #22c55e;
+        }
+
+        .achievement-item.locked {
+            opacity: 0.5;
+        }
+
+        .achievement-icon {
+            font-size: 1.8em;
+            width: 45px;
+            text-align: center;
+        }
+
+        .achievement-info {
+            flex: 1;
+        }
+
+        .achievement-name {
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 2px;
+        }
+
+        .achievement-desc {
+            font-size: 0.8em;
+            color: #94a3b8;
+        }
+
+        /* 成就提示 */
+        .achievement-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1f2937;
+            padding: 12px 24px;
+            border-radius: 25px;
+            box-shadow: 0 5px 25px rgba(251, 191, 36, 0.4);
+            z-index: 2000;
+            animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        @keyframes toastOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        .stop-hint {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #94a3b8;
+            display: none;
+        }
+
+        .stop-hint.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 12px;
+            }
+
+            .title {
+                font-size: 20px;
+            }
+
+            .speed-controls {
+                gap: 6px;
+            }
+
+            .speed-btn {
+                padding: 6px 12px;
+                font-size: 12px;
+                min-width: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">
+            🌌 动态太阳系模型
+        </div>
+        <div class="subtitle">
+            展示太阳与八大行星以及地月系统的运行轨迹，适配电脑与手机屏幕。
+        </div>
+        
+        <!-- 速度控制按钮 -->
+        <div class="speed-controls">
+            <button id="speedStop" class="speed-btn stop">停止</button>
+            <button id="speedSlow" class="speed-btn active">慢速</button>
+            <button id="speedNormal" class="speed-btn">正常</button>
+            <button id="speedFast" class="speed-btn">快速</button>
+            <button id="speedVeryFast" class="speed-btn">极速</button>
+            <button class="achieve-btn" onclick="showAchievementModal()">🏆 成就</button>
+        </div>
+        <div class="stop-hint" id="stopHint">💡 停止状态下可点击星球查看介绍</div>
+
+        <!-- 星球介绍弹窗 -->
+        <div class="planet-modal" id="planetModal">
+            <div class="planet-content">
+                <img class="planet-image" id="planetImage" src="" alt="">
+                <div class="planet-name" id="planetName"></div>
+                <div class="planet-desc" id="planetDesc"></div>
+                <button class="planet-close-btn" onclick="closePlanetModal()">知道了</button>
+            </div>
+        </div>
+
+        <!-- 成就弹窗 -->
+        <div class="achievement-modal" id="achievementModal">
+            <div class="achievement-content">
+                <div class="achievement-header">
+                    <h2>🏆 太阳系探索成就</h2>
+                    <button class="close-btn" onclick="closeAchievementModal()">×</button>
+                </div>
+                <div class="achievement-progress">
+                    已探索：<span id="exploreProgress">0/10</span>
+                </div>
+                <div class="achievement-list" id="achievementList"></div>
+            </div>
+        </div>
+        
+        <div class="canvas-wrapper">
+            <canvas id="solarSystem" width="1200" height="1200"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('solarSystem');
+        const ctx = canvas.getContext('2d');
+
+        // 定义行星数据（含中文名和介绍）
+        const planets = [
+            { name: 'sun', cnName: '太阳', image: 'https://img.alicdn.com/imgextra/i1/O1CN01oVLbLx22VlN34KDQs_!!6000000007126-2-tps-800-800.png', size: 120, distance: 0, speed: 0, icon: '☀️',
+              desc: '太阳是太阳系的中心天体，是一颗黄矮星。它的质量占太阳系总质量的99.86%，直径约139万公里，是地球的109倍。太阳的表面温度约5500℃，核心温度高达1500万℃。' },
+            { name: 'mercury', cnName: '水星', image: 'https://img.alicdn.com/imgextra/i2/O1CN01UjgqIB1SrRxQfrflh_!!6000000002300-2-tps-800-800.png', size: 10, distance: 120, speed: 4, icon: '🪨',
+              desc: '水星是太阳系中最小的行星，也是离太阳最近的行星。它没有大气层，昼夜温差极大，白天可达430℃，夜间降至-180℃。水星公转周期仅88天。' },
+            { name: 'venus', cnName: '金星', image: 'https://img.alicdn.com/imgextra/i3/O1CN01JGEgLU1dfxnVvp91R_!!6000000003764-2-tps-800-800.png', size: 16, distance: 180, speed: 3, icon: '🌟',
+              desc: '金星是太阳系中最亮的行星，被称为"启明星"或"长庚星"。它有浓厚的大气层，表面温度高达465℃，是太阳系中最热的行星。金星自转方向与其他行星相反。' },
+            { name: 'earth', cnName: '地球', image: 'https://img.alicdn.com/imgextra/i4/O1CN01R6wlzD1IhhMlBcGLg_!!6000000000925-2-tps-800-800.png', size: 20, distance: 240, speed: 2, icon: '🌍',
+              desc: '地球是我们的家园，是太阳系中唯一已知存在生命的行星。地球表面71%被水覆盖，拥有适宜生命的大气层和磁场。地球有一颗天然卫星——月球。' },
+            { name: 'mars', cnName: '火星', image: 'https://img.alicdn.com/imgextra/i1/O1CN01OlZAk81OVEHJ0pazq_!!6000000001710-2-tps-800-800.png', size: 14, distance: 300, speed: 1.5, icon: '🔴',
+              desc: '火星被称为"红色星球"，因其表面富含氧化铁而呈红色。火星有太阳系最高的山——奥林匹斯山（高约21公里）。科学家认为火星曾经有液态水存在。' },
+            { name: 'jupiter', cnName: '木星', image: 'https://img.alicdn.com/imgextra/i2/O1CN01MA3Mk51bAhWxWxHim_!!6000000003425-2-tps-800-800.png', size: 24, distance: 360, speed: 1, icon: '🟤',
+              desc: '木星是太阳系最大的行星，质量是其他所有行星总和的2.5倍。它是一颗气态巨行星，著名的大红斑是一个持续了数百年的巨大风暴。木星有79颗已知卫星。' },
+            { name: 'saturn', cnName: '土星', image: 'https://img.alicdn.com/imgextra/i2/O1CN01NG2FjS1XDDEofNNhg_!!6000000002889-2-tps-800-800.png', size: 48, distance: 420, speed: 0.8, icon: '💫',
+              desc: '土星以其壮观的环系统闻名，土星环主要由冰块和岩石碎片组成。土星是太阳系中密度最低的行星，甚至比水还轻。它有82颗已知卫星。' },
+            { name: 'uranus', cnName: '天王星', image: 'https://img.alicdn.com/imgextra/i1/O1CN01wnxTX51xIPkTHqPBr_!!6000000006420-2-tps-800-800.png', size: 18, distance: 480, speed: 0.5, icon: '🔵',
+              desc: '天王星是一颗冰巨星，它的自转轴几乎与公转平面平行，像是"躺着"转动。天王星呈蓝绿色，是因为大气中的甲烷吸收了红光。' },
+            { name: 'neptune', cnName: '海王星', image: 'https://img.alicdn.com/imgextra/i1/O1CN01LTf0rT25zwJWsIDkD_!!6000000007598-2-tps-800-800.png', size: 16, distance: 540, speed: 0.4, icon: '🌀',
+              desc: '海王星是太阳系最远的行星，也是太阳系中风速最快的行星，风速可达2100公里/小时。海王星呈深蓝色，公转一周需要165年。' }
+        ];
+
+        // 月球数据
+        const moon = {
+            name: 'moon',
+            cnName: '月球',
+            image: 'https://img.alicdn.com/imgextra/i4/O1CN01Ad5SeB20tv1nfRoA2_!!6000000006908-2-tps-800-800.png',
+            size: 8,
+            distance: 20,
+            speed: 8,
+            icon: '🌙',
+            desc: '月球是地球唯一的天然卫星，直径约3474公里。月球表面布满陨石坑，没有大气和水。人类于1969年首次登上月球，至今共有12人踏上过月球表面。'
+        };
+
+        // 成就系统
+        const achievements = [
+            { id: 'sun', name: '初识太阳', desc: '了解太阳的知识', icon: '☀️' },
+            { id: 'mercury', name: '水星探索者', desc: '了解水星的知识', icon: '🪨' },
+            { id: 'venus', name: '金星探索者', desc: '了解金星的知识', icon: '🌟' },
+            { id: 'earth', name: '地球守护者', desc: '了解地球的知识', icon: '🌍' },
+            { id: 'mars', name: '火星先驱', desc: '了解火星的知识', icon: '🔴' },
+            { id: 'jupiter', name: '木星观察者', desc: '了解木星的知识', icon: '🟤' },
+            { id: 'saturn', name: '土星追踪者', desc: '了解土星的知识', icon: '💫' },
+            { id: 'uranus', name: '天王星发现者', desc: '了解天王星的知识', icon: '🔵' },
+            { id: 'neptune', name: '海王星探险家', desc: '了解海王星的知识', icon: '🌀' },
+            { id: 'moon', name: '月球漫步者', desc: '了解月球的知识', icon: '🌙' }
+        ];
+
+        let exploreData = { unlocked: [] };
+
+        function loadExploreData() {
+            const saved = localStorage.getItem('solar_explore');
+            if (saved) exploreData = JSON.parse(saved);
+        }
+
+        function saveExploreData() {
+            localStorage.setItem('solar_explore', JSON.stringify(exploreData));
+        }
+
+        function unlockAchievement(id) {
+            if (exploreData.unlocked.includes(id)) return false;
+            exploreData.unlocked.push(id);
+            saveExploreData();
+            const ach = achievements.find(a => a.id === id);
+            if (ach) showAchievementToast(ach);
+            return true;
+        }
+
+        function showAchievementToast(ach) {
+            const toast = document.createElement('div');
+            toast.className = 'achievement-toast';
+            toast.innerHTML = `<span style="font-size:1.4em">${ach.icon}</span> 成就解锁：${ach.name}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function showAchievementModal() {
+            renderAchievementList();
+            document.getElementById('achievementModal').classList.add('show');
+        }
+
+        function closeAchievementModal() {
+            document.getElementById('achievementModal').classList.remove('show');
+        }
+
+        function renderAchievementList() {
+            const list = document.getElementById('achievementList');
+            document.getElementById('exploreProgress').textContent = `${exploreData.unlocked.length}/10`;
+            list.innerHTML = achievements.map(ach => {
+                const unlocked = exploreData.unlocked.includes(ach.id);
+                return `
+                    <div class="achievement-item ${unlocked ? 'unlocked' : 'locked'}">
+                        <div class="achievement-icon">${ach.icon}</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">${ach.name}</div>
+                            <div class="achievement-desc">${ach.desc}</div>
+                        </div>
+                        ${unlocked ? '<span style="color:#22c55e;font-size:1.2em">✓</span>' : '<span style="color:#64748b">🔒</span>'}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 星球介绍弹窗
+        function showPlanetInfo(planetData) {
+            document.getElementById('planetImage').src = planetData.image;
+            document.getElementById('planetName').textContent = planetData.icon + ' ' + planetData.cnName;
+            document.getElementById('planetDesc').textContent = planetData.desc;
+            document.getElementById('planetModal').classList.add('show');
+            unlockAchievement(planetData.name);
+        }
+
+        function closePlanetModal() {
+            document.getElementById('planetModal').classList.remove('show');
+        }
+
+        // 初始化
+        loadExploreData();
+
+        // 加载所有图片
+        const images = {};
+        let loadedImages = 0;
+        const totalImages = planets.length + 1; // +1 for moon
+
+        function loadImages() {
+            // 加载行星图片
+            planets.forEach(planet => {
+                images[planet.name] = new Image();
+                images[planet.name].crossOrigin = "anonymous";
+                images[planet.name].onload = () => {
+                    loadedImages++;
+                    if (loadedImages === totalImages) {
+                        init();
+                    }
+                };
+                images[planet.name].src = planet.image;
+            });
+
+            // 加载月球图片
+            images[moon.name] = new Image();
+            images[moon.name].crossOrigin = "anonymous";
+            images[moon.name].onload = () => {
+                loadedImages++;
+                if (loadedImages === totalImages) {
+                    init();
+                }
+            };
+            images[moon.name].src = moon.image;
+        }
+
+        // 生成星星
+        const stars = [];
+        for (let i = 0; i < 200; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 0.5 + 0.5,
+                opacity: Math.random() * 0.5 + 0.5
+            });
+        }
+
+        // 动画参数
+        let angle = 0;
+        let speedMultiplier = 0.25; // 默认慢速
+        let isStopped = false; // 是否停止
+
+        // 速度控制配置
+        const speedSettings = {
+            stop: 0,
+            slow: 0.25,
+            normal: 1.0,
+            fast: 2.0,
+            veryfast: 4.0
+        };
+
+        // 存储各星球当前位置用于点击检测
+        let planetPositions = [];
+
+        function init() {
+            // 初始化速度控制按钮事件
+            initSpeedControls();
+            // 初始化点击事件
+            initCanvasClick();
+            animate();
+        }
+
+        // 初始化速度控制
+        function initSpeedControls() {
+            const speedButtons = document.querySelectorAll('.speed-btn:not(.achieve-btn)');
+            const stopHint = document.getElementById('stopHint');
+            
+            speedButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 移除所有按钮的active类
+                    speedButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // 为当前按钮添加active类
+                    this.classList.add('active');
+                    
+                    // 根据按钮ID设置速度倍数
+                    const speedType = this.id.replace('speed', '').toLowerCase();
+                    speedMultiplier = speedSettings[speedType] !== undefined ? speedSettings[speedType] : 0.25;
+                    
+                    // 判断是否停止
+                    isStopped = speedType === 'stop';
+                    
+                    // 显示/隐藏停止提示
+                    if (isStopped) {
+                        stopHint.classList.add('show');
+                    } else {
+                        stopHint.classList.remove('show');
+                    }
+                });
+            });
+        }
+
+        // 处理点击/触摸检测
+        function handlePlanetClick(clientX, clientY) {
+            if (!isStopped) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const clickX = (clientX - rect.left) * scaleX;
+            const clickY = (clientY - rect.top) * scaleY;
+            
+            // 检测点击了哪个星球
+            for (const pos of planetPositions) {
+                const dx = clickX - pos.x;
+                const dy = clickY - pos.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const hitRadius = Math.max(pos.size, 30); // 手机上增大点击范围
+                
+                if (dist <= hitRadius) {
+                    showPlanetInfo(pos.data);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // 初始化画布点击事件
+        function initCanvasClick() {
+            // 鼠标点击
+            canvas.addEventListener('click', function(e) {
+                handlePlanetClick(e.clientX, e.clientY);
+            });
+            
+            // 触摸事件（手机）
+            canvas.addEventListener('touchend', function(e) {
+                if (e.changedTouches.length > 0) {
+                    const touch = e.changedTouches[0];
+                    if (handlePlanetClick(touch.clientX, touch.clientY)) {
+                        e.preventDefault(); // 阻止默认行为
+                    }
+                }
+            }, { passive: false });
+            
+            // 鼠标样式（仅桌面端）
+            canvas.addEventListener('mousemove', function(e) {
+                if (!isStopped) {
+                    canvas.style.cursor = 'default';
+                    return;
+                }
+                
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const mouseX = (e.clientX - rect.left) * scaleX;
+                const mouseY = (e.clientY - rect.top) * scaleY;
+                
+                let isOverPlanet = false;
+                for (const pos of planetPositions) {
+                    const dx = mouseX - pos.x;
+                    const dy = mouseY - pos.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const hitRadius = Math.max(pos.size, 30);
+                    
+                    if (dist <= hitRadius) {
+                        isOverPlanet = true;
+                        break;
+                    }
+                }
+                
+                canvas.style.cursor = isOverPlanet ? 'pointer' : 'default';
+            });
+        }
+
+        function drawSolarSystem() {
+            // 清空画布
+            ctx.fillStyle = '#050608';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 清空位置记录
+            planetPositions = [];
+
+            // 绘制星星
+            stars.forEach(star => {
+                ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // 设置中心点
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height * 0.45;
+
+            // 绘制行星轨道
+            planets.slice(1).forEach(planet => {
+                ctx.strokeStyle = `rgba(255, 255, 255, 0.2)`;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.ellipse(centerX, centerY, planet.distance, planet.distance * 0.6, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            });
+
+            // 绘制太阳
+            if (images.sun) {
+                ctx.drawImage(
+                    images.sun,
+                    centerX - planets[0].size / 2,
+                    centerY - planets[0].size / 2,
+                    planets[0].size,
+                    planets[0].size
+                );
+                // 记录太阳位置
+                planetPositions.push({ x: centerX, y: centerY, size: planets[0].size / 2, data: planets[0] });
+            }
+
+            // 绘制行星
+            for (let i = 1; i < planets.length; i++) {
+                const planet = planets[i];
+                const planetAngle = angle * planet.speed;
+                const x = centerX + planet.distance * Math.cos(planetAngle);
+                const y = centerY + planet.distance * 0.6 * Math.sin(planetAngle);
+
+                if (images[planet.name]) {
+                    ctx.drawImage(
+                        images[planet.name],
+                        x - planet.size / 2,
+                        y - planet.size / 2,
+                        planet.size,
+                        planet.size
+                    );
+                    // 记录位置（地球单独处理）
+                    if (planet.name !== 'earth') {
+                        planetPositions.push({ x: x, y: y, size: planet.size / 2, data: planet });
+                    }
+                }
+            }
+
+            // 绘制地球和月球
+            const earth = planets.find(p => p.name === 'earth');
+            if (earth && images.earth) {
+                const earthAngle = angle * earth.speed;
+                const earthX = centerX + earth.distance * Math.cos(earthAngle);
+                const earthY = centerY + earth.distance * 0.6 * Math.sin(earthAngle);
+
+                // 绘制地球
+                ctx.drawImage(
+                    images.earth,
+                    earthX - earth.size / 2,
+                    earthY - earth.size / 2,
+                    earth.size,
+                    earth.size
+                );
+                // 记录地球位置
+                planetPositions.push({ x: earthX, y: earthY, size: earth.size / 2, data: earth });
+
+                // 计算月球位置
+                const moonAngle = angle * moon.speed;
+                const moonX = earthX + moon.distance * Math.cos(moonAngle);
+                const moonY = earthY + moon.distance * 0.6 * Math.sin(moonAngle);
+
+                // 绘制月球
+                if (images.moon) {
+                    ctx.drawImage(
+                        images.moon,
+                        moonX - moon.size / 2,
+                        moonY - moon.size / 2,
+                        moon.size,
+                        moon.size
+                    );
+                    // 记录月球位置
+                    planetPositions.push({ x: moonX, y: moonY, size: moon.size / 2, data: moon });
+                }
+
+                // 绘制月球轨道
+                ctx.strokeStyle = `rgba(255, 255, 255, 0.2)`;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath();
+                ctx.ellipse(earthX, earthY, moon.distance, moon.distance * 0.6, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+
+        function animate() {
+            angle += 0.005 * speedMultiplier;
+            drawSolarSystem();
+            requestAnimationFrame(animate);
+        }
+
+        // 启动
+        loadImages();
+    </script>
+    <script src="fullscreen-btn.js"></script>
+</body>
+</html>

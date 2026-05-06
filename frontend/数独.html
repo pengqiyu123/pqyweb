@@ -1,0 +1,1730 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>数独游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #fff;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .game-info {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .game-info span {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .difficulty-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .difficulty-btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 2px solid transparent;
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .difficulty-btn.active {
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            border-color: #fff;
+        }
+
+        .sudoku-container {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .sudoku-board {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 2px;
+            background: rgba(255, 255, 255, 0.3);
+            padding: 2px;
+            border-radius: 10px;
+        }
+
+        .cell {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: rgba(30, 30, 60, 0.9);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .cell:hover {
+            background: rgba(0, 212, 255, 0.2);
+        }
+
+        .cell.selected {
+            background: rgba(0, 212, 255, 0.4);
+            box-shadow: inset 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+
+        .cell.fixed {
+            color: #00d4ff;
+            cursor: default;
+        }
+
+        .cell.user-input {
+            color: #fff;
+        }
+
+        .cell.error {
+            background: rgba(255, 71, 87, 0.4);
+            animation: shake 0.3s ease;
+        }
+
+        .cell.highlight {
+            background: rgba(123, 44, 191, 0.3);
+        }
+
+        .cell.same-number {
+            background: rgba(0, 212, 255, 0.2);
+        }
+
+        /* 3x3宫格边框 */
+        .cell:nth-child(3n) {
+            border-right: 3px solid rgba(255, 255, 255, 0.5);
+        }
+        .cell:nth-child(9n) {
+            border-right: none;
+        }
+        .cell:nth-child(n+19):nth-child(-n+27),
+        .cell:nth-child(n+46):nth-child(-n+54) {
+            border-bottom: 3px solid rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .number-pad {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .number-btn {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(123, 44, 191, 0.3));
+            color: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .number-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .number-btn.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .control-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-btn.primary {
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            color: #fff;
+        }
+
+        .control-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .control-btn.danger {
+            background: linear-gradient(135deg, #ff4757, #ff6b81);
+            color: #fff;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .modal-content h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .modal-content p {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #ccc;
+        }
+
+        .modal-content.large {
+            max-width: 95vw;
+            max-height: 85vh;
+            min-width: 320px;
+            width: 500px;
+            overflow-y: auto;
+        }
+
+        .bottom-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .stat-item .label {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .stat-item .value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            text-align: left;
+            margin: 20px 0;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+
+        .achievement-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .achievement-item.unlocked {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: #00d4ff;
+        }
+
+        .achievement-item .icon {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .achievement-item .name {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 3px;
+        }
+
+        .achievement-item .desc {
+            font-size: 0.75rem;
+            color: #888;
+        }
+
+        .achievement-item.unlocked .desc {
+            color: #00d4ff;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+
+        .close-btn:hover {
+            opacity: 1;
+        }
+
+        .modal-content {
+            position: relative;
+        }
+
+        .note-mode {
+            background: rgba(255, 193, 7, 0.3) !important;
+            border-color: #ffc107 !important;
+        }
+
+        .notes {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            font-size: 0.6rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .notes span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .timer-display {
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+        }
+
+        .start-difficulty {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .start-btn {
+            font-size: 1.2rem;
+            padding: 15px 40px;
+            margin-top: 10px;
+        }
+
+        /* 弹窗内滚动条美化 */
+        .modal-content.large::-webkit-scrollbar,
+        .achievements-grid::-webkit-scrollbar,
+        .stats-grid::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .modal-content.large::-webkit-scrollbar-track,
+        .achievements-grid::-webkit-scrollbar-track,
+        .stats-grid::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 4px;
+        }
+
+        .modal-content.large::-webkit-scrollbar-thumb,
+        .achievements-grid::-webkit-scrollbar-thumb,
+        .stats-grid::-webkit-scrollbar-thumb {
+            background: rgba(0, 212, 255, 0.25);
+            border-radius: 4px;
+        }
+
+        .modal-content.large::-webkit-scrollbar-thumb:hover,
+        .achievements-grid::-webkit-scrollbar-thumb:hover,
+        .stats-grid::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 212, 255, 0.4);
+        }
+
+        /* Firefox弹窗滚动条 */
+        .modal-content.large,
+        .achievements-grid,
+        .stats-grid {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(123, 44, 191, 0.3) rgba(255, 255, 255, 0.02);
+        }
+
+        /* 电脑大屏弹窗适配 */
+        @media (min-width: 800px) {
+            .modal-content.large {
+                width: 650px;
+                max-width: 90vw;
+                padding: 40px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 18px;
+            }
+
+            .stat-item {
+                padding: 18px;
+            }
+
+            .stat-item .label {
+                font-size: 0.9rem;
+            }
+
+            .stat-item .value {
+                font-size: 1.5rem;
+            }
+
+            .achievements-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
+                max-height: 55vh;
+            }
+
+            .achievement-item {
+                padding: 15px;
+            }
+
+            .achievement-item .icon {
+                font-size: 2rem;
+            }
+
+            .achievement-item .name {
+                font-size: 1.05rem;
+            }
+
+            .achievement-item .desc {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* 平板适配 */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+                margin-bottom: 8px;
+            }
+
+            .game-info {
+                gap: 15px;
+                margin-bottom: 12px;
+                font-size: 0.95rem;
+            }
+
+            .game-info span {
+                padding: 6px 12px;
+            }
+
+            .difficulty-selector {
+                gap: 6px;
+                margin-bottom: 12px;
+            }
+
+            .difficulty-btn {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+
+            .sudoku-container {
+                padding: 12px;
+            }
+
+            .cell {
+                width: 38px;
+                height: 38px;
+                font-size: 1.3rem;
+            }
+
+            .notes {
+                font-size: 0.5rem;
+            }
+
+            .number-pad {
+                gap: 6px;
+                margin-top: 15px;
+            }
+
+            .number-btn {
+                width: 38px;
+                height: 38px;
+                font-size: 1.3rem;
+            }
+
+            .controls {
+                gap: 8px;
+                margin-top: 15px;
+            }
+
+            .control-btn {
+                padding: 10px 14px;
+                font-size: 0.85rem;
+                gap: 4px;
+            }
+
+            .modal-content {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .modal-content.large {
+                max-width: calc(100vw - 20px);
+                max-height: 85vh;
+                padding: 20px 15px;
+            }
+
+            .modal-content h2 {
+                font-size: 1.4rem;
+                margin-bottom: 15px;
+            }
+
+            .modal-content p {
+                font-size: 0.95rem;
+                margin-bottom: 15px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+                margin: 15px 0;
+                max-height: 45vh;
+                overflow-y: auto;
+            }
+
+            .stat-item {
+                padding: 8px;
+            }
+
+            .stat-item .label {
+                font-size: 0.75rem;
+            }
+
+            .stat-item .value {
+                font-size: 1rem;
+            }
+
+            .achievements-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+                max-height: 45vh;
+            }
+
+            .achievement-item {
+                padding: 8px;
+            }
+
+            .achievement-item .icon {
+                font-size: 1.2rem;
+                margin-bottom: 2px;
+            }
+
+            .achievement-item .name {
+                font-size: 0.75rem;
+            }
+
+            .achievement-item .desc {
+                font-size: 0.6rem;
+            }
+
+            .close-btn {
+                top: 10px;
+                right: 10px;
+                font-size: 1.3rem;
+            }
+        }
+
+        /* 小屏手机适配 */
+        @media (max-width: 400px) {
+            body {
+                padding: 8px;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .game-info {
+                gap: 10px;
+                font-size: 0.85rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .game-info span {
+                padding: 5px 10px;
+            }
+
+            .difficulty-selector {
+                gap: 5px;
+            }
+
+            .difficulty-btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+
+            .sudoku-container {
+                padding: 8px;
+            }
+
+            .cell {
+                width: 32px;
+                height: 32px;
+                font-size: 1.1rem;
+            }
+
+            .cell:nth-child(3n) {
+                border-right-width: 2px;
+            }
+
+            .cell:nth-child(n+19):nth-child(-n+27),
+            .cell:nth-child(n+46):nth-child(-n+54) {
+                border-bottom-width: 2px;
+            }
+
+            .notes {
+                font-size: 0.4rem;
+            }
+
+            .number-pad {
+                gap: 4px;
+                margin-top: 12px;
+            }
+
+            .number-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 1.1rem;
+                border-radius: 8px;
+            }
+
+            .controls {
+                gap: 6px;
+                margin-top: 12px;
+            }
+
+            .control-btn {
+                padding: 8px 10px;
+                font-size: 0.75rem;
+                border-radius: 15px;
+            }
+        }
+
+        /* 超小屏幕适配 (iPhone SE等) */
+        @media (max-width: 350px) {
+            .cell {
+                width: 28px;
+                height: 28px;
+                font-size: 1rem;
+            }
+
+            .number-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 1rem;
+            }
+
+            .notes {
+                font-size: 0.35rem;
+            }
+
+            .control-btn {
+                padding: 6px 8px;
+                font-size: 0.7rem;
+            }
+
+            .difficulty-btn {
+                padding: 5px 10px;
+                font-size: 0.75rem;
+            }
+        }
+
+        /* 横屏适配 */
+        @media (max-height: 500px) and (orientation: landscape) {
+            body {
+                padding: 5px;
+            }
+
+            h1 {
+                font-size: 1.2rem;
+                margin-bottom: 5px;
+            }
+
+            .game-info {
+                margin-bottom: 5px;
+                font-size: 0.8rem;
+            }
+
+            .difficulty-selector {
+                margin-bottom: 5px;
+            }
+
+            .sudoku-container {
+                padding: 8px;
+            }
+
+            .cell {
+                width: 28px;
+                height: 28px;
+                font-size: 0.9rem;
+            }
+
+            .number-pad {
+                margin-top: 8px;
+                gap: 4px;
+            }
+
+            .number-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 0.9rem;
+            }
+
+            .controls {
+                margin-top: 8px;
+                gap: 5px;
+            }
+
+            .control-btn {
+                padding: 5px 8px;
+                font-size: 0.7rem;
+            }
+        }
+
+        /* 触摸设备优化 */
+        @media (hover: none) and (pointer: coarse) {
+            .cell:hover {
+                background: rgba(30, 30, 60, 0.9);
+            }
+
+            .cell.selected:hover {
+                background: rgba(0, 212, 255, 0.4);
+            }
+
+            .cell.highlight:hover {
+                background: rgba(123, 44, 191, 0.3);
+            }
+
+            .number-btn:hover {
+                transform: none;
+                box-shadow: none;
+            }
+
+            .number-btn:active {
+                transform: scale(0.95);
+                background: linear-gradient(135deg, rgba(0, 212, 255, 0.5), rgba(123, 44, 191, 0.5));
+            }
+
+            .control-btn:hover {
+                transform: none;
+            }
+
+            .control-btn:active {
+                transform: scale(0.95);
+            }
+
+            .difficulty-btn:hover {
+                transform: none;
+            }
+
+            .difficulty-btn:active {
+                transform: scale(0.95);
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>🧩 数独游戏</h1>
+    
+    <div class="game-info">
+        <span>⏱️ <span id="timer" class="timer-display">00:00</span></span>
+        <span>❌ 错误: <span id="errors">0</span>/<span id="maxErrors">3</span></span>
+    </div>
+
+    <div class="difficulty-selector">
+        <button class="difficulty-btn active" data-difficulty="easy">简单</button>
+        <button class="difficulty-btn" data-difficulty="medium">中等</button>
+        <button class="difficulty-btn" data-difficulty="hard">困难</button>
+    </div>
+
+    <div class="sudoku-container">
+        <div class="sudoku-board" id="board"></div>
+        
+        <div class="number-pad" id="numberPad"></div>
+        
+        <div class="controls">
+            <button class="control-btn secondary" id="pauseBtn">⏸️ 暂停</button>
+            <button class="control-btn secondary" id="noteBtn">📝 笔记模式</button>
+            <button class="control-btn secondary" id="hintBtn">💡 提示</button>
+            <button class="control-btn secondary" id="eraseBtn">🗑️ 擦除</button>
+            <button class="control-btn primary" id="newGameBtn">🔄 新游戏</button>
+            <button class="control-btn danger" id="solveBtn">🔮 查看答案</button>
+        </div>
+    </div>
+
+    <div class="modal" id="winModal">
+        <div class="modal-content">
+            <h2>🎉 恭喜完成！</h2>
+            <p id="winMessage">用时: 00:00</p>
+            <button class="control-btn primary" onclick="newGame()">再来一局</button>
+        </div>
+    </div>
+
+    <div class="modal" id="pauseModal">
+        <div class="modal-content">
+            <h2>⏸️ 游戏暂停</h2>
+            <p>休息一下，准备好了再继续！</p>
+            <button class="control-btn primary" id="resumeBtn">▶️ 继续游戏</button>
+        </div>
+    </div>
+
+    <div class="modal" id="loseModal">
+        <div class="modal-content">
+            <h2>😢 游戏结束</h2>
+            <p>错误次数已达上限</p>
+            <button class="control-btn primary" onclick="newGame()">重新开始</button>
+        </div>
+    </div>
+
+    <div class="bottom-buttons">
+        <button class="control-btn primary" id="statsBtn">📊 数据</button>
+        <button class="control-btn primary" id="achieveBtn">🏆 成就</button>
+    </div>
+
+    <div class="modal show" id="startModal">
+        <div class="modal-content">
+            <h2>🧩 数独游戏</h2>
+            <p>选择难度后开始挑战</p>
+            <div class="start-difficulty">
+                <button class="difficulty-btn active" data-diff="easy">简单</button>
+                <button class="difficulty-btn" data-diff="medium">中等</button>
+                <button class="difficulty-btn" data-diff="hard">困难</button>
+            </div>
+            <button class="control-btn primary start-btn" id="startGameBtn">🎮 开始游戏</button>
+        </div>
+    </div>
+
+    <div class="modal" id="statsModal">
+        <div class="modal-content large">
+            <button class="close-btn" onclick="closeModal('statsModal')">×</button>
+            <h2>📊 游戏数据</h2>
+            <div class="stats-grid" id="statsContent"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="achieveModal">
+        <div class="modal-content large">
+            <button class="close-btn" onclick="closeModal('achieveModal')">×</button>
+            <h2>🏆 成就系统</h2>
+            <p id="achieveProgress"></p>
+            <div class="achievements-grid" id="achieveContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // 游戏状态
+        let board = [];
+        let solution = [];
+        let initialBoard = [];
+        let selectedCell = null;
+        let difficulty = 'easy';
+        let errors = 0;
+        let timer = 0;
+        let timerInterval = null;
+        let noteMode = false;
+        let notes = Array(81).fill(null).map(() => new Set());
+        let hintsUsed = 0;
+
+        // 数据统计
+        let gameStats = loadStats();
+
+        // 成就定义
+        const achievements = [
+            { id: 'first_win', name: '初次胜利', desc: '完成第一局数独', icon: '🌟' },
+            { id: 'easy_master', name: '简单大师', desc: '完成 10 局简单难度', icon: '🟢' },
+            { id: 'medium_master', name: '中等大师', desc: '完成 10 局中等难度', icon: '🟡' },
+            { id: 'hard_master', name: '困难大师', desc: '完成 10 局困难难度', icon: '🔴' },
+            { id: 'perfect_easy', name: '完美简单', desc: '简单难度零错误完成', icon: '✨' },
+            { id: 'perfect_medium', name: '完美中等', desc: '中等难度零错误完成', icon: '💫' },
+            { id: 'perfect_hard', name: '完美困难', desc: '困难难度零错误完成', icon: '🌟' },
+            { id: 'no_hint', name: '独立思考', desc: '不使用提示完成一局', icon: '🧠' },
+            { id: 'speed_easy', name: '简单速通', desc: '简单难度5分钟内完成', icon: '⚡' },
+            { id: 'speed_medium', name: '中等速通', desc: '中等难度10分钟内完成', icon: '🚀' },
+            { id: 'speed_hard', name: '困难速通', desc: '困难难度15分钟内完成', icon: '🔥' },
+            { id: 'veteran', name: '数独老手', desc: '累计完成 50 局', icon: '🏅' },
+            { id: 'addict', name: '数独迷', desc: '累计完成 100 局', icon: '💎' },
+            { id: 'marathon', name: '马拉松玩家', desc: '累计游戏时长超过 10 小时', icon: '⏰' },
+            { id: 'streak_3', name: '三连胜', desc: '连续完成 3 局', icon: '🔥3️⃣' },
+            { id: 'streak_7', name: '七连胜', desc: '连续完成 7 局', icon: '🔥7️⃣' }
+        ];
+
+        // 难度配置（移除的数字数量）
+        const difficultyConfig = {
+            easy: 35,
+            medium: 45,
+            hard: 55
+        };
+
+        // 错误次数限制配置
+        const maxErrorsConfig = {
+            easy: 3,
+            medium: 5,
+            hard: 7
+        };
+
+        let maxErrors = 3;
+        let isPaused = false;
+
+        // 初始化游戏
+        function init() {
+            createBoard();
+            createNumberPad();
+            bindEvents();
+            // 不自动开始，等待用户点击开始按钮
+        }
+
+        // 创建棋盘
+        function createBoard() {
+            const boardEl = document.getElementById('board');
+            boardEl.innerHTML = '';
+            for (let i = 0; i < 81; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.index = i;
+                
+                const notesDiv = document.createElement('div');
+                notesDiv.className = 'notes';
+                for (let n = 1; n <= 9; n++) {
+                    const noteSpan = document.createElement('span');
+                    noteSpan.dataset.note = n;
+                    notesDiv.appendChild(noteSpan);
+                }
+                cell.appendChild(notesDiv);
+                
+                boardEl.appendChild(cell);
+            }
+        }
+
+        // 创建数字键盘
+        function createNumberPad() {
+            const pad = document.getElementById('numberPad');
+            pad.innerHTML = '';
+            for (let i = 1; i <= 9; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'number-btn';
+                btn.textContent = i;
+                btn.dataset.number = i;
+                pad.appendChild(btn);
+            }
+        }
+
+        // 绑定事件
+        function bindEvents() {
+            // 棋盘点击
+            document.getElementById('board').addEventListener('click', (e) => {
+                const cell = e.target.closest('.cell');
+                if (cell) {
+                    selectCell(cell);
+                }
+            });
+
+            // 数字键盘点击
+            document.getElementById('numberPad').addEventListener('click', (e) => {
+                if (e.target.classList.contains('number-btn')) {
+                    const num = parseInt(e.target.dataset.number);
+                    inputNumber(num);
+                }
+            });
+
+            // 键盘输入
+            document.addEventListener('keydown', (e) => {
+                if (e.key >= '1' && e.key <= '9') {
+                    inputNumber(parseInt(e.key));
+                } else if (e.key === 'Backspace' || e.key === 'Delete') {
+                    eraseCell();
+                } else if (e.key === 'n' || e.key === 'N') {
+                    toggleNoteMode();
+                } else if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                    e.preventDefault();
+                    navigateCell(e.key);
+                }
+            });
+
+            // 难度选择
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    difficulty = btn.dataset.difficulty;
+                    newGame();
+                });
+            });
+
+            // 控制按钮
+            document.getElementById('noteBtn').addEventListener('click', toggleNoteMode);
+            document.getElementById('hintBtn').addEventListener('click', giveHint);
+            document.getElementById('eraseBtn').addEventListener('click', eraseCell);
+            document.getElementById('statsBtn').addEventListener('click', showStats);
+            document.getElementById('achieveBtn').addEventListener('click', showAchievements);
+            document.getElementById('newGameBtn').addEventListener('click', newGame);
+            document.getElementById('solveBtn').addEventListener('click', showSolution);
+            document.getElementById('pauseBtn').addEventListener('click', togglePause);
+            document.getElementById('resumeBtn').addEventListener('click', togglePause);
+
+            // 开始界面难度选择
+            document.querySelectorAll('#startModal .difficulty-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#startModal .difficulty-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    difficulty = btn.dataset.diff;
+                    // 同步主界面难度按钮
+                    document.querySelectorAll('.difficulty-selector .difficulty-btn').forEach(b => {
+                        b.classList.toggle('active', b.dataset.difficulty === difficulty);
+                    });
+                });
+            });
+
+            // 开始游戏按钮
+            document.getElementById('startGameBtn').addEventListener('click', () => {
+                document.getElementById('startModal').classList.remove('show');
+                newGame();
+            });
+        }
+
+        // 生成有效的数独解
+        function generateSolution() {
+            const grid = Array(9).fill(null).map(() => Array(9).fill(0));
+            fillGrid(grid);
+            return grid;
+        }
+
+        // 递归填充网格
+        function fillGrid(grid) {
+            const empty = findEmpty(grid);
+            if (!empty) return true;
+
+            const [row, col] = empty;
+            const numbers = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+            for (const num of numbers) {
+                if (isValid(grid, row, col, num)) {
+                    grid[row][col] = num;
+                    if (fillGrid(grid)) return true;
+                    grid[row][col] = 0;
+                }
+            }
+            return false;
+        }
+
+        // 查找空格
+        function findEmpty(grid) {
+            for (let r = 0; r < 9; r++) {
+                for (let c = 0; c < 9; c++) {
+                    if (grid[r][c] === 0) return [r, c];
+                }
+            }
+            return null;
+        }
+
+        // 验证数字是否有效
+        function isValid(grid, row, col, num) {
+            // 检查行
+            if (grid[row].includes(num)) return false;
+            
+            // 检查列
+            for (let r = 0; r < 9; r++) {
+                if (grid[r][col] === num) return false;
+            }
+            
+            // 检查3x3宫格
+            const boxRow = Math.floor(row / 3) * 3;
+            const boxCol = Math.floor(col / 3) * 3;
+            for (let r = boxRow; r < boxRow + 3; r++) {
+                for (let c = boxCol; c < boxCol + 3; c++) {
+                    if (grid[r][c] === num) return false;
+                }
+            }
+            
+            return true;
+        }
+
+        // 打乱数组
+        function shuffle(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // 生成题目
+        function generatePuzzle(solution, removeCount) {
+            const puzzle = solution.map(row => [...row]);
+            let removed = 0;
+            const positions = shuffle([...Array(81).keys()]);
+
+            for (const pos of positions) {
+                if (removed >= removeCount) break;
+                const row = Math.floor(pos / 9);
+                const col = pos % 9;
+                if (puzzle[row][col] !== 0) {
+                    puzzle[row][col] = 0;
+                    removed++;
+                }
+            }
+            return puzzle;
+        }
+
+        // 开始新游戏
+        function newGame() {
+            const solutionGrid = generateSolution();
+            solution = solutionGrid.flat();
+            const puzzleGrid = generatePuzzle(solutionGrid, difficultyConfig[difficulty]);
+            board = puzzleGrid.flat();
+            initialBoard = [...board];
+
+            errors = 0;
+            timer = 0;
+            selectedCell = null;
+            noteMode = false;
+            hintsUsed = 0;
+            isPaused = false;
+            maxErrors = maxErrorsConfig[difficulty];
+            notes = Array(81).fill(null).map(() => new Set());
+
+            updateBoard();
+            updateErrors();
+            updateTimer();
+            document.getElementById('noteBtn').classList.remove('note-mode');
+            document.getElementById('noteBtn').textContent = '📝 笔记模式';
+            document.getElementById('pauseBtn').textContent = '⏸️ 暂停';
+            document.getElementById('winModal').classList.remove('show');
+            document.getElementById('loseModal').classList.remove('show');
+            document.getElementById('pauseModal').classList.remove('show');
+            document.getElementById('board').style.filter = 'none';
+            document.getElementById('maxErrors').textContent = maxErrors;
+
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (!isPaused) {
+                    timer++;
+                    updateTimer();
+                }
+            }, 1000);
+        }
+
+        // 更新棋盘显示
+        function updateBoard() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach((cell, index) => {
+                const value = board[index];
+                cell.classList.remove('fixed', 'user-input', 'error', 'selected', 'highlight', 'same-number');
+                
+                const textNodes = Array.from(cell.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
+                textNodes.forEach(node => node.remove());
+                
+                if (value !== 0) {
+                    cell.insertBefore(document.createTextNode(value), cell.firstChild);
+                    if (initialBoard[index] !== 0) {
+                        cell.classList.add('fixed');
+                    } else {
+                        cell.classList.add('user-input');
+                    }
+                    cell.querySelector('.notes').style.display = 'none';
+                } else {
+                    const notesDiv = cell.querySelector('.notes');
+                    notesDiv.style.display = 'grid';
+                    notes[index].forEach(n => {
+                        notesDiv.querySelector(`[data-note="${n}"]`).textContent = n;
+                    });
+                    for (let n = 1; n <= 9; n++) {
+                        if (!notes[index].has(n)) {
+                            notesDiv.querySelector(`[data-note="${n}"]`).textContent = '';
+                        }
+                    }
+                }
+            });
+            updateNumberPadCount();
+        }
+
+        // 更新数字键盘计数
+        function updateNumberPadCount() {
+            for (let num = 1; num <= 9; num++) {
+                const count = board.filter(v => v === num).length;
+                const btn = document.querySelector(`.number-btn[data-number="${num}"]`);
+                if (count >= 9) {
+                    btn.classList.add('disabled');
+                } else {
+                    btn.classList.remove('disabled');
+                }
+            }
+        }
+
+        // 选择单元格
+        function selectCell(cell) {
+            if (isPaused) return;
+            // 移除之前的选中状态
+            document.querySelectorAll('.cell').forEach(c => {
+                c.classList.remove('selected', 'highlight', 'same-number');
+            });
+
+            selectedCell = cell;
+            const index = parseInt(cell.dataset.index);
+            const row = Math.floor(index / 9);
+            const col = index % 9;
+
+            cell.classList.add('selected');
+
+            // 高亮同行、同列、同宫格
+            document.querySelectorAll('.cell').forEach((c, i) => {
+                const r = Math.floor(i / 9);
+                const cCol = i % 9;
+                const boxRow = Math.floor(row / 3);
+                const boxCol = Math.floor(col / 3);
+                const cBoxRow = Math.floor(r / 3);
+                const cBoxCol = Math.floor(cCol / 3);
+
+                if (r === row || cCol === col || (cBoxRow === boxRow && cBoxCol === boxCol)) {
+                    if (i !== index) c.classList.add('highlight');
+                }
+
+                // 高亮相同数字
+                if (board[index] !== 0 && board[i] === board[index] && i !== index) {
+                    c.classList.add('same-number');
+                }
+            });
+        }
+
+        // 输入数字
+        function inputNumber(num) {
+            if (isPaused) return;
+            if (!selectedCell) return;
+            if (selectedCell.classList.contains('fixed')) return;
+
+            const index = parseInt(selectedCell.dataset.index);
+
+            if (noteMode) {
+                // 笔记模式
+                if (notes[index].has(num)) {
+                    notes[index].delete(num);
+                } else {
+                    notes[index].add(num);
+                }
+                updateBoard();
+            } else {
+                // 正常输入模式
+                if (num === solution[index]) {
+                    board[index] = num;
+                    notes[index].clear();
+                    clearRelatedNotes(index, num);
+                    updateBoard();
+                    selectCell(selectedCell);
+                    checkWin();
+                } else {
+                    // 错误输入
+                    errors++;
+                    updateErrors();
+                    selectedCell.classList.add('error');
+                    setTimeout(() => {
+                        selectedCell.classList.remove('error');
+                    }, 500);
+
+                    if (errors >= maxErrors) {
+                        gameOver();
+                    }
+                }
+            }
+        }
+
+        // 擦除单元格
+        function eraseCell() {
+            if (isPaused) return;
+            if (!selectedCell || selectedCell.classList.contains('fixed')) return;
+
+            const index = parseInt(selectedCell.dataset.index);
+            if (board[index] === 0 && notes[index].size === 0) return;
+            
+            board[index] = 0;
+            notes[index].clear();
+            updateBoard();
+        }
+
+        // 自动清除相关笔记
+        function clearRelatedNotes(index, num) {
+            const row = Math.floor(index / 9);
+            const col = index % 9;
+            const boxRow = Math.floor(row / 3) * 3;
+            const boxCol = Math.floor(col / 3) * 3;
+            
+            for (let i = 0; i < 81; i++) {
+                const r = Math.floor(i / 9);
+                const c = i % 9;
+                const bRow = Math.floor(r / 3) * 3;
+                const bCol = Math.floor(c / 3) * 3;
+                
+                // 同行、同列、同宫格
+                if (r === row || c === col || (bRow === boxRow && bCol === boxCol)) {
+                    notes[i].delete(num);
+                }
+            }
+        }
+
+        // 方向键导航
+        function navigateCell(key) {
+            if (isPaused) return;
+            
+            let currentIndex = selectedCell ? parseInt(selectedCell.dataset.index) : 40;
+            let row = Math.floor(currentIndex / 9);
+            let col = currentIndex % 9;
+            
+            switch (key) {
+                case 'ArrowUp': row = Math.max(0, row - 1); break;
+                case 'ArrowDown': row = Math.min(8, row + 1); break;
+                case 'ArrowLeft': col = Math.max(0, col - 1); break;
+                case 'ArrowRight': col = Math.min(8, col + 1); break;
+            }
+            
+            const newIndex = row * 9 + col;
+            const cell = document.querySelector(`.cell[data-index="${newIndex}"]`);
+            if (cell) selectCell(cell);
+        }
+
+        // 切换笔记模式
+        function toggleNoteMode() {
+            noteMode = !noteMode;
+            const btn = document.getElementById('noteBtn');
+            if (noteMode) {
+                btn.classList.add('note-mode');
+                btn.textContent = '📝 笔记模式 ON';
+            } else {
+                btn.classList.remove('note-mode');
+                btn.textContent = '📝 笔记模式';
+            }
+        }
+
+        // 提示
+        function giveHint() {
+            if (isPaused) return;
+            // 找一个空格填入正确答案
+            const emptyCells = [];
+            board.forEach((val, index) => {
+                if (val === 0) emptyCells.push(index);
+            });
+
+            if (emptyCells.length === 0) return;
+
+            const randomIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+            board[randomIndex] = solution[randomIndex];
+            notes[randomIndex].clear();
+            hintsUsed++;
+            updateBoard();
+            checkWin();
+        }
+
+        // 显示答案
+        function showSolution() {
+            if (confirm('确定要查看答案吗？这将结束当前游戏。')) {
+                board = [...solution];
+                updateBoard();
+                if (timerInterval) clearInterval(timerInterval);
+            }
+        }
+
+        // 更新错误显示
+        function updateErrors() {
+            document.getElementById('errors').textContent = errors;
+        }
+
+        // 更新计时器显示
+        function updateTimer() {
+            const minutes = Math.floor(timer / 60).toString().padStart(2, '0');
+            const seconds = (timer % 60).toString().padStart(2, '0');
+            document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+        }
+
+        // 检查胜利
+        function checkWin() {
+            if (board.every((val, index) => val === solution[index])) {
+                if (timerInterval) clearInterval(timerInterval);
+                
+                // 更新统计数据
+                updateStats();
+                
+                const minutes = Math.floor(timer / 60).toString().padStart(2, '0');
+                const seconds = (timer % 60).toString().padStart(2, '0');
+                
+                // 检查新解锁的成就
+                const newAchievements = checkNewAchievements();
+                let achieveText = '';
+                if (newAchievements.length > 0) {
+                    achieveText = '\n\n🎉 新成就: ' + newAchievements.map(a => a.name).join(', ');
+                }
+                
+                document.getElementById('winMessage').innerHTML = 
+                    `用时: ${minutes}:${seconds} | 错误: ${errors}次 | 提示: ${hintsUsed}次${achieveText}`;
+                document.getElementById('winModal').classList.add('show');
+            }
+        }
+
+        // 游戏结束
+        function gameOver() {
+            if (timerInterval) clearInterval(timerInterval);
+            // 记录失败，重置连胜
+            gameStats.currentStreak = 0;
+            saveStats();
+            document.getElementById('loseModal').classList.add('show');
+        }
+
+        // 切换暂停
+        function togglePause() {
+            isPaused = !isPaused;
+            const pauseBtn = document.getElementById('pauseBtn');
+            const pauseModal = document.getElementById('pauseModal');
+            
+            if (isPaused) {
+                pauseBtn.textContent = '▶️ 继续';
+                pauseModal.classList.add('show');
+                // 隐藏棋盘内容
+                document.getElementById('board').style.filter = 'blur(10px)';
+            } else {
+                pauseBtn.textContent = '⏸️ 暂停';
+                pauseModal.classList.remove('show');
+                // 显示棋盘内容
+                document.getElementById('board').style.filter = 'none';
+            }
+        }
+
+        // 加载统计数据
+        function loadStats() {
+            const saved = localStorage.getItem('sudoku_stats');
+            if (saved) {
+                return JSON.parse(saved);
+            }
+            return {
+                totalGames: 0,
+                totalWins: 0,
+                easyWins: 0,
+                mediumWins: 0,
+                hardWins: 0,
+                totalTime: 0,
+                bestTimeEasy: null,
+                bestTimeMedium: null,
+                bestTimeHard: null,
+                totalHints: 0,
+                perfectGames: 0,
+                currentStreak: 0,
+                bestStreak: 0,
+                achievements: []
+            };
+        }
+
+        // 保存统计数据
+        function saveStats() {
+            localStorage.setItem('sudoku_stats', JSON.stringify(gameStats));
+        }
+
+        // 更新统计数据
+        function updateStats() {
+            gameStats.totalGames++;
+            gameStats.totalWins++;
+            gameStats.totalTime += timer;
+            gameStats.totalHints += hintsUsed;
+            gameStats.currentStreak++;
+            
+            if (gameStats.currentStreak > gameStats.bestStreak) {
+                gameStats.bestStreak = gameStats.currentStreak;
+            }
+            
+            if (errors === 0) {
+                gameStats.perfectGames++;
+            }
+            
+            // 按难度统计
+            if (difficulty === 'easy') {
+                gameStats.easyWins++;
+                if (!gameStats.bestTimeEasy || timer < gameStats.bestTimeEasy) {
+                    gameStats.bestTimeEasy = timer;
+                }
+            } else if (difficulty === 'medium') {
+                gameStats.mediumWins++;
+                if (!gameStats.bestTimeMedium || timer < gameStats.bestTimeMedium) {
+                    gameStats.bestTimeMedium = timer;
+                }
+            } else {
+                gameStats.hardWins++;
+                if (!gameStats.bestTimeHard || timer < gameStats.bestTimeHard) {
+                    gameStats.bestTimeHard = timer;
+                }
+            }
+            
+            saveStats();
+        }
+
+        // 检查新解锁的成就
+        function checkNewAchievements() {
+            const newUnlocked = [];
+            
+            const checkAndUnlock = (id) => {
+                if (!gameStats.achievements.includes(id)) {
+                    gameStats.achievements.push(id);
+                    const achieve = achievements.find(a => a.id === id);
+                    if (achieve) newUnlocked.push(achieve);
+                }
+            };
+            
+            // 检查各种成就条件
+            if (gameStats.totalWins >= 1) checkAndUnlock('first_win');
+            if (gameStats.easyWins >= 10) checkAndUnlock('easy_master');
+            if (gameStats.mediumWins >= 10) checkAndUnlock('medium_master');
+            if (gameStats.hardWins >= 10) checkAndUnlock('hard_master');
+            
+            if (errors === 0 && difficulty === 'easy') checkAndUnlock('perfect_easy');
+            if (errors === 0 && difficulty === 'medium') checkAndUnlock('perfect_medium');
+            if (errors === 0 && difficulty === 'hard') checkAndUnlock('perfect_hard');
+            
+            if (hintsUsed === 0) checkAndUnlock('no_hint');
+            
+            if (difficulty === 'easy' && timer <= 300) checkAndUnlock('speed_easy');
+            if (difficulty === 'medium' && timer <= 600) checkAndUnlock('speed_medium');
+            if (difficulty === 'hard' && timer <= 900) checkAndUnlock('speed_hard');
+            
+            if (gameStats.totalWins >= 50) checkAndUnlock('veteran');
+            if (gameStats.totalWins >= 100) checkAndUnlock('addict');
+            if (gameStats.totalTime >= 36000) checkAndUnlock('marathon');
+            
+            if (gameStats.currentStreak >= 3) checkAndUnlock('streak_3');
+            if (gameStats.currentStreak >= 7) checkAndUnlock('streak_7');
+            
+            saveStats();
+            return newUnlocked;
+        }
+
+        // 显示统计弹窗
+        function showStats() {
+            const formatTime = (seconds) => {
+                if (!seconds) return '--:--';
+                const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const s = (seconds % 60).toString().padStart(2, '0');
+                return `${m}:${s}`;
+            };
+            
+            const formatTotalTime = (seconds) => {
+                const hours = Math.floor(seconds / 3600);
+                const mins = Math.floor((seconds % 3600) / 60);
+                return `${hours}小时${mins}分钟`;
+            };
+            
+            const winRate = gameStats.totalGames > 0 
+                ? Math.round(gameStats.totalWins / gameStats.totalGames * 100) 
+                : 0;
+            
+            document.getElementById('statsContent').innerHTML = `
+                <div class="stat-item">
+                    <div class="label">总局数</div>
+                    <div class="value">${gameStats.totalGames}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">胜利局数</div>
+                    <div class="value">${gameStats.totalWins}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">胜率</div>
+                    <div class="value">${winRate}%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">当前连胜</div>
+                    <div class="value">${gameStats.currentStreak}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">最高连胜</div>
+                    <div class="value">${gameStats.bestStreak}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">完美通关</div>
+                    <div class="value">${gameStats.perfectGames}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">简单完成</div>
+                    <div class="value">${gameStats.easyWins}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">中等完成</div>
+                    <div class="value">${gameStats.mediumWins}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">困难完成</div>
+                    <div class="value">${gameStats.hardWins}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">简单最快</div>
+                    <div class="value">${formatTime(gameStats.bestTimeEasy)}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">中等最快</div>
+                    <div class="value">${formatTime(gameStats.bestTimeMedium)}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">困难最快</div>
+                    <div class="value">${formatTime(gameStats.bestTimeHard)}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">总游戏时长</div>
+                    <div class="value">${formatTotalTime(gameStats.totalTime)}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">使用提示</div>
+                    <div class="value">${gameStats.totalHints}次</div>
+                </div>
+            `;
+            
+            document.getElementById('statsModal').classList.add('show');
+        }
+
+        // 显示成就弹窗
+        function showAchievements() {
+            const unlockedCount = gameStats.achievements.length;
+            const totalCount = achievements.length;
+            
+            document.getElementById('achieveProgress').textContent = 
+                `已解锁: ${unlockedCount}/${totalCount} (${Math.round(unlockedCount/totalCount*100)}%)`;
+            
+            document.getElementById('achieveContent').innerHTML = achievements.map(a => {
+                const unlocked = gameStats.achievements.includes(a.id);
+                return `
+                    <div class="achievement-item ${unlocked ? 'unlocked' : ''}">
+                        <div class="icon">${unlocked ? a.icon : '\ud83d\udd12'}</div>
+                        <div class="info">
+                            <div class="name">${a.name}</div>
+                            <div class="desc">${a.desc}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('achieveModal').classList.add('show');
+        }
+
+        // 关闭弹窗
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        // 启动游戏
+        init();
+    </script>
+    <script src="fullscreen-btn.js"></script>
+</body>
+</html>

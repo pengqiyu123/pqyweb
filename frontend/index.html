@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-bs-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="导航网站">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="images/LOG.ico" type="image/x-icon">
+    <title>煜的工具站 - 奇思妙想</title>
+    <!-- Favicon -->
+    <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+    <!-- Bootstrap 5.3+ CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 自定义CSS -->
+    <link rel="stylesheet" href="css/main.css">
+
+    <style>
+        :root {
+            --bg-color: #050505;
+            --card-bg: rgba(20, 20, 25, 0.6);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --accent-glow: 0 0 20px rgba(100, 200, 255, 0.3);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Background Canvas */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at center, #0a0a10 0%, #000000 100%);
+        }
+
+        /* Loading */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Main Content Wrapper */
+        .cover-wrapper {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+            z-index: 1;
+        }
+
+        /* Glassmorphism Card */
+        .cover-card {
+            position: relative;
+            max-width: 800px;
+            width: 100%;
+            padding: 3rem;
+            border-radius: 24px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            animation: fadeInUp 1s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .cover-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        .cover-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: -0.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .cover-disclaimer {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            padding: 0 1.5rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .cover-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        /* Update Log */
+        .update-log {
+            margin-bottom: 2.5rem;
+            padding: 1.5rem;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: background 0.3s ease;
+        }
+
+        .update-log:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .update-log-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .update-log-title i {
+            color: #fbbf24;
+        }
+
+        .update-log-toggle {
+            color: var(--text-secondary);
+            border-color: rgba(255, 255, 255, 0.2);
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .update-log-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .update-log-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .update-log-list li {
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+        }
+
+        .update-log-date {
+            color: #60a5fa;
+            font-family: monospace;
+            margin-right: 0.5rem;
+            font-weight: 500;
+        }
+
+        .update-log-history {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .update-log-history.open {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Buttons Grid */
+        .cover-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .cover-btn {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 1.5rem;
+            border-radius: 16px;
+            text-decoration: none;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .cover-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+
+        .cover-btn:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .cover-btn:hover::before {
+            transform: translateX(100%);
+        }
+
+        .cover-btn-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: #fff;
+        }
+
+        .cover-btn-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .cover-card {
+                padding: 2rem 1.5rem;
+                margin-bottom: 3.5rem;
+            }
+
+            .cover-title {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Background Canvas -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Loading -->
+    <div id="loading" class="loading">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="cover-wrapper">
+        <div class="cover-card">
+            <div class="cover-title">煜的工具站 · 首页风格选择</div>
+            <div class="cover-meta">背景制作-Gemini 架构生成-Claude 内容生成-ChatGPT</div>
+            <p class="cover-subtitle">请选择你喜欢的首页风格进入：可以随时在页面标题处切换到另一种风格。</p>
+
+            <div class="update-log">
+                <div class="update-log-title">
+                    <i class="fas fa-bell"></i>
+                    <span>更新日志</span>
+                    <button type="button" class="btn btn-sm btn-outline-light ms-auto py-0 px-2 update-log-toggle">
+                        历史记录
+                        <i class="fas fa-chevron-down ms-1 update-log-toggle-icon"></i>
+                    </button>
+                </div>
+                <!-- 最新一条 -->
+                <ul class="update-log-list">
+                    <li>
+                        <span class="update-log-date">2025-12-13</span>
+                        新增"音乐钢琴键"交互式钢琴模拟器：支持电脑键盘和手机触控演奏，2个八度音阶（C4到C6），使用Web Audio API生成钢琴音色，模拟真实钢琴的指数衰减特性，支持主动停止和自动停止，手机竖屏自动旋转90度横屏显示。
+                    </li>
+                </ul>
+                <!-- 历史记录 -->
+                <div id="updateLogHistory" class="update-log-history">
+                    <ul class="update-log-list">
+                        <li>
+                            <span class="update-log-date">2025-12-13</span>
+                            优化 Index1 布局：工具银河6列、趣味/学习5列、移动端3列紧凑排列；移除"更多"按钮，所有工具直接展示；新增工具：乡间郎中、aishort、图片转Excel表格；优化卡片样式，缩小内边距和字号。
+                        </li>
+                        <li>
+                            <span class="update-log-date">2025-12-04</span>
+                            新增"虚空切水果"手势体感游戏：使用摄像头识别手势切水果，包含16个成就、连击系统、分数奖励，数据本地存储。
+                        </li>
+                        <li>
+                            <span class="update-log-date">2025-12-03</span>
+                            新增趣味星球游戏：井字棋、五子棋、弹球消砖、迷宫逃脱、水井棋（双人/AI对战+成就系统）；为全站30+页面添加右下角全屏按钮。
+                        </li>
+                        <li>
+                            <span class="update-log-date">2025-12-03</span>
+                            新增"水井棋"完整游戏：支持本地双人对战、AI对战（三档难度）、闯关模式（10关递进），包含悔棋、提示、计时、成就系统、游戏统计等功能。
+                        </li>
+                        <li>
+                            <span class="update-log-date">2025-11-24</span>
+                            为 Index1 新增"工具银河 · 完整导航"弹窗：将外部工具集中收纳到"更多模块"中，首页工具卡片保持精简。
+                        </li>
+                        <li>
+                            <span class="update-log-date">2025-11-23</span>
+                            优化 Index1 / Index2 / Index3 的"趣味星球"和学习模块结构：拆分小游戏与学习项目，新增学习模块矩阵 / 学习星河。
+                        </li>
+                        <li>
+                            <span class="update-log-date">2025-11-22</span>
+                            新增速算页面的"基准值法减法"和"分段法减法"学习模块，并在首页封面展示更新日志。
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="cover-buttons">
+                <a href="index1.html" class="cover-btn">
+                    <span class="cover-btn-title">星际奇妙站</span>
+                    <span class="cover-btn-desc">卡通 · 质感 · 科技</span>
+                </a>
+                <a href="index2.html" class="cover-btn">
+                    <span class="cover-btn-title">奇思妙想 · 霓虹</span>
+                    <span class="cover-btn-desc">黑漆漆</span>
+                </a>
+                <a href="index3.html" class="cover-btn">
+                    <span class="cover-btn-title">学习小宇宙 · 面板</span>
+                    <span class="cover-btn-desc">面板信息 · 总览全局</span>
+                </a>
+            </div>
+        </div>
+        <div class="cover-disclaimer">
+            本站页面视觉与文案部分由 Gemini、Claude、ChatGPT 等 AI 工具辅助生成，仅供个人学习与交流使用；站内外链接及资源请自行甄别，使用前请遵守相关法律法规与各网站使用条款。
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Loading & UI Logic
+        document.addEventListener('DOMContentLoaded', function () {
+            const loading = document.getElementById('loading');
+            if (loading) {
+                setTimeout(() => {
+                    loading.classList.add('fade-out');
+                    setTimeout(() => loading.style.display = 'none', 500);
+                }, 500);
+            }
+
+            initUpdateLogToggle();
+            initCanvasAnimation();
+        });
+
+        function initUpdateLogToggle() {
+            const history = document.getElementById('updateLogHistory');
+            const toggleBtn = document.querySelector('.update-log-toggle');
+            const icon = document.querySelector('.update-log-toggle-icon');
+            if (!history || !toggleBtn || !icon) return;
+
+            toggleBtn.addEventListener('click', function () {
+                const isOpen = history.classList.contains('open');
+                history.classList.toggle('open', !isOpen);
+                icon.classList.toggle('fa-chevron-down', isOpen);
+                icon.classList.toggle('fa-chevron-up', !isOpen);
+            });
+        }
+
+        // Canvas Animation Logic
+        function initCanvasAnimation() {
+            const canvas = document.getElementById('bg-canvas');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let particles = [];
+            const mouse = { x: -1000, y: -1000 };
+
+            // Resize handler
+            function resize() {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+                createParticles();
+            }
+
+            // Mouse handler
+            window.addEventListener('mousemove', (e) => {
+                mouse.x = e.clientX;
+                mouse.y = e.clientY;
+            });
+
+            // Touch handler
+            window.addEventListener('touchmove', (e) => {
+                if (e.touches.length > 0) {
+                    mouse.x = e.touches[0].clientX;
+                    mouse.y = e.touches[0].clientY;
+                }
+            }, { passive: true });
+
+            window.addEventListener('touchstart', (e) => {
+                if (e.touches.length > 0) {
+                    mouse.x = e.touches[0].clientX;
+                    mouse.y = e.touches[0].clientY;
+                }
+            }, { passive: true });
+
+            window.addEventListener('resize', resize);
+
+            // Particle Class
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    this.vy = (Math.random() - 0.5) * 0.5;
+                    this.size = Math.random() * 2 + 1;
+                    this.baseColor = `hsla(${Math.random() * 60 + 200}, 70%, 50%, 0.5)`; // Blue/Purple range
+                    this.color = this.baseColor;
+                    this.angle = Math.random() * Math.PI * 2;
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    // Bounce off edges
+                    if (this.x < 0 || this.x > width) this.vx *= -1;
+                    if (this.y < 0 || this.y > height) this.vy *= -1;
+
+                    // Mouse interaction
+                    const dx = mouse.x - this.x;
+                    const dy = mouse.y - this.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const maxDistance = 300;
+
+                    if (distance < maxDistance) {
+                        const forceDirectionX = dx / distance;
+                        const forceDirectionY = dy / distance;
+                        const force = (maxDistance - distance) / maxDistance;
+
+                        // Gentle attraction
+                        this.vx += forceDirectionX * force * 0.05;
+                        this.vy += forceDirectionY * force * 0.05;
+
+                        // Glow effect
+                        this.size = Math.min(5, this.size + 0.1);
+                    } else {
+                        if (this.size > 2) this.size -= 0.05;
+                    }
+
+                    // Friction
+                    this.vx *= 0.99;
+                    this.vy *= 0.99;
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                }
+            }
+
+            // Create particles
+            function createParticles() {
+                particles = [];
+                const particleCount = Math.min(100, (width * height) / 10000);
+                for (let i = 0; i < particleCount; i++) {
+                    particles.push(new Particle());
+                }
+            }
+
+            // Animation Loop
+            function animate() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; // Trails effect
+                ctx.fillRect(0, 0, width, height);
+
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+
+                // Draw connecting lines near mouse
+                connectParticles();
+
+                requestAnimationFrame(animate);
+            }
+
+            function connectParticles() {
+                const maxDist = 150;
+                for (let i = 0; i < particles.length; i++) {
+                    const p1 = particles[i];
+                    // Only connect if near mouse
+                    const dxMouse = mouse.x - p1.x;
+                    const dyMouse = mouse.y - p1.y;
+                    const distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
+
+                    if (distMouse < 250) {
+                        for (let j = i + 1; j < particles.length; j++) {
+                            const p2 = particles[j];
+                            const dx = p1.x - p2.x;
+                            const dy = p1.y - p2.y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+
+                            if (dist < maxDist) {
+                                ctx.beginPath();
+                                ctx.strokeStyle = `rgba(100, 150, 255, ${1 - dist / maxDist})`;
+                                ctx.lineWidth = 0.5;
+                                ctx.moveTo(p1.x, p1.y);
+                                ctx.lineTo(p2.x, p2.y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                }
+            }
+
+            resize();
+            animate();
+        }
+    </script>
+    <script src="fullscreen-btn.js"></script>
+</body>
+
+</html>

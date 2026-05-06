@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后缀名批量转换工具</title>
+    <!-- Favicon -->
+    <link rel="icon" href="images/LOG.ico" type="image/x-icon">
+    <!-- Bootstrap 5.3+ CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 自定义CSS -->
+    <link rel="stylesheet" href="css/main.css">
+    <style>
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 15px;
+            padding: 3rem;
+            text-align: center;
+            background: rgba(102, 126, 234, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            border-color: #5a6fd8;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .upload-area.dragover {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+        }
+        
+        .file-item {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .file-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        
+        .file-item .file-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .file-item .file-info {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .progress-container {
+            margin-top: 1rem;
+        }
+        
+        .conversion-options {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+        
+        .dark-mode .file-item {
+            background: #2d2d2d;
+            color: #ffffff;
+        }
+        
+        .dark-mode .file-item .file-name {
+            color: #ffffff;
+        }
+        
+        .dark-mode .file-item .file-info {
+            color: #cccccc;
+        }
+        
+        .dark-mode .conversion-options {
+            background: #2d2d2d;
+            color: #ffffff;
+        }
+        
+        .preview-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .preview-item .old-name {
+            color: #dc3545;
+            text-decoration: line-through;
+        }
+        
+        .preview-item .new-name {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .dark-mode .preview-item {
+            background: #343a40;
+            border-color: #495057;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <!-- 返回按钮 -->
+    <a href="index.html" class="btn btn-outline-primary back-button">
+        <i class="fas fa-arrow-left me-2"></i>返回首页
+    </a>
+
+    <div class="container mt-5 pt-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <!-- 页面标题 -->
+                <div class="text-center mb-5">
+                    <h1 class="display-4 mb-3">
+                        <i class="fas fa-exchange-alt text-primary me-3"></i>
+                        后缀名批量转换工具
+                    </h1>
+                    <p class="lead text-muted">
+                        批量转换文件后缀名，支持多种格式，快速高效
+                    </p>
+                </div>
+
+                <!-- 转换选项 -->
+                <div class="conversion-options">
+                    <h4 class="mb-3">
+                        <i class="fas fa-cog me-2"></i>转换设置
+                    </h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="targetExtension" class="form-label">目标后缀名</label>
+                            <input type="text" class="form-control" id="targetExtension" 
+                                   placeholder="例如: txt, pdf, docx" value="txt">
+                            <div class="form-text">输入不带点的后缀名</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="preserveOriginal" class="form-label">保留原文件</label>
+                            <select class="form-select" id="preserveOriginal">
+                                <option value="true">是</option>
+                                <option value="false">否</option>
+                            </select>
+                            <div class="form-text">选择是否保留原始文件</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 文件上传区域 -->
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-content">
+                        <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                        <h4>拖拽文件到此处或点击选择文件</h4>
+                        <p class="text-muted">支持批量上传，最大文件大小：50MB</p>
+                        <button class="btn btn-primary btn-lg" onclick="document.getElementById('fileInput').click()">
+                            <i class="fas fa-folder-open me-2"></i>选择文件
+                        </button>
+                    </div>
+                    <input type="file" id="fileInput" multiple style="display: none;" accept="*/*">
+                </div>
+
+                <!-- 文件列表 -->
+                <div id="fileList" class="mt-4" style="display: none;">
+                    <h4 class="mb-3">
+                        <i class="fas fa-list me-2"></i>待转换文件
+                    </h4>
+                    <div id="fileItems"></div>
+                    
+                    <!-- 预览转换结果 -->
+                    <div id="previewContainer" class="mt-4" style="display: none;">
+                        <h5 class="mb-3">
+                            <i class="fas fa-eye me-2"></i>转换预览
+                        </h5>
+                        <div id="previewItems"></div>
+                    </div>
+                    
+                    <!-- 转换按钮 -->
+                    <div class="text-center mt-4">
+                        <button class="btn btn-success btn-lg" id="convertBtn" onclick="startConversion()">
+                            <i class="fas fa-magic me-2"></i>开始转换
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 进度显示 -->
+                <div id="progressContainer" class="mt-4" style="display: none;">
+                    <h4 class="mb-3">
+                        <i class="fas fa-tasks me-2"></i>转换进度
+                    </h4>
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             id="progressBar" role="progressbar" style="width: 0%">0%</div>
+                    </div>
+                    <div class="text-center">
+                        <span id="progressText">准备中...</span>
+                    </div>
+                </div>
+
+                <!-- 结果下载 -->
+                <div id="resultContainer" class="mt-4" style="display: none;">
+                    <div class="alert alert-success text-center">
+                        <h4 class="alert-heading">
+                            <i class="fas fa-check-circle me-2"></i>转换完成！
+                        </h4>
+                        <p class="mb-3">所有文件已成功转换，点击下方按钮下载压缩包</p>
+                        <button class="btn btn-success btn-lg" id="downloadBtn">
+                            <i class="fas fa-download me-2"></i>下载转换结果
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- JSZip库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    
+    <script>
+        let uploadedFiles = [];
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeUploadArea();
+            initializeFileInput();
+        });
+
+        // 初始化上传区域
+        function initializeUploadArea() {
+            const uploadArea = document.getElementById('uploadArea');
+            
+            // 拖拽事件
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                handleFiles(e.dataTransfer.files);
+            });
+            
+            // 点击上传
+            uploadArea.addEventListener('click', function() {
+                document.getElementById('fileInput').click();
+            });
+        }
+
+        // 初始化文件输入
+        function initializeFileInput() {
+            const fileInput = document.getElementById('fileInput');
+            fileInput.addEventListener('change', function(e) {
+                handleFiles(e.target.files);
+            });
+        }
+
+        // 处理文件
+        function handleFiles(files) {
+            if (files.length === 0) return;
+            
+            // 验证文件
+            for (let file of files) {
+                if (file.size > 50 * 1024 * 1024) { // 50MB限制
+                    alert(`文件 ${file.name} 超过50MB限制，已跳过`);
+                    continue;
+                }
+                
+                // 检查是否已存在
+                if (!uploadedFiles.find(f => f.name === file.name && f.size === file.size)) {
+                    uploadedFiles.push(file);
+                }
+            }
+            
+            displayFileList();
+            generatePreview();
+        }
+
+        // 显示文件列表
+        function displayFileList() {
+            if (uploadedFiles.length === 0) {
+                document.getElementById('fileList').style.display = 'none';
+                return;
+            }
+            
+            const fileList = document.getElementById('fileList');
+            const fileItems = document.getElementById('fileItems');
+            
+            fileItems.innerHTML = '';
+            
+            uploadedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-info">
+                                ${(file.size / 1024 / 1024).toFixed(2)} MB | 
+                                当前后缀: ${getFileExtension(file.name)}
+                            </div>
+                        </div>
+                        <button class="btn btn-outline-danger btn-sm" onclick="removeFile(${index})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                fileItems.appendChild(fileItem);
+            });
+            
+            fileList.style.display = 'block';
+        }
+
+        // 生成预览
+        function generatePreview() {
+            const targetExtension = document.getElementById('targetExtension').value.trim();
+            if (!targetExtension) return;
+            
+            const previewContainer = document.getElementById('previewContainer');
+            const previewItems = document.getElementById('previewItems');
+            
+            if (uploadedFiles.length === 0) {
+                previewContainer.style.display = 'none';
+                return;
+            }
+            
+            previewItems.innerHTML = '';
+            
+            uploadedFiles.forEach(file => {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'preview-item';
+                
+                const oldName = file.name;
+                const newName = generateNewFileName(file.name, targetExtension);
+                
+                previewItem.innerHTML = `
+                    <div><span class="old-name">${oldName}</span></div>
+                    <div><i class="fas fa-arrow-down me-2"></i></div>
+                    <div><span class="new-name">${newName}</span></div>
+                `;
+                
+                previewItems.appendChild(previewItem);
+            });
+            
+            previewContainer.style.display = 'block';
+        }
+
+        // 移除文件
+        function removeFile(index) {
+            uploadedFiles.splice(index, 1);
+            displayFileList();
+            generatePreview();
+        }
+
+        // 核心功能：分离文件名和扩展名
+        function splitFileNameAndExt(fileName) {
+            // 处理无扩展名的情况（如"README"）
+            if (!fileName.includes('.')) {
+                return { name: fileName, ext: '' };
+            }
+            
+            // 处理多个点的情况（如"file.tar.gz"取最后一个点后的部分作为扩展名）
+            const lastDotIndex = fileName.lastIndexOf('.');
+            const name = fileName.substring(0, lastDotIndex);
+            const ext = fileName.substring(lastDotIndex); // 包含点号（如".jpg"）
+            
+            return { name, ext };
+        }
+
+        // 获取文件扩展名
+        function getFileExtension(fileName) {
+            const { ext } = splitFileNameAndExt(fileName);
+            return ext || '无';
+        }
+
+        // 生成新的文件名
+        function generateNewFileName(fileName, targetExtension) {
+            const { name } = splitFileNameAndExt(fileName);
+            const newExt = targetExtension.startsWith('.') ? targetExtension : '.' + targetExtension;
+            return name + newExt;
+        }
+
+        // 开始转换
+        async function startConversion() {
+            if (uploadedFiles.length === 0) {
+                alert('请先选择要转换的文件');
+                return;
+            }
+            
+            const targetExtension = document.getElementById('targetExtension').value.trim();
+            if (!targetExtension) {
+                alert('请输入目标后缀名');
+                return;
+            }
+            
+            // 显示进度
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('convertBtn').disabled = true;
+            
+            try {
+                // 模拟转换过程
+                await simulateConversion();
+                
+                // 显示结果
+                showResult();
+                
+            } catch (error) {
+                console.error('转换错误:', error);
+                alert('转换失败: ' + error.message);
+                hideProgress();
+            }
+        }
+
+        // 模拟转换过程
+        async function simulateConversion() {
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            
+            const steps = [
+                { progress: 20, text: '文件上传中...' },
+                { progress: 50, text: '文件转换中...' },
+                { progress: 80, text: '打包压缩中...' },
+                { progress: 100, text: '转换完成！' }
+            ];
+            
+            for (let step of steps) {
+                await new Promise(resolve => setTimeout(resolve, 800));
+                progressBar.style.width = step.progress + '%';
+                progressBar.textContent = step.progress + '%';
+                progressText.textContent = step.text;
+            }
+        }
+
+        // 显示结果
+        function showResult() {
+            document.getElementById('progressContainer').style.display = 'none';
+            document.getElementById('resultContainer').style.display = 'block';
+            
+            // 设置下载链接（这里创建一个包含转换后文件名的文本文件）
+            const downloadBtn = document.getElementById('downloadBtn');
+            downloadBtn.onclick = function() {
+                downloadConversionResult();
+            };
+        }
+
+        // 下载转换结果
+        function downloadConversionResult() {
+            const targetExtension = document.getElementById('targetExtension').value.trim();
+            
+            // 创建ZIP文件
+            createAndDownloadZip(targetExtension);
+        }
+
+        // 创建并下载ZIP文件
+        async function createAndDownloadZip(targetExtension) {
+            try {
+                const zip = new JSZip();
+                
+                // 显示进度
+                const progressText = document.getElementById('progressText');
+                progressText.textContent = '正在创建ZIP文件...';
+                
+                // 为每个文件创建重命名后的版本
+                for (let i = 0; i < uploadedFiles.length; i++) {
+                    const file = uploadedFiles[i];
+                    const newFileName = generateNewFileName(file.name, targetExtension);
+                    
+                    // 更新进度
+                    progressText.textContent = `正在处理文件 ${i + 1}/${uploadedFiles.length}...`;
+                    
+                    // 将文件内容添加到ZIP中，使用新的文件名
+                    zip.file(newFileName, file);
+                }
+                
+                progressText.textContent = '正在生成ZIP文件...';
+                
+                // 生成ZIP文件
+                const zipBlob = await zip.generateAsync({
+                    type: 'blob',
+                    compression: 'DEFLATE',
+                    compressionOptions: { level: 6 }
+                });
+                
+                // 下载ZIP文件
+                const url = URL.createObjectURL(zipBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `converted_files_${targetExtension}_${Date.now()}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                // 显示成功消息
+                progressText.textContent = '下载完成！';
+                
+            } catch (error) {
+                console.error('创建ZIP文件失败:', error);
+                alert('创建ZIP文件失败: ' + error.message);
+            }
+        }
+
+        // 隐藏进度
+        function hideProgress() {
+            document.getElementById('progressContainer').style.display = 'none';
+            document.getElementById('convertBtn').disabled = false;
+        }
+
+        // 监听目标后缀名输入变化，实时更新预览
+        document.getElementById('targetExtension').addEventListener('input', function() {
+            generatePreview();
+        });
+
+        // 主题切换支持
+        function updateTheme() {
+            const html = document.documentElement;
+            const theme = localStorage.getItem('theme') || 'default';
+            
+            if (theme === 'dark') {
+                html.setAttribute('data-bs-theme', 'dark');
+                document.body.classList.add('dark-mode');
+            } else {
+                html.removeAttribute('data-bs-theme');
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+        // 页面加载时应用主题
+        updateTheme();
+    </script>
+    <script src="fullscreen-btn.js"></script>
+</body>
+</html>

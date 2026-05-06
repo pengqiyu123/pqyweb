@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一次方程学习</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            padding: 16px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 0.95em;
+        }
+
+        .tabs {
+            display: none;
+        }
+
+        .tab {
+            display: none;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 24px 20px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .equation-section {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            align-items: center;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.35);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.45);
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+        }
+
+        .step-display {
+            background: linear-gradient(135deg, #f0f4ff, #e8f4fd);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 20px 0;
+            border: 2px solid #c7d2fe;
+            text-align: center;
+        }
+
+        .step-equation {
+            font-size: 28px;
+            text-align: center;
+            margin: 12px 0;
+            font-weight: 700;
+            color: #4f46e5;
+            font-family: 'SF Mono', ui-monospace, monospace;
+        }
+
+        .step-description {
+            text-align: center;
+            color: #6366f1;
+            margin-bottom: 8px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: 16px 0;
+            flex-wrap: wrap;
+        }
+
+        .function-section {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 2px solid #f3f4f6;
+        }
+
+        .canvas-container {
+            flex: 1;
+            background: linear-gradient(135deg, #fafafa, #f5f5f5);
+            border-radius: 16px;
+            padding: 16px;
+            position: relative;
+            border: 2px solid #e5e7eb;
+        }
+
+        canvas {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .controls-panel {
+            width: 280px;
+            background: linear-gradient(135deg, #fafafa, #f5f5f5);
+            border-radius: 16px;
+            padding: 18px;
+            border: 2px solid #e5e7eb;
+        }
+
+        .control-group {
+            margin-bottom: 18px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.95em;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #e5e7eb, #d1d5db);
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        }
+
+        .value-display {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .explanation {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-top: 16px;
+            font-size: 13px;
+            line-height: 1.6;
+            border: 1px solid #a7f3d0;
+        }
+
+        .explanation h4 {
+            color: #059669;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .function-section {
+                flex-direction: column;
+            }
+            
+            .controls-panel {
+                width: 100%;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+
+            .container {
+                margin: 10px auto;
+                border-radius: 10px;
+            }
+
+            .header h1 {
+                font-size: 1.6em;
+            }
+
+            .tab-content {
+                padding: 20px 15px;
+            }
+
+            .controls .btn {
+                flex: 1 1 45%;
+            }
+
+            .step-equation {
+                font-size: 20px;
+            }
+
+            canvas {
+                width: 100%;
+                height: auto;
+            }
+        }
+
+        .success-animation {
+            animation: bounce 0.6s ease;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 60%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            80% { transform: translateY(-5px); }
+        }
+
+        /* 成就按钮 */
+        .achieve-btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1f2937;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .achieve-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        /* 成就弹窗 */
+        .achievement-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .achievement-modal.show {
+            display: flex;
+        }
+
+        .achievement-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 420px;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .achievement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 24px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1f2937;
+        }
+
+        .achievement-header h2 {
+            margin: 0;
+            font-size: 1.2em;
+        }
+
+        .achievement-header .close-btn {
+            background: none;
+            border: none;
+            color: #1f2937;
+            font-size: 1.6em;
+            cursor: pointer;
+        }
+
+        .achievement-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .achievement-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            transition: all 0.2s;
+        }
+
+        .achievement-item.unlocked {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            border-color: #22c55e;
+        }
+
+        .achievement-item.locked {
+            opacity: 0.5;
+        }
+
+        .achievement-icon {
+            font-size: 2em;
+            width: 50px;
+            text-align: center;
+        }
+
+        .achievement-info {
+            flex: 1;
+        }
+
+        .achievement-name {
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .achievement-desc {
+            font-size: 0.85em;
+            color: #6b7280;
+        }
+
+        .achievement-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1f2937;
+            padding: 14px 28px;
+            border-radius: 30px;
+            box-shadow: 0 8px 30px rgba(251, 191, 36, 0.5);
+            z-index: 2000;
+            animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s;
+            font-weight: 600;
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        @keyframes toastOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>� 一次方程学习</h1>
+            <p>掌握一元一次方程求解，理解一次函数图像</p>
+            <div class="header-actions">
+                <button class="achieve-btn" onclick="showAchievementModal()">🏆 成就</button>
+            </div>
+        </div>
+
+        <!-- 成就弹窗 -->
+        <div class="achievement-modal" id="achievementModal">
+            <div class="achievement-content">
+                <div class="achievement-header">
+                    <h2>🏆 学习成就</h2>
+                    <button class="close-btn" onclick="closeAchievementModal()">×</button>
+                </div>
+                <div class="achievement-list" id="achievementList"></div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('equation')">方程求解</button>
+        </div>
+
+        <!-- 方程求解模块 -->
+        <div id="equation" class="tab-content active">
+            <div class="equation-section">
+                <h2>🔢 一元一次方程求解器</h2>
+                <p style="color: #666; margin: 10px 0;">输入方程格式：ax + b = c (例如: 2x + 3 = 7)</p>
+                
+                <div class="input-group">
+                    <input type="text" id="equationInput" placeholder="输入方程，如: 2x + 3 = 7" value="2x + 3 = 7">
+                    <button class="btn btn-primary" onclick="solveEquation()">求解方程</button>
+                    <button class="btn btn-secondary" onclick="loadSampleEquation()">示例方程</button>
+                </div>
+
+                <div class="step-display">
+                    <div class="step-description" id="currentStepDesc">请输入方程并点击求解</div>
+                    <div class="step-equation" id="currentStepEquation">_ = _</div>
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-secondary" onclick="prevStep()" id="prevBtn" disabled>上一步</button>
+                    <button class="btn btn-primary" onclick="nextStep()" id="nextBtn">下一步</button>
+                    <button class="btn btn-secondary" onclick="resetSolver()">重置</button>
+                    <button class="btn btn-success" onclick="autoPlay()">自动播放</button>
+                </div>
+
+                <div class="explanation">
+                    <h4>💡 教学要点</h4>
+                    <div id="teachingTips">输入方程后，系统将逐步演示求解过程，强调等式两边同时进行相同操作保持平衡的原理。</div>
+                </div>
+            </div>
+            
+            <!-- 函数可视化模块 -->
+            <div class="function-section">
+                <div class="canvas-container">
+                    <canvas id="functionCanvas" width="600" height="400"></canvas>
+                    <div style="text-align: center; margin-top: 10px; color: #666;">
+                        拖动滑块观察函数图像变化
+                    </div>
+                </div>
+
+                <div class="controls-panel">
+                    <div class="control-group">
+                        <label>斜率 (k): <span id="kValue" class="value-display">2</span></label>
+                        <input type="range" min="-5" max="5" step="0.1" value="2" class="slider" id="kSlider" oninput="updateFunction()">
+                    </div>
+
+                    <div class="control-group">
+                        <label>截距 (b): <span id="bValue" class="value-display">1</span></label>
+                        <input type="range" min="-10" max="10" step="0.1" value="1" class="slider" id="bSlider" oninput="updateFunction()">
+                    </div>
+
+                    <div class="control-group">
+                        <label>当前函数: <span id="currentFunction" class="value-display">y = 2x + 1</span></label>
+                    </div>
+
+                    <div class="explanation">
+                        <h4>🎯 参数说明</h4>
+                        <p><span class="highlight">斜率(k)</span>: 决定直线的倾斜程度和方向</p>
+                        <p><span class="highlight">截距(b)</span>: 直线与y轴的交点</p>
+                        <p><span class="highlight">斜率三角形</span>: 可视化斜率的几何意义</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 成就系统
+        const achievements = [
+            { id: 'first_solve', name: '初探方程', desc: '第一次求解方程', icon: '🎯' },
+            { id: 'solve_5', name: '勤学好问', desc: '累计求解5道方程', icon: '📖' },
+            { id: 'solve_10', name: '熟能生巧', desc: '累计求解10道方程', icon: '⭐' },
+            { id: 'solve_20', name: '方程达人', desc: '累计求解20道方程', icon: '🌟' },
+            { id: 'auto_play', name: '自动演示', desc: '使用自动播放功能', icon: '▶️' },
+            { id: 'all_steps', name: '步步为营', desc: '完整看完一道方程的所有步骤', icon: '👣' },
+            { id: 'adjust_k', name: '斜率探索', desc: '调整斜率观察函数变化', icon: '📐' },
+            { id: 'adjust_b', name: '截距探索', desc: '调整截距观察函数变化', icon: '📏' },
+            { id: 'negative_k', name: '反向思维', desc: '设置负数斜率', icon: '🔄' },
+            { id: 'zero_k', name: '水平线', desc: '设置斜率为0观察水平线', icon: '➖' }
+        ];
+
+        let mathData = { unlocked: [], totalSolves: 0, kAdjusted: false, bAdjusted: false };
+
+        function loadMathData() {
+            try {
+                const saved = localStorage.getItem('math_achievements');
+                if (saved) mathData = JSON.parse(saved);
+            } catch(e) {}
+        }
+
+        function saveMathData() {
+            try {
+                localStorage.setItem('math_achievements', JSON.stringify(mathData));
+            } catch(e) {}
+        }
+
+        function unlockAchievement(id) {
+            if (mathData.unlocked.includes(id)) return false;
+            mathData.unlocked.push(id);
+            saveMathData();
+            const ach = achievements.find(a => a.id === id);
+            if (ach) showAchievementToast(ach);
+            return true;
+        }
+
+        function showAchievementToast(ach) {
+            const toast = document.createElement('div');
+            toast.className = 'achievement-toast';
+            toast.innerHTML = `${ach.icon} 成就解锁：${ach.name}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function showAchievementModal() {
+            renderAchievementList();
+            document.getElementById('achievementModal').classList.add('show');
+        }
+
+        function closeAchievementModal() {
+            document.getElementById('achievementModal').classList.remove('show');
+        }
+
+        function renderAchievementList() {
+            const list = document.getElementById('achievementList');
+            list.innerHTML = achievements.map(ach => {
+                const unlocked = mathData.unlocked.includes(ach.id);
+                return `
+                    <div class="achievement-item ${unlocked ? 'unlocked' : 'locked'}">
+                        <div class="achievement-icon">${ach.icon}</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">${ach.name}</div>
+                            <div class="achievement-desc">${ach.desc}</div>
+                        </div>
+                        ${unlocked ? '<span style="color:#22c55e;font-size:1.2em">✓</span>' : '<span style="color:#9ca3af">🔒</span>'}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        loadMathData();
+
+        // 全局变量
+        let currentEquation = null;
+        let steps = [];
+        let currentStep = 0;
+        let isAutoPlaying = false;
+        let autoPlayInterval = null;
+
+        // 切换标签页
+        function switchTab(tabName) {
+            // 隐藏所有内容区域
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            // 移除所有标签的激活状态
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 激活选中的内容区域和标签
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            // 如果切换到函数页面，重新绘制
+            if (tabName === 'function') {
+                updateFunction();
+            }
+        }
+
+        // 方程求解相关函数
+        function solveEquation() {
+            const input = document.getElementById('equationInput').value.trim();
+            if (!input) {
+                alert('请输入方程！');
+                return;
+            }
+
+            // 解析方程
+            currentEquation = parseEquation(input);
+            if (!currentEquation) {
+                alert('方程格式错误！请使用格式: ax + b = c');
+                return;
+            }
+
+            // 重置步骤索引为0，确保从第一步开始显示
+            currentStep = 0;
+            
+            // 生成求解步骤
+            generateSteps();
+            showCurrentStep();
+
+            // 成就检查
+            mathData.totalSolves++;
+            saveMathData();
+            unlockAchievement('first_solve');
+            if (mathData.totalSolves >= 5) unlockAchievement('solve_5');
+            if (mathData.totalSolves >= 10) unlockAchievement('solve_10');
+            if (mathData.totalSolves >= 20) unlockAchievement('solve_20');
+        }
+
+        function parseEquation(equationStr) {
+            // 简化版本的方程解析器
+            equationStr = equationStr.replace(/\s/g, '');
+            const parts = equationStr.split('=');
+            if (parts.length !== 2) return null;
+
+            const left = parts[0];
+            const right = parseFloat(parts[1]);
+
+            // 解析左边的表达式 ax + b
+            let a = 0, b = 0;
+
+            // 查找x的系数
+            const xMatch = left.match(/(-?\d*\.?\d*)x/);
+            if (xMatch) {
+                let coeff = xMatch[1];
+                if (coeff === '' || coeff === '+') coeff = '1';
+                if (coeff === '-') coeff = '-1';
+                a = parseFloat(coeff);
+            }
+
+            // 查找常数项
+            const constPart = left.replace(/-?\d*\.?\d*x/g, '');
+            if (constPart) {
+                b = parseFloat(constPart) || 0;
+            }
+
+            return { a, b, right, original: equationStr };
+        }
+
+        function generateSteps() {
+            steps = [];
+            const eq = currentEquation;
+
+            // 步骤1: 原始方程
+            steps.push({
+                equation: `${eq.a}x + ${eq.b} = ${eq.right}`,
+                description: "原始方程",
+                operation: "初始"
+            });
+
+            // 步骤2: 移项
+            const newRight = eq.right - eq.b;
+            steps.push({
+                equation: `${eq.a}x = ${newRight}`,
+                description: `等式两边同时减去 ${eq.b}`,
+                operation: "减法"
+            });
+
+            // 步骤3: 除法
+            if (eq.a !== 0) {
+                const finalX = newRight / eq.a;
+                steps.push({
+                    equation: `x = ${finalX}`,
+                    description: `等式两边同时除以 ${eq.a}`,
+                    operation: "除法"
+                });
+            }
+        }
+
+        function showCurrentStep() {
+            if (steps.length === 0 || currentStep >= steps.length) return;
+
+            const step = steps[currentStep];
+            document.getElementById('currentStepEquation').textContent = step.equation;
+            document.getElementById('currentStepDesc').textContent = step.description;
+            document.getElementById('teachingTips').innerHTML = getTeachingTip(step.operation);
+
+            // 更新按钮状态
+            document.getElementById('prevBtn').disabled = (currentStep === 0);
+            document.getElementById('nextBtn').disabled = (currentStep === steps.length - 1);
+        }
+
+        function getTeachingTip(operation) {
+            switch(operation) {
+                case "初始":
+                    return "观察方程结构，识别未知数x的系数和常数项";
+                case "减法":
+                    return "运用逆运算，将常数项移到等号右边，保持等式平衡";
+                case "除法":
+                    return "将x的系数化为1，得到方程的解";
+                default:
+                    return "每一步操作都要确保等式两边相等，这是代数求解的核心原则";
+            }
+        }
+
+        function nextStep() {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                showCurrentStep();
+                // 检查是否完成所有步骤
+                if (currentStep === steps.length - 1) {
+                    unlockAchievement('all_steps');
+                }
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                showCurrentStep();
+            }
+        }
+
+        function resetSolver() {
+            currentStep = 0;
+            steps = [];
+            document.getElementById('currentStepEquation').textContent = '_ = _';
+            document.getElementById('currentStepDesc').textContent = '请输入方程并点击求解';
+            document.getElementById('teachingTips').textContent = '输入方程后，系统将逐步演示求解过程，强调等式两边同时进行相同操作保持平衡的原理。';
+            document.getElementById('prevBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        function autoPlay() {
+            if (isAutoPlaying) {
+                clearInterval(autoPlayInterval);
+                isAutoPlaying = false;
+                document.querySelector('.btn-success').textContent = '自动播放';
+            } else {
+                isAutoPlaying = true;
+                unlockAchievement('auto_play');
+                document.querySelector('.btn-success').textContent = '停止播放';
+                
+                autoPlayInterval = setInterval(() => {
+                    if (currentStep < steps.length - 1) {
+                        nextStep();
+                    } else {
+                        clearInterval(autoPlayInterval);
+                        isAutoPlaying = false;
+                        document.querySelector('.btn-success').textContent = '自动播放';
+                    }
+                }, 2000);
+            }
+        }
+
+        function loadSampleEquation() {
+            const samples = ['2x + 3 = 7', '3x - 5 = 10', '-x + 4 = 1', '0.5x + 2 = 6'];
+            const randomSample = samples[Math.floor(Math.random() * samples.length)];
+            document.getElementById('equationInput').value = randomSample;
+        }
+
+        // 函数可视化相关函数
+        function updateFunction() {
+            const k = parseFloat(document.getElementById('kSlider').value);
+            const b = parseFloat(document.getElementById('bSlider').value);
+            
+            document.getElementById('kValue').textContent = k;
+            document.getElementById('bValue').textContent = b;
+            document.getElementById('currentFunction').textContent = `y = ${k}x + ${b}`;
+            
+            drawFunction(k, b);
+
+            // 成就检查
+            if (!mathData.kAdjusted && k !== 2) {
+                mathData.kAdjusted = true;
+                saveMathData();
+                unlockAchievement('adjust_k');
+            }
+            if (!mathData.bAdjusted && b !== 1) {
+                mathData.bAdjusted = true;
+                saveMathData();
+                unlockAchievement('adjust_b');
+            }
+            if (k < 0) unlockAchievement('negative_k');
+            if (k === 0) unlockAchievement('zero_k');
+        }
+
+        function drawFunction(k, b) {
+            const canvas = document.getElementById('functionCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 设置坐标系参数
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const scale = 30; // 每个单位像素数
+            
+            // 绘制网格
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            
+            // 垂直线
+            for (let x = -10; x <= 10; x++) {
+                ctx.beginPath();
+                ctx.moveTo(centerX + x * scale, 0);
+                ctx.lineTo(centerX + x * scale, height);
+                ctx.stroke();
+            }
+            
+            // 水平线
+            for (let y = -10; y <= 10; y++) {
+                ctx.beginPath();
+                ctx.moveTo(0, centerY + y * scale);
+                ctx.lineTo(width, centerY + y * scale);
+                ctx.stroke();
+            }
+            
+            // 绘制坐标轴
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            
+            // x轴
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(width, centerY);
+            ctx.stroke();
+            
+            // y轴
+            ctx.beginPath();
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, height);
+            ctx.stroke();
+            
+            // 绘制箭头
+            // x轴箭头
+            ctx.beginPath();
+            ctx.moveTo(width - 10, centerY - 5);
+            ctx.lineTo(width, centerY);
+            ctx.lineTo(width - 10, centerY + 5);
+            ctx.stroke();
+            
+            // y轴箭头
+            ctx.beginPath();
+            ctx.moveTo(centerX - 5, 10);
+            ctx.lineTo(centerX, 0);
+            ctx.lineTo(centerX + 5, 10);
+            ctx.stroke();
+            
+            // 标记刻度
+            ctx.fillStyle = '#666';
+            ctx.font = '12px Arial';
+            
+            // x轴刻度
+            for (let x = -10; x <= 10; x++) {
+                if (x !== 0) {
+                    ctx.fillText(x.toString(), centerX + x * scale - 5, centerY + 15);
+                }
+            }
+            
+            // y轴刻度
+            for (let y = -10; y <= 10; y++) {
+                if (y !== 0) {
+                    ctx.fillText((-y).toString(), centerX - 15, centerY + y * scale + 4);
+                }
+            }
+            
+            // 绘制函数直线
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 3;
+            
+            // 计算直线上的两个点来绘制直线
+            const x1 = -10;
+            const y1 = k * x1 + b;
+            const x2 = 10;
+            const y2 = k * x2 + b;
+            
+            ctx.beginPath();
+            ctx.moveTo(centerX + x1 * scale, centerY - y1 * scale);
+            ctx.lineTo(centerX + x2 * scale, centerY - y2 * scale);
+            ctx.stroke();
+            
+            // 绘制y轴截距点
+            ctx.fillStyle = '#ff6b6b';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY - b * scale, 5, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // 标注截距点
+            if (Math.abs(b) > 0.1) {
+                ctx.fillStyle = '#ff6b6b';
+                ctx.fillText(`(0, ${b})`, centerX + 5, centerY - b * scale - 5);
+            }
+            
+            // 绘制斜率三角形（仅当斜率不为0时）
+            if (Math.abs(k) > 0.1) {
+                ctx.strokeStyle = '#ff9900';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                
+                const start_x = 0;
+                const start_y = k * start_x + b;
+                const end_x = 1;
+                const end_y = k * end_x + b;
+                
+                // 水平线
+                ctx.beginPath();
+                ctx.moveTo(centerX + start_x * scale, centerY - start_y * scale);
+                ctx.lineTo(centerX + end_x * scale, centerY - start_y * scale);
+                ctx.stroke();
+                
+                // 垂直线
+                ctx.beginPath();
+                ctx.moveTo(centerX + end_x * scale, centerY - start_y * scale);
+                ctx.lineTo(centerX + end_x * scale, centerY - end_y * scale);
+                ctx.stroke();
+                
+                // 恢复实线
+                ctx.setLineDash([]);
+                
+                // 标注斜率
+                ctx.fillStyle = '#ff9900';
+                ctx.fillText(`斜率 = ${k}`, centerX + end_x * scale + 10, centerY - (start_y + end_y) * scale / 2);
+            }
+        }
+
+        // 触控滑动支持：在步骤区域左右滑动切换步骤
+        let touchStartX = null;
+        let touchEndX = null;
+
+        function handleTouchStart(e) {
+            if (!e.changedTouches || e.changedTouches.length === 0) return;
+            touchStartX = e.changedTouches[0].clientX;
+        }
+
+        function handleTouchEnd(e) {
+            if (!e.changedTouches || e.changedTouches.length === 0) return;
+            touchEndX = e.changedTouches[0].clientX;
+            handleSwipeGesture();
+        }
+
+        function handleSwipeGesture() {
+            if (touchStartX === null || touchEndX === null) return;
+            const diffX = touchEndX - touchStartX;
+            const threshold = 50; // 滑动触发阈值
+            if (Math.abs(diffX) > threshold) {
+                if (diffX < 0) {
+                    nextStep();
+                } else {
+                    prevStep();
+                }
+            }
+            touchStartX = null;
+            touchEndX = null;
+        }
+
+        // 画布自适应容器宽度
+        function resizeCanvas() {
+            const canvas = document.getElementById('functionCanvas');
+            if (!canvas) return;
+            const container = canvas.parentElement;
+            if (!container) return;
+            const baseWidth = 600;
+            const baseHeight = 400;
+            const availableWidth = container.clientWidth ? container.clientWidth - 20 : baseWidth;
+            const width = Math.min(baseWidth, availableWidth);
+            const height = width * (baseHeight / baseWidth);
+            canvas.width = width;
+            canvas.height = height;
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            resizeCanvas();
+            updateFunction();
+            
+            // 绑定回车键事件
+            document.getElementById('equationInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    solveEquation();
+                }
+            });
+
+            // 绑定触控滑动事件（仅在支持触控的设备上）
+            const stepDisplay = document.querySelector('.step-display');
+            if (stepDisplay && 'ontouchstart' in window) {
+                stepDisplay.addEventListener('touchstart', handleTouchStart, { passive: true });
+                stepDisplay.addEventListener('touchend', handleTouchEnd, { passive: true });
+            }
+
+            // 窗口尺寸变化时自适应画布
+            window.addEventListener('resize', function() {
+                resizeCanvas();
+                updateFunction();
+            });
+        });
+
+        // 页面加载完成后自动绘制函数（兜底）
+        window.onload = function() {
+            resizeCanvas();
+            updateFunction();
+        };
+
+        </script>
+    <script src="fullscreen-btn.js"></script>
+</body>
+    </html>

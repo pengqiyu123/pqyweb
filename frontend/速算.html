@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数学小达人 - 100以内加减法</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #e0f7fa 0%, #e1bee7 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .game-setup {
+            background: #fff3cd;
+            padding: 25px;
+            margin: 20px;
+            border-radius: 15px;
+            border: 2px solid #ffeaa7;
+        }
+
+        .setup-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center; /* 让时间/题目数量/难度三块整体居中 */
+        }
+
+        .setup-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px; /* 缩小标签与输入/难度选项之间的间隔 */
+        }
+
+        .setup-group label {
+            font-weight: bold;
+            color: #856404;
+            min-width: 100px; /* 缩小标签固定宽度，让输入框更靠近 */
+        }
+
+        .setup-group input[type="number"] {
+            padding: 10px;
+            border: 2px solid #ffd93d;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 100px;
+        }
+
+        .game-setup input[type="radio"] {
+            margin-right: 4px; /* 调小圆点和文字之间的间距 */
+            vertical-align: middle;
+        }
+
+        .rules {
+            background: #d1ecf1;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 15px;
+            border-left: 5px solid #0c5460;
+        }
+
+        .rules h3 {
+            color: #0c5460;
+            margin-bottom: 10px;
+        }
+
+        .game-area {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .timer {
+            font-size: 3em;
+            font-weight: bold;
+            color: #dc3545;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .score {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+
+        .progress {
+            font-size: 1.2em;
+            color: #6c757d;
+            margin-bottom: 30px;
+        }
+
+        .question {
+            font-size: 3em;
+            font-weight: bold;
+            color: #333;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border: 3px solid #dee2e6;
+        }
+
+        .answer-input {
+            padding: 15px;
+            font-size: 1.5em;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            text-align: center;
+            width: 150px;
+            margin: 20px 0;
+        }
+
+        .answer-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin: 10px 0 0;
+        }
+
+        .answer-submit-btn {
+            padding: 12px 20px;
+            font-size: 1em;
+            min-width: 100px;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .feedback {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 20px 0;
+            min-height: 50px;
+        }
+
+        .correct {
+            color: #28a745;
+            animation: bounce 0.6s ease;
+        }
+
+        .incorrect {
+            color: #dc3545;
+            animation: shake 0.6s ease;
+        }
+
+        .result-area {
+            padding: 30px;
+            display: none;
+        }
+
+        .result-summary {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .result-message {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .review {
+            margin-top: 30px;
+        }
+
+        .review h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .review-item {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 5px solid;
+        }
+
+        .review-correct {
+            border-left-color: #28a745;
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .review-incorrect {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .review-unanswered {
+            border-left-color: #6c757d;
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .history-area {
+            padding: 20px 30px 30px;
+            border-top: 1px solid #eee;
+            background: #fafafa;
+        }
+
+        .history-area h3 {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 0.95em;
+        }
+
+        .history-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 6px;
+        }
+
+        .history-level {
+            font-weight: bold;
+            color: #444;
+            min-width: 48px;
+        }
+
+        .history-status {
+            flex: 1;
+            color: #555;
+        }
+
+        .history-status.up {
+            color: #16a34a;
+        }
+
+        .history-status.down {
+            color: #dc2626;
+        }
+
+        .history-status.same {
+            color: #2563eb;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .star {
+            position: absolute;
+            font-size: 2em;
+            animation: starFloat 1s ease-out forwards;
+            z-index: 1000;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 60%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            80% { transform: translateY(-10px); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        @keyframes starFloat {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-50px) scale(1.5); opacity: 0; }
+        }
+
+        @keyframes confetti {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                border-radius: 12px;
+            }
+
+            .header {
+                padding: 20px 15px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .header p {
+                font-size: 1em;
+            }
+
+            .game-setup,
+            .rules {
+                margin: 12px;
+                padding: 15px;
+            }
+
+            .game-area {
+                padding: 20px 15px;
+            }
+
+            .question {
+                font-size: 2em;
+                margin: 20px 0;
+                padding: 15px;
+            }
+
+            .timer {
+                font-size: 2.4em;
+            }
+
+            /* 只让“难度选择”这行在手机上上下排布，其余设置项保持左右结构 */
+            .game-setup > .setup-group {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .setup-group label {
+                min-width: auto;
+            }
+
+            .answer-input {
+                width: auto;
+                max-width: 60%;
+                font-size: 1.3em;
+            }
+
+            .answer-row {
+                justify-content: center;
+                flex-wrap: nowrap; /* 不换行，保持输入框和提交按钮同一行 */
+            }
+
+            .buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .buttons .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .result-area {
+                padding: 20px 15px;
+            }
+
+            .history-area {
+                padding: 15px;
+            }
+
+            .history-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.7em;
+            }
+
+            .header p {
+                font-size: 0.95em;
+            }
+
+            .timer {
+                font-size: 2em;
+            }
+
+            .question {
+                font-size: 1.7em;
+            }
+
+            .feedback {
+                font-size: 1.4em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔢 数学小达人 - 100以内加减法</h1>
+            <p>挑战你的数学能力，快速计算加减法！</p>
+        </div>
+
+        <div class="rules">
+            <h3>🎮 游戏规则</h3>
+            <ul style="text-align: left; padding-left: 20px;">
+                <li>在规定时间内完成所有题目</li>
+                <li>每答对一题得10分</li>
+                <li>答错不扣分，但不得分</li>
+                <li>时间到自动结束游戏</li>
+                <li>游戏结束后查看错题回顾</li>
+            </ul>
+        </div>
+
+        <div class="game-setup">
+            <h3 style="text-align: center; margin-bottom: 20px; color: #856404;">游戏设置</h3>
+            <div class="setup-row">
+                <div class="setup-group">
+                    <label for="timeLimit">时间(秒):</label>
+                    <input type="number" id="timeLimit" value="60" min="10" max="300">
+                </div>
+                <div class="setup-group">
+                    <label for="questionCount">题目数量:</label>
+                    <input type="number" id="questionCount" value="10" min="5" max="50">
+                </div>
+                <div class="setup-group">
+                    <label>难度选择:</label>
+                    <div>
+                        <label style="margin-right: 10px;">
+                            <input type="radio" name="difficulty" value="easy" checked> 初级
+                        </label>
+                        <label style="margin-right: 10px;">
+                            <input type="radio" name="difficulty" value="medium"> 中级
+                        </label>
+                        <label style="margin-right: 10px;">
+                            <input type="radio" name="difficulty" value="hard"> 高级
+                        </label>
+                        <label>
+                            <input type="radio" name="difficulty" value="nightmare"> 噩梦
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-area" id="gameArea">
+            <div class="timer" id="timer">60</div>
+            <div class="score">得分: <span id="score">0</span></div>
+            <div class="progress" id="progress">准备开始挑战！</div>
+            
+            <div class="question" id="question">点击开始挑战</div>
+
+            <!-- 答案输入与提交按钮一行显示 -->
+            <div class="answer-row">
+                <input type="number" class="answer-input" id="answerInput" placeholder="答案" style="display: none;">
+                <button class="btn btn-success answer-submit-btn" id="submitBtn" style="display: none;">提交答案</button>
+            </div>
+            
+            <div class="buttons">
+                <button class="btn btn-primary" id="startBtn">开始挑战</button>
+                <button class="btn btn-secondary" id="nextBtn" style="display: none;">下一题</button>
+            </div>
+
+            <!-- 提示放在答题区域最下方 -->
+            <div class="feedback" id="feedback"></div>
+        </div>
+
+        <div class="result-area" id="resultArea">
+            <div class="result-summary">
+                <div class="result-message" id="resultMessage"></div>
+                <div style="font-size: 1.5em; margin: 20px 0;">
+                    最终得分: <span id="finalScore" style="font-weight: bold; color: #667eea;"></span>
+                </div>
+            </div>
+            
+            <div class="review">
+                <h3>📋 错题回顾</h3>
+                <div id="reviewList"></div>
+            </div>
+            <div class="buttons">
+                <button class="btn btn-primary" id="restartBtn">再来一局</button>
+            </div>
+        </div>
+        <div class="history-area">
+            <h3>📊 历史成绩（按难度）</h3>
+            <div class="history-list" id="historyList">
+                <!-- 由脚本填充：每个难度最近两次分数 + 进步/退步 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 游戏状态
+        let gameState = {
+            timeLeft: 60,
+            score: 0,
+            currentQuestion: 0,
+            totalQuestions: 10,
+            questions: [],
+            answers: [],
+            timer: null,
+            gameStarted: false,
+            difficulty: 'easy' // easy, medium, hard, nightmare
+        };
+
+        // 音效系统
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playCorrectSound() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.1);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.2);
+        }
+
+        function playIncorrectSound() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+            oscillator.frequency.setValueAtTime(200, audioContext.currentTime + 0.1);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        function playWinSound() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+            oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+            oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        // 生成随机题目（根据难度生成不同类型，保证结果在 0~100 以内）
+        function generateQuestion() {
+            const diff = gameState.difficulty || 'easy';
+            let question = '';
+            let answer = 0;
+
+            if (diff === 'easy') {
+                // 初级：10以内加减法（含 0~10）
+                const num1 = Math.floor(Math.random() * 11); // 0~10
+                const num2 = Math.floor(Math.random() * 11);
+                const op = Math.random() > 0.5 ? '+' : '-';
+
+                if (op === '+') {
+                    answer = num1 + num2;
+                    if (answer > 10) {
+                        // 超过 10 就重抽一题
+                        return generateQuestion();
+                    }
+                    question = `${num1} + ${num2}`;
+                } else {
+                    const a = Math.max(num1, num2);
+                    const b = Math.min(num1, num2);
+                    answer = a - b;
+                    question = `${a} - ${b}`;
+                }
+            } else if (diff === 'medium') {
+                // 中级：两个 100 以内的数加减，结果 0~100
+                while (true) {
+                    const num1 = Math.floor(Math.random() * 101); // 0~100
+                    const num2 = Math.floor(Math.random() * 101);
+                    const op = Math.random() > 0.5 ? '+' : '-';
+
+                    if (op === '+') {
+                        answer = num1 + num2;
+                        if (answer <= 100) {
+                            question = `${num1} + ${num2}`;
+                            break;
+                        }
+                    } else {
+                        answer = num1 - num2;
+                        if (answer >= 0) {
+                            question = `${num1} - ${num2}`;
+                            break;
+                        }
+                    }
+                }
+            } else if (diff === 'hard') {
+                // 高级：多个（这里固定 3 个）100 以内的数加减，结果 0~100
+                while (true) {
+                    const termCount = 3;
+                    const nums = [];
+                    const ops = [];
+
+                    nums.push(Math.floor(Math.random() * 101)); // 第一个 0~100
+                    for (let i = 1; i < termCount; i++) {
+                        const op = Math.random() > 0.5 ? '+' : '-';
+                        ops.push(op);
+                        nums.push(Math.floor(Math.random() * 101));
+                    }
+
+                    // 计算结果
+                    answer = nums[0];
+                    for (let i = 1; i < termCount; i++) {
+                        if (ops[i - 1] === '+') {
+                            answer += nums[i];
+                        } else {
+                            answer -= nums[i];
+                        }
+                    }
+
+                    if (answer < 0 || answer > 100) {
+                        // 结果不在范围内，重来一题
+                        continue;
+                    }
+
+                    // 拼接表达式，如 “a + b - c”
+                    question = String(nums[0]);
+                    for (let i = 1; i < termCount; i++) {
+                        question += ` ${ops[i - 1]} ${nums[i]}`;
+                    }
+                    break;
+                }
+            } else {
+                // 噩梦：两个 10 以内的乘除法数 + 一个 100 以内的数 做加减
+                // 形如 “a × b + c” 或 “(a × b) ÷ b - c”，结果控制在 0~100
+                const makeMulOrDiv = () => {
+                    const a = Math.floor(Math.random() * 10) + 1; // 1~10
+                    const b = Math.floor(Math.random() * 10) + 1; // 1~10
+                    const useMul = Math.random() > 0.5;
+                    if (useMul) {
+                        return {
+                            expr: `${a} × ${b}`,
+                            value: a * b
+                        };
+                    } else {
+                        // 生成整除的除法：先乘再除，保证是整数
+                        const product = a * b;
+                        return {
+                            expr: `${product} ÷ ${b}`,
+                            value: a
+                        };
+                    }
+                };
+
+                while (true) {
+                    const part = makeMulOrDiv();
+                    const extra = Math.floor(Math.random() * 101); // 0~100
+                    const op = Math.random() > 0.5 ? '+' : '-';
+
+                    let result = op === '+' ? part.value + extra : part.value - extra;
+
+                    if (result >= 0 && result <= 100) {
+                        answer = result;
+                        question = `${part.expr} ${op} ${extra}`;
+                        break;
+                    }
+                }
+            }
+
+            return { question, answer };
+        }
+
+        // 初始化题目
+        function initializeQuestions() {
+            const timeLimit = parseInt(document.getElementById('timeLimit').value) || 60;
+            const questionCount = parseInt(document.getElementById('questionCount').value) || 10;
+            const diffRadios = document.querySelectorAll('input[name="difficulty"]');
+            let selectedDiff = 'easy';
+            diffRadios.forEach(radio => {
+                if (radio.checked) selectedDiff = radio.value;
+            });
+            
+            gameState.timeLeft = timeLimit;
+            gameState.totalQuestions = questionCount;
+            gameState.difficulty = selectedDiff;
+            gameState.questions = [];
+            gameState.answers = new Array(questionCount).fill(null);
+            
+            for (let i = 0; i < questionCount; i++) {
+                gameState.questions.push(generateQuestion());
+            }
+            
+            document.getElementById('timer').textContent = timeLimit;
+            document.getElementById('score').textContent = '0';
+            document.getElementById('progress').textContent = `准备开始挑战！共${questionCount}题`;
+        }
+
+        // 显示当前题目
+        function showCurrentQuestion() {
+            if (gameState.currentQuestion < gameState.totalQuestions) {
+                const currentQ = gameState.questions[gameState.currentQuestion];
+                document.getElementById('question').textContent = `${currentQ.question} = ?`;
+                document.getElementById('progress').textContent = `第${gameState.currentQuestion + 1}题/共${gameState.totalQuestions}题`;
+                
+                const answerInput = document.getElementById('answerInput');
+                answerInput.style.display = 'block';
+                answerInput.value = '';
+                answerInput.focus();
+                answerInput.select();
+                
+                document.getElementById('submitBtn').style.display = 'inline-block';
+                document.getElementById('nextBtn').style.display = 'none';
+                document.getElementById('feedback').textContent = '';
+            } else {
+                endGame();
+            }
+        }
+
+        // 开始游戏
+        function startGame() {
+            if (gameState.gameStarted) return;
+            
+            initializeQuestions();
+            gameState.gameStarted = true;
+            gameState.score = 0;
+            gameState.currentQuestion = 0;
+            
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('timer').textContent = gameState.timeLeft;
+            document.getElementById('score').textContent = '0';
+            
+            // 开始计时
+            gameState.timer = setInterval(() => {
+                gameState.timeLeft--;
+                document.getElementById('timer').textContent = gameState.timeLeft;
+                
+                if (gameState.timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+            
+            showCurrentQuestion();
+        }
+
+        // 提交答案
+        function submitAnswer() {
+            const userAnswer = parseInt(document.getElementById('answerInput').value);
+            const currentQ = gameState.questions[gameState.currentQuestion];
+            
+            gameState.answers[gameState.currentQuestion] = userAnswer;
+            
+            if (userAnswer === currentQ.answer) {
+                // 答对了
+                gameState.score += 10;
+                document.getElementById('score').textContent = gameState.score;
+                document.getElementById('feedback').textContent = '答对了! 🎉';
+                document.getElementById('feedback').className = 'feedback correct';
+                playCorrectSound();
+                
+                // 显示动画
+                showSuccessAnimation();
+            } else {
+                // 答错了
+                document.getElementById('feedback').textContent = `答错了! 正确答案是 ${currentQ.answer} 😢`;
+                document.getElementById('feedback').className = 'feedback incorrect';
+                playIncorrectSound();
+            }
+            
+            document.getElementById('answerInput').style.display = 'none';
+            document.getElementById('submitBtn').style.display = 'none';
+
+            // 速算模式：短暂停顿后自动进入下一题
+            setTimeout(() => {
+                // 仅在游戏仍在进行且还有题目时才切到下一题
+                if (gameState.gameStarted && gameState.currentQuestion < gameState.totalQuestions - 1) {
+                    nextQuestion();
+                } else if (gameState.gameStarted && gameState.currentQuestion === gameState.totalQuestions - 1) {
+                    // 最后一题答完后由 nextQuestion/endGame 逻辑收尾
+                    nextQuestion();
+                }
+            }, 1000);
+        }
+
+        // 下一题
+        function nextQuestion() {
+            gameState.currentQuestion++;
+            showCurrentQuestion();
+        }
+
+        // 结束游戏
+        function endGame() {
+            clearInterval(gameState.timer);
+            gameState.gameStarted = false;
+            
+            const gameArea = document.getElementById('gameArea');
+            if (gameArea) gameArea.style.display = 'none';
+            document.getElementById('resultArea').style.display = 'block';
+            
+            // 计算最终得分
+            let correctCount = 0;
+            for (let i = 0; i < gameState.totalQuestions; i++) {
+                if (gameState.answers[i] === gameState.questions[i].answer) {
+                    correctCount++;
+                }
+            }
+            
+            const finalScore = correctCount * 10;
+            document.getElementById('finalScore').textContent = finalScore;
+            
+            // 显示结果信息
+            let message = '';
+            let messageClass = '';
+            
+            if (finalScore >= 80) {
+                message = '太棒了! 数学小天才! 🌟';
+                messageClass = 'success';
+                playWinSound();
+                showCelebrationAnimation();
+            } else if (finalScore >= 60) {
+                message = '不错哦! 继续加油! 💪';
+                messageClass = 'good';
+                playWinSound();
+            } else {
+                message = '继续努力! 你会更棒的! 🌈';
+                messageClass = 'encouraging';
+            }
+            
+            document.getElementById('resultMessage').textContent = message;
+            document.getElementById('resultMessage').className = `result-message ${messageClass}`;
+            
+            // 生成错题回顾
+            generateReview();
+
+            // 更新并展示历史成绩
+            updateHistory(finalScore);
+            renderHistory();
+        }
+
+        // 历史成绩：按难度记录最近两次分数
+        function loadHistory() {
+            try {
+                const raw = localStorage.getItem('fastMathHistory');
+                if (!raw) return {
+                    easy: [],
+                    medium: [],
+                    hard: [],
+                    nightmare: []
+                };
+                const parsed = JSON.parse(raw);
+                return {
+                    easy: parsed.easy || [],
+                    medium: parsed.medium || [],
+                    hard: parsed.hard || [],
+                    nightmare: parsed.nightmare || []
+                };
+            } catch (e) {
+                return {
+                    easy: [],
+                    medium: [],
+                    hard: [],
+                    nightmare: []
+                };
+            }
+        }
+
+        function saveHistory(history) {
+            try {
+                localStorage.setItem('fastMathHistory', JSON.stringify(history));
+            } catch (e) {
+                // 忽略存储失败
+            }
+        }
+
+        // 更新当前难度的历史记录（仅保留最近两次）
+        function updateHistory(currentScore) {
+            const history = loadHistory();
+            const diff = gameState.difficulty || 'easy';
+            const arr = history[diff] || [];
+
+            arr.push(currentScore);
+            if (arr.length > 2) {
+                arr.shift(); // 仅保留最近两次
+            }
+
+            history[diff] = arr;
+            saveHistory(history);
+        }
+
+        // 渲染历史成绩到页面
+        function renderHistory() {
+            const historyList = document.getElementById('historyList');
+            if (!historyList) return;
+
+            const history = loadHistory();
+            const levels = [
+                { key: 'easy', label: '初级' },
+                { key: 'medium', label: '中级' },
+                { key: 'hard', label: '高级' },
+                { key: 'nightmare', label: '噩梦' }
+            ];
+
+            historyList.innerHTML = '';
+
+            levels.forEach(level => {
+                const scores = history[level.key] || [];
+                let text = '暂无记录';
+                let statusClass = 'same';
+
+                if (scores.length === 1) {
+                    text = `当前：${scores[0]} 分`;
+                    statusClass = 'same';
+                } else if (scores.length === 2) {
+                    const prev = scores[0];
+                    const curr = scores[1];
+                    if (curr > prev) {
+                        text = `上次：${prev} 分，本次：${curr} 分（进步了 ${curr - prev} 分）`;
+                        statusClass = 'up';
+                    } else if (curr < prev) {
+                        text = `上次：${prev} 分，本次：${curr} 分（退步了 ${prev - curr} 分）`;
+                        statusClass = 'down';
+                    } else {
+                        text = `上次：${prev} 分，本次：${curr} 分（保持不变）`;
+                        statusClass = 'same';
+                    }
+                }
+
+                const row = document.createElement('div');
+                row.className = 'history-row';
+                row.innerHTML = `
+                    <div class="history-level">${level.label}</div>
+                    <div class="history-status ${statusClass}">${text}</div>
+                `;
+                historyList.appendChild(row);
+            });
+        }
+
+        // 生成错题回顾
+        function generateReview() {
+            const reviewList = document.getElementById('reviewList');
+            reviewList.innerHTML = '';
+            
+            for (let i = 0; i < gameState.totalQuestions; i++) {
+                const q = gameState.questions[i];
+                const userAnswer = gameState.answers[i];
+                const isCorrect = userAnswer === q.answer;
+                const isUnanswered = userAnswer === null;
+                
+                const reviewItem = document.createElement('div');
+                reviewItem.className = `review-item ${
+                    isCorrect ? 'review-correct' : 
+                    isUnanswered ? 'review-unanswered' : 'review-incorrect'
+                }`;
+                
+                if (isCorrect) {
+                    reviewItem.innerHTML = `
+                        <strong>第${i + 1}题:</strong> ${q.question} = ${q.answer}
+                        <br><span style="color: #28a745;">✓ 正确!</span>
+                    `;
+                } else if (isUnanswered) {
+                    reviewItem.innerHTML = `
+                        <strong>第${i + 1}题:</strong> ${q.question} = ?
+                        <br><span style="color: #6c757d;">{?} 未作答</span>
+                    `;
+                } else {
+                    reviewItem.innerHTML = `
+                        <strong>第${i + 1}题:</strong> ${q.question} = ${q.answer}
+                        <br><span style="color: #dc3545;">✗ 你的答案: ${userAnswer}</span>
+                    `;
+                }
+                
+                reviewList.appendChild(reviewItem);
+            }
+        }
+
+        // 显示成功动画
+        function showSuccessAnimation() {
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    star.textContent = '⭐';
+                    star.style.left = `${Math.random() * 100}%`;
+                    star.style.top = `${Math.random() * 100}%`;
+                    star.style.color = `hsl(${Math.random() * 360}, 70%, 60%)`;
+                    
+                    document.body.appendChild(star);
+                    
+                    setTimeout(() => {
+                        star.remove();
+                    }, 1000);
+                }, i * 100);
+            }
+        }
+
+        // 显示庆祝动画
+        function showCelebrationAnimation() {
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.textContent = ['🎉', '🌟', '✨', '💫', '🎈'][Math.floor(Math.random() * 5)];
+                    confetti.style.position = 'fixed';
+                    confetti.style.fontSize = '2em';
+                    confetti.style.left = `${Math.random() * 100}%`;
+                    confetti.style.top = `${Math.random() * 100}%`;
+                    confetti.style.zIndex = '9999';
+                    confetti.style.animation = `confetti ${Math.random() * 2 + 1}s ease-out forwards`;
+                    confetti.style.opacity = '0.8';
+                    
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 3000);
+                }, i * 50);
+            }
+        }
+
+        // 事件监听器
+        document.getElementById('startBtn').addEventListener('click', startGame);
+        document.getElementById('submitBtn').addEventListener('click', submitAnswer);
+        document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+
+        // 回车键提交答案
+        document.getElementById('answerInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                if (document.getElementById('submitBtn').style.display !== 'none') {
+                    submitAnswer();
+                } else if (document.getElementById('nextBtn').style.display !== 'none') {
+                    nextQuestion();
+                }
+            }
+        });
+
+        // 重置游戏
+        function resetGame() {
+            clearInterval(gameState.timer);
+
+            // 按当前设置重置基础状态
+            const timeLimit = parseInt(document.getElementById('timeLimit').value) || 60;
+            const questionCount = parseInt(document.getElementById('questionCount').value) || 10;
+
+            gameState = {
+                timeLeft: timeLimit,
+                score: 0,
+                currentQuestion: 0,
+                totalQuestions: questionCount,
+                questions: [],
+                answers: [],
+                timer: null,
+                gameStarted: false
+            };
+
+            // 重新初始化题目列表
+            initializeQuestions();
+
+            const gameArea = document.getElementById('gameArea');
+            const resultArea = document.getElementById('resultArea');
+            if (gameArea) gameArea.style.display = 'block';
+            if (resultArea) resultArea.style.display = 'none';
+
+            document.getElementById('timer').textContent = gameState.timeLeft;
+            document.getElementById('score').textContent = '0';
+            document.getElementById('progress').textContent = `准备开始挑战！共${gameState.totalQuestions}题`;
+            document.getElementById('question').textContent = '点击开始挑战';
+
+            const answerInput = document.getElementById('answerInput');
+            answerInput.style.display = 'none';
+            answerInput.value = '';
+
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = '';
+            feedback.className = 'feedback';
+
+            document.getElementById('startBtn').style.display = 'inline-block';
+            document.getElementById('submitBtn').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'none';
+
+            document.getElementById('reviewList').innerHTML = '';
+            const resultMessage = document.getElementById('resultMessage');
+            resultMessage.textContent = '';
+            resultMessage.className = 'result-message';
+            document.getElementById('finalScore').textContent = '';
+        }
+
+        // 重新开始按钮
+        document.getElementById('restartBtn').addEventListener('click', resetGame);
+
+        // 页面加载时就渲染一次历史成绩，保证刷新后也能看到历史记录
+        renderHistory();
+    </script>
+    <script src="fullscreen-btn.js"></script>
+</body>
+</html>

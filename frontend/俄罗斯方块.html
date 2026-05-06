@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>俄罗斯方块</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 16px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at top, #0f172a 0, #020617 45%, #000 100%);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+            color: #e5e7eb;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 420px;
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 18px;
+            padding: 16px 16px 18px;
+            box-shadow:
+                0 18px 40px rgba(15, 23, 42, 0.9),
+                0 0 0 1px rgba(148, 163, 184, 0.35);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            color: #a5b4fc;
+            text-shadow: 0 0 16px rgba(129, 140, 248, 0.8);
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 8px;
+        }
+
+        .stat-box {
+            min-width: 70px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            background: #020617;
+            border: 1px solid rgba(148, 163, 184, 0.8);
+            font-size: 11px;
+            text-align: center;
+        }
+
+        .stat-box .value {
+            display: block;
+            font-size: 18px;
+            font-weight: 700;
+            color: #e5e7eb;
+        }
+
+        .controls-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hint {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .btn-main {
+            border: none;
+            border-radius: 999px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #22c55e, #4ade80);
+            color: #022c22;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 0 0 0 1px rgba(22, 163, 74, 0.8);
+            transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.1s ease;
+        }
+
+        .btn-main:active {
+            transform: translateY(1px) scale(0.97);
+            box-shadow: 0 0 0 1px rgba(226, 232, 240, 0.9);
+        }
+
+        .board-wrapper {
+            display: flex;
+            justify-content: center;
+        }
+
+        #gameCanvas {
+            width: min(70vw, 240px);
+            max-width: 100%;
+            height: auto;
+            background: #020617;
+            border-radius: 10px;
+            border: 1px solid rgba(148, 163, 184, 0.8);
+        }
+
+        .mobile-controls {
+            margin-top: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .mobile-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn-control {
+            border: none;
+            border-radius: 999px;
+            padding: 8px 14px;
+            min-width: 44px;
+            min-height: 44px;
+            background: rgba(15, 23, 42, 0.95);
+            color: #e5e7eb;
+            font-size: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.6);
+            cursor: pointer;
+            transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.1s ease;
+        }
+
+        .btn-control:active {
+            transform: translateY(1px) scale(0.97);
+            box-shadow: 0 0 0 1px rgba(226, 232, 240, 0.9);
+        }
+
+        .status {
+            margin-top: 4px;
+            font-size: 11px;
+            color: #9ca3af;
+            text-align: center;
+        }
+
+        @media (max-width: 480px) {
+            .title {
+                font-size: 20px;
+            }
+
+            .game-container {
+                padding: 14px 12px 16px;
+            }
+        }
+
+        /* 成就按钮 */
+        .btn-achieve {
+            border: none;
+            border-radius: 999px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1a1a2e;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* 成就弹窗 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 420px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content h2 {
+            margin: 0 0 16px;
+            color: #fbbf24;
+            text-align: center;
+            font-size: 20px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: none;
+            border: none;
+            color: #9ca3af;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+        }
+
+        .achieve-progress {
+            text-align: center;
+            color: #9ca3af;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .achievement-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 10px 6px;
+            text-align: center;
+            opacity: 0.5;
+            transition: all 0.3s;
+        }
+
+        .achievement-item.unlocked {
+            opacity: 1;
+            background: rgba(251, 191, 36, 0.15);
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+        }
+
+        .achievement-item .icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .achievement-item .name {
+            font-size: 10px;
+            font-weight: 600;
+            color: #e5e7eb;
+            margin-bottom: 2px;
+        }
+
+        .achievement-item .desc {
+            font-size: 8px;
+            color: #6b7280;
+        }
+
+        .achievement-item.unlocked .desc {
+            color: #fbbf24;
+        }
+
+        .clear-btn {
+            margin-top: 16px;
+            width: 100%;
+            padding: 10px;
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .clear-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        /* 成就解锁通知 */
+        .achievement-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-150px);
+            z-index: 2000;
+            opacity: 0;
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .achievement-toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 2px solid #fbbf24;
+            border-radius: 12px;
+            padding: 10px 16px;
+            box-shadow: 0 8px 32px rgba(251, 191, 36, 0.3);
+        }
+
+        .toast-icon {
+            font-size: 1.8rem;
+        }
+
+        .toast-info {
+            text-align: left;
+        }
+
+        .toast-title {
+            font-size: 11px;
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        .toast-name {
+            font-size: 13px;
+            color: #fff;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header-row">
+            <div>
+                <div class="title">俄罗斯方块</div>
+                <div class="subtitle">消除整行方块，获取高分！</div>
+            </div>
+            <div class="stats">
+                <div class="stat-box">
+                    分数
+                    <span class="value" id="score">0</span>
+                </div>
+                <div class="stat-box">
+                    行数
+                    <span class="value" id="lines">0</span>
+                </div>
+            </div>
+        </div>
+        <div class="controls-row">
+            <button class="btn-main" id="btnRestart">新游戏</button>
+            <button class="btn-achieve" id="btnAchieve">🏆 成就</button>
+            <div class="hint">
+                电脑：方向键移动，↑ 旋转<br />
+                手机：点击下面按钮
+            </div>
+        </div>
+        <div class="board-wrapper">
+            <canvas id="gameCanvas" width="200" height="400"></canvas>
+        </div>
+        <div class="mobile-controls">
+            <div class="mobile-row">
+                <button class="btn-control" data-action="rotate">⟳</button>
+            </div>
+            <div class="mobile-row">
+                <button class="btn-control" data-action="left">◀</button>
+                <button class="btn-control" data-action="down">▼</button>
+                <button class="btn-control" data-action="right">▶</button>
+                <button class="btn-control" data-action="drop">⏬</button>
+            </div>
+        </div>
+        <div class="status" id="status">让方块堆叠并消除整行，试着坚持更久！</div>
+    </div>
+
+    <!-- 成就弹窗 -->
+    <div class="modal" id="achieveModal">
+        <div class="modal-content">
+            <button class="close-btn" id="closeModal">×</button>
+            <h2>🏆 游戏成就</h2>
+            <p class="achieve-progress" id="achieveProgress"></p>
+            <div class="achievements-grid" id="achieveContent"></div>
+            <button class="clear-btn" id="clearDataBtn">🗑️ 清除所有记录</button>
+        </div>
+    </div>
+
+    <!-- 成就解锁通知 -->
+    <div class="achievement-toast" id="achievementToast">
+        <div class="toast-content">
+            <div class="toast-icon" id="toastIcon">🏆</div>
+            <div class="toast-info">
+                <div class="toast-title">成就解锁！</div>
+                <div class="toast-name" id="toastName"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const linesEl = document.getElementById('lines');
+        const statusEl = document.getElementById('status');
+        const btnRestart = document.getElementById('btnRestart');
+        const controlButtons = document.querySelectorAll('.btn-control');
+        const btnAchieve = document.getElementById('btnAchieve');
+        const achieveModal = document.getElementById('achieveModal');
+
+        // 成就定义
+        const achievements = [
+            { id: 'first_game', name: '初来乍到', desc: '完成第一局游戏', icon: '🎮' },
+            { id: 'lines_10', name: '消除新手', desc: '累计消除10行', icon: '📊' },
+            { id: 'lines_50', name: '消除高手', desc: '累计消除50行', icon: '📈' },
+            { id: 'lines_100', name: '消除大师', desc: '累计消除100行', icon: '🏅' },
+            { id: 'score_1000', name: '千分王者', desc: '单局获得1000分', icon: '👑' },
+            { id: 'score_5000', name: '五千传奇', desc: '单局获得5000分', icon: '💎' },
+            { id: 'tetris', name: '完美四消', desc: '一次消除4行', icon: '⚡' },
+            { id: 'single_40', name: '单局辉煌', desc: '单局消除40行', icon: '🌟' },
+            { id: 'games_10', name: '方块狂人', desc: '累计游戏10局', icon: '🔥' },
+            { id: 'games_50', name: '方块大师', desc: '累计游戏50局', icon: '💪' },
+            { id: 'speed_master', name: '极速闪电', desc: '达到最高速度', icon: '🚀' },
+            { id: 'survivor', name: '持久战士', desc: '单局超过3分钟', icon: '⏱️' }
+        ];
+
+        // 加载数据
+        function loadGameData() {
+            const saved = localStorage.getItem('tetris_data');
+            if (saved) return JSON.parse(saved);
+            return { totalLines: 0, totalGames: 0, achievements: [], bestScore: 0 };
+        }
+
+        function saveGameData(data) {
+            localStorage.setItem('tetris_data', JSON.stringify(data));
+        }
+
+        let gameData = loadGameData();
+
+        // 成就通知队列
+        let toastQueue = [];
+        let isShowingToast = false;
+
+        function showAchievementToast(achievement) {
+            toastQueue.push(achievement);
+            processToastQueue();
+        }
+
+        function processToastQueue() {
+            if (isShowingToast || toastQueue.length === 0) return;
+            isShowingToast = true;
+            const achievement = toastQueue.shift();
+            const toast = document.getElementById('achievementToast');
+            document.getElementById('toastIcon').textContent = achievement.icon;
+            document.getElementById('toastName').textContent = achievement.name;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    isShowingToast = false;
+                    processToastQueue();
+                }, 500);
+            }, 3000);
+        }
+
+        // 解锁成就
+        function unlockAchievement(id) {
+            if (gameData.achievements.includes(id)) return;
+            gameData.achievements.push(id);
+            saveGameData(gameData);
+            const a = achievements.find(x => x.id === id);
+            if (a) showAchievementToast(a);
+        }
+
+        // 显示成就弹窗
+        function showAchievements() {
+            const count = gameData.achievements ? gameData.achievements.length : 0;
+            document.getElementById('achieveProgress').textContent = `已解锁: ${count}/${achievements.length}`;
+            document.getElementById('achieveContent').innerHTML = achievements.map(a => {
+                const unlocked = gameData.achievements && gameData.achievements.includes(a.id);
+                return `
+                    <div class="achievement-item ${unlocked ? 'unlocked' : ''}">
+                        <div class="icon">${unlocked ? a.icon : '🔒'}</div>
+                        <div class="name">${a.name}</div>
+                        <div class="desc">${a.desc}</div>
+                    </div>
+                `;
+            }).join('');
+            achieveModal.classList.add('show');
+        }
+
+        btnAchieve.addEventListener('click', showAchievements);
+        document.getElementById('closeModal').addEventListener('click', () => achieveModal.classList.remove('show'));
+        achieveModal.addEventListener('click', (e) => {
+            if (e.target === achieveModal) achieveModal.classList.remove('show');
+        });
+
+        // 清除数据
+        document.getElementById('clearDataBtn').addEventListener('click', () => {
+            if (confirm('确定要清除所有记录吗？\n包括成就进度，此操作不可恢复！')) {
+                localStorage.removeItem('tetris_data');
+                gameData = { totalLines: 0, totalGames: 0, achievements: [], bestScore: 0 };
+                achieveModal.classList.remove('show');
+            }
+        });
+
+        const COLS = 10;
+        const ROWS = 20;
+        const BLOCK_SIZE = 20; // canvas 200x400
+
+        const COLORS = [
+            '#020617', // empty
+            '#22c55e',
+            '#3b82f6',
+            '#f97316',
+            '#eab308',
+            '#a855f7',
+            '#ec4899',
+            '#f43f5e',
+        ];
+
+        const SHAPES = [
+            // I
+            [
+                [0, 0, 0, 0],
+                [1, 1, 1, 1],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+            ],
+            // J
+            [
+                [2, 0, 0],
+                [2, 2, 2],
+                [0, 0, 0],
+            ],
+            // L
+            [
+                [0, 0, 3],
+                [3, 3, 3],
+                [0, 0, 0],
+            ],
+            // O
+            [
+                [4, 4],
+                [4, 4],
+            ],
+            // S
+            [
+                [0, 5, 5],
+                [5, 5, 0],
+                [0, 0, 0],
+            ],
+            // T
+            [
+                [0, 6, 0],
+                [6, 6, 6],
+                [0, 0, 0],
+            ],
+            // Z
+            [
+                [7, 7, 0],
+                [0, 7, 7],
+                [0, 0, 0],
+            ],
+        ];
+
+        let board = [];
+        let current = null; // {x,y,shape}
+        let score = 0;
+        let lines = 0;
+        let dropInterval = 600;
+        let lastDropTime = 0;
+        let gameOver = false;
+        let animationFrameId = null;
+        let gameStartTime = 0; // 游戏开始时间
+
+        function createBoard() {
+            board = [];
+            for (let y = 0; y < ROWS; y++) {
+                const row = [];
+                for (let x = 0; x < COLS; x++) {
+                    row.push(0);
+                }
+                board.push(row);
+            }
+        }
+
+        function randomPiece() {
+            const index = Math.floor(Math.random() * SHAPES.length);
+            const shape = SHAPES[index];
+            return {
+                x: Math.floor((COLS - shape[0].length) / 2),
+                y: 0,
+                shape: shape.map(row => row.slice()),
+            };
+        }
+
+        function collide(board, piece) {
+            const { shape, x: px, y: py } = piece;
+            for (let y = 0; y < shape.length; y++) {
+                for (let x = 0; x < shape[y].length; x++) {
+                    if (shape[y][x] !== 0) {
+                        const nx = px + x;
+                        const ny = py + y;
+                        if (
+                            nx < 0 ||
+                            nx >= COLS ||
+                            ny >= ROWS ||
+                            (ny >= 0 && board[ny][nx] !== 0)
+                        ) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        function merge(board, piece) {
+            const { shape, x: px, y: py } = piece;
+            for (let y = 0; y < shape.length; y++) {
+                for (let x = 0; x < shape[y].length; x++) {
+                    if (shape[y][x] !== 0) {
+                        const nx = px + x;
+                        const ny = py + y;
+                        if (ny >= 0 && ny < ROWS && nx >= 0 && nx < COLS) {
+                            board[ny][nx] = shape[y][x];
+                        }
+                    }
+                }
+            }
+        }
+
+        function rotateMatrix(matrix) {
+            const h = matrix.length;
+            const w = matrix[0].length;
+            const res = [];
+            for (let x = 0; x < w; x++) {
+                const row = [];
+                for (let y = h - 1; y >= 0; y--) {
+                    row.push(matrix[y][x]);
+                }
+                res.push(row);
+            }
+            return res;
+        }
+
+        function clearLines() {
+            let count = 0;
+            for (let y = ROWS - 1; y >= 0; y--) {
+                if (board[y].every(v => v !== 0)) {
+                    board.splice(y, 1);
+                    board.unshift(new Array(COLS).fill(0));
+                    count++;
+                    y++; // 重新检查当前行
+                }
+            }
+            if (count > 0) {
+                lines += count;
+                gameData.totalLines += count;
+                saveGameData(gameData);
+                
+                const lineScore = [0, 100, 300, 500, 800][count] || 0;
+                score += lineScore;
+                // 提升速度，最低 150ms
+                dropInterval = Math.max(150, dropInterval - 20 * count);
+
+                // 检查成就
+                if (count === 4) unlockAchievement('tetris');
+                if (gameData.totalLines >= 10) unlockAchievement('lines_10');
+                if (gameData.totalLines >= 50) unlockAchievement('lines_50');
+                if (gameData.totalLines >= 100) unlockAchievement('lines_100');
+                if (score >= 1000) unlockAchievement('score_1000');
+                if (score >= 5000) unlockAchievement('score_5000');
+                if (lines >= 40) unlockAchievement('single_40');
+                if (dropInterval <= 150) unlockAchievement('speed_master');
+            }
+        }
+
+        function updateUI() {
+            scoreEl.textContent = score;
+            linesEl.textContent = lines;
+        }
+
+        function drawCell(x, y, value) {
+            ctx.fillStyle = value === 0 ? '#020617' : COLORS[value];
+            ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+            ctx.strokeStyle = 'rgba(15,23,42,0.9)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 画场地
+            for (let y = 0; y < ROWS; y++) {
+                for (let x = 0; x < COLS; x++) {
+                    drawCell(x, y, board[y][x]);
+                }
+            }
+
+            // 画当前方块
+            if (current) {
+                const { shape, x: px, y: py } = current;
+                for (let y = 0; y < shape.length; y++) {
+                    for (let x = 0; x < shape[y].length; x++) {
+                        const v = shape[y][x];
+                        if (v !== 0) {
+                            const nx = px + x;
+                            const ny = py + y;
+                            if (ny >= 0) {
+                                drawCell(nx, ny, v);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        function resetGame() {
+            createBoard();
+            current = randomPiece();
+            score = 0;
+            lines = 0;
+            dropInterval = 600;
+            gameOver = false;
+            gameStartTime = performance.now(); // 记录开始时间
+            updateUI();
+            if (statusEl) {
+                statusEl.textContent = '让方块堆叠并消除整行，试着坚持更久！';
+            }
+            if (animationFrameId !== null) {
+                cancelAnimationFrame(animationFrameId);
+            }
+            lastDropTime = performance.now();
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        function hardDrop() {
+            if (gameOver || !current) return;
+            while (true) {
+                const test = { ...current, y: current.y + 1 };
+                if (collide(board, test)) {
+                    lockPiece();
+                    break;
+                } else {
+                    current.y++;
+                }
+            }
+        }
+
+        function lockPiece() {
+            merge(board, current);
+            clearLines();
+            updateUI();
+            current = randomPiece();
+            if (collide(board, current)) {
+                gameOver = true;
+                
+                // 游戏结束，检查成就
+                gameData.totalGames++;
+                saveGameData(gameData);
+                
+                unlockAchievement('first_game');
+                if (gameData.totalGames >= 10) unlockAchievement('games_10');
+                if (gameData.totalGames >= 50) unlockAchievement('games_50');
+                
+                // 检查游戏时长
+                const playTime = (performance.now() - gameStartTime) / 1000;
+                if (playTime >= 180) unlockAchievement('survivor'); // 3分钟
+                
+                if (statusEl) {
+                    statusEl.textContent = '游戏结束，点击"新游戏"重新开始。';
+                }
+            }
+        }
+
+        function move(dx, dy) {
+            if (gameOver || !current) return;
+            const test = { ...current, x: current.x + dx, y: current.y + dy };
+            if (!collide(board, test)) {
+                current = test;
+            } else if (dy === 1) {
+                // 下落受阻，锁定
+                lockPiece();
+            }
+        }
+
+        function rotate() {
+            if (gameOver || !current) return;
+            const rotated = rotateMatrix(current.shape);
+            const test = { ...current, shape: rotated };
+            if (!collide(board, test)) {
+                current = test;
+            }
+        }
+
+        function handleAction(action) {
+            switch (action) {
+                case 'left':
+                    move(-1, 0);
+                    break;
+                case 'right':
+                    move(1, 0);
+                    break;
+                case 'down':
+                    move(0, 1);
+                    break;
+                case 'rotate':
+                    rotate();
+                    break;
+                case 'drop':
+                    hardDrop();
+                    break;
+            }
+        }
+
+        function gameLoop(timestamp) {
+            const delta = timestamp - lastDropTime;
+            if (!gameOver && delta > dropInterval) {
+                move(0, 1);
+                lastDropTime = timestamp;
+            }
+            draw();
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (gameOver && e.key === 'Enter') {
+                resetGame();
+                return;
+            }
+            switch (e.key) {
+                case 'ArrowLeft':
+                    handleAction('left');
+                    e.preventDefault();
+                    break;
+                case 'ArrowRight':
+                    handleAction('right');
+                    e.preventDefault();
+                    break;
+                case 'ArrowDown':
+                    handleAction('down');
+                    e.preventDefault();
+                    break;
+                case 'ArrowUp':
+                    handleAction('rotate');
+                    e.preventDefault();
+                    break;
+                case ' ': // 空格硬降
+                    handleAction('drop');
+                    e.preventDefault();
+                    break;
+            }
+        });
+
+        if (btnRestart) {
+            btnRestart.addEventListener('click', () => {
+                resetGame();
+            });
+        }
+
+        if (controlButtons.length) {
+            controlButtons.forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    const action = btn.getAttribute('data-action');
+                    if (action) {
+                        handleAction(action);
+                    }
+                });
+            });
+        }
+
+        // 初始化
+        resetGame();
+    </script>
+    <script src="fullscreen-btn.js"></script>
+</body>
+</html>

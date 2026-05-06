@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>记忆翻牌游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            padding: 16px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.6em;
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+
+        .header-actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .achieve-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1f2937;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .achieve-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+        }
+
+        .game-area {
+            padding: 20px;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            background: linear-gradient(135deg, #f0f4ff, #e8f4fd);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            border: 2px solid #c7d2fe;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.75em;
+            color: #6b7280;
+            margin-bottom: 2px;
+        }
+
+        .stat-value {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+
+        .level-info {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .level-title {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 4px;
+        }
+
+        .level-desc {
+            font-size: 0.85em;
+            color: #6b7280;
+        }
+
+        .game-board {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .card {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .card:hover:not(.flipped):not(.matched) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card.matched {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-size: 1.5em;
+        }
+
+        .card-back {
+            background: white;
+            transform: rotateY(180deg);
+            border: 3px solid #e5e7eb;
+        }
+
+        .card.matched .card-back {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.35);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        /* 关卡选择 */
+        .level-select {
+            display: none;
+            padding: 20px;
+        }
+
+        .level-select.show {
+            display: block;
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .level-btn {
+            padding: 20px 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .level-btn:hover:not(.locked) {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .level-btn.current {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f0f4ff, #e8f4fd);
+        }
+
+        .level-btn.completed {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+        }
+
+        .level-btn.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .level-num {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .level-btn.completed .level-num {
+            color: #10b981;
+        }
+
+        .level-stars {
+            font-size: 0.9em;
+            margin-top: 4px;
+        }
+
+        /* 胜利弹窗 */
+        .win-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .win-modal.show {
+            display: flex;
+        }
+
+        .win-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            max-width: 320px;
+            width: 90%;
+        }
+
+        .win-icon {
+            font-size: 4em;
+            margin-bottom: 10px;
+        }
+
+        .win-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .win-stats {
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+        .win-stars {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+
+        .win-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .win-buttons .btn {
+            flex: 1;
+        }
+
+        /* 成就弹窗 */
+        .achievement-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .achievement-modal.show {
+            display: flex;
+        }
+
+        .achievement-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 420px;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .achievement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 24px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1f2937;
+        }
+
+        .achievement-header h2 {
+            margin: 0;
+            font-size: 1.2em;
+        }
+
+        .achievement-header .close-btn {
+            background: none;
+            border: none;
+            color: #1f2937;
+            font-size: 1.6em;
+            cursor: pointer;
+        }
+
+        .achievement-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .achievement-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+        }
+
+        .achievement-item.unlocked {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            border-color: #22c55e;
+        }
+
+        .achievement-item.locked {
+            opacity: 0.5;
+        }
+
+        .achievement-icon {
+            font-size: 2em;
+            width: 50px;
+            text-align: center;
+        }
+
+        .achievement-info {
+            flex: 1;
+        }
+
+        .achievement-name {
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .achievement-desc {
+            font-size: 0.85em;
+            color: #6b7280;
+        }
+
+        .achievement-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1f2937;
+            padding: 14px 28px;
+            border-radius: 30px;
+            box-shadow: 0 8px 30px rgba(251, 191, 36, 0.5);
+            z-index: 2000;
+            animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s;
+            font-weight: 600;
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        @keyframes toastOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        @media (max-width: 400px) {
+            .game-board {
+                gap: 6px;
+            }
+            .card {
+                border-radius: 8px;
+            }
+            .card-back {
+                font-size: 0.85em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🃏 记忆翻牌</h1>
+            <p>翻开卡牌，找出所有配对</p>
+            <div class="header-actions">
+                <button class="achieve-btn" onclick="showLevelSelect()">📋 关卡</button>
+                <button class="achieve-btn" onclick="showAchievementModal()">🏆 成就</button>
+            </div>
+        </div>
+
+        <!-- 关卡选择 -->
+        <div class="level-select" id="levelSelect">
+            <div class="level-info">
+                <div class="level-title">选择关卡</div>
+                <div class="level-desc">完成关卡解锁下一关</div>
+            </div>
+            <div class="level-grid" id="levelGrid"></div>
+            <div class="controls" style="margin-top: 16px;">
+                <button class="btn btn-secondary" onclick="hideLevelSelect()">返回游戏</button>
+            </div>
+        </div>
+
+        <!-- 游戏区域 -->
+        <div class="game-area" id="gameArea">
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-label">关卡</div>
+                    <div class="stat-value" id="currentLevel">1</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">步数</div>
+                    <div class="stat-value" id="moves">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">配对</div>
+                    <div class="stat-value" id="matched">0/6</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">时间</div>
+                    <div class="stat-value" id="timer">0:00</div>
+                </div>
+            </div>
+
+            <div class="level-info">
+                <div class="level-title" id="levelTitle">第 1 关</div>
+                <div class="level-desc" id="levelDesc">3×4 简单模式</div>
+            </div>
+
+            <div class="game-board" id="gameBoard"></div>
+
+            <div class="controls">
+                <button class="btn btn-primary" onclick="restartLevel()">🔄 重新开始</button>
+                <button class="btn btn-secondary" onclick="showLevelSelect()">📋 选关</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 胜利弹窗 -->
+    <div class="win-modal" id="winModal">
+        <div class="win-content">
+            <div class="win-icon">🎉</div>
+            <div class="win-title">恭喜过关！</div>
+            <div class="win-stars" id="winStars">⭐⭐⭐</div>
+            <div class="win-stats" id="winStats">用时: 0:30 | 步数: 12</div>
+            <div class="win-buttons">
+                <button class="btn btn-secondary" onclick="restartLevel()">重玩</button>
+                <button class="btn btn-primary" onclick="nextLevel()">下一关</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成就弹窗 -->
+    <div class="achievement-modal" id="achievementModal">
+        <div class="achievement-content">
+            <div class="achievement-header">
+                <h2>🏆 游戏成就</h2>
+                <button class="close-btn" onclick="closeAchievementModal()">×</button>
+            </div>
+            <div class="achievement-list" id="achievementList"></div>
+        </div>
+    </div>
+
+    <script>
+        // 关卡配置
+        const levels = [
+            { id: 1, rows: 3, cols: 4, pairs: 6, name: '第 1 关', desc: '3×4 简单模式' },
+            { id: 2, rows: 4, cols: 4, pairs: 8, name: '第 2 关', desc: '4×4 入门模式' },
+            { id: 3, rows: 4, cols: 5, pairs: 10, name: '第 3 关', desc: '4×5 进阶模式' },
+            { id: 4, rows: 4, cols: 6, pairs: 12, name: '第 4 关', desc: '4×6 挑战模式' },
+            { id: 5, rows: 5, cols: 6, pairs: 15, name: '第 5 关', desc: '5×6 困难模式' },
+            { id: 6, rows: 6, cols: 6, pairs: 18, name: '第 6 关', desc: '6×6 大师模式' }
+        ];
+
+        // 卡牌图案
+        const cardEmojis = ['🍎', '🍊', '🍋', '🍇', '🍓', '🍑', '🥝', '🍒', '🥭', '🍍', 
+                           '🌸', '🌺', '🌻', '🌷', '🌹', '🪻', '🐶', '🐱', '🐼', '🦊'];
+
+        // 成就定义
+        const achievements = [
+            { id: 'first_match', name: '初次配对', desc: '完成第一次配对', icon: '🎯' },
+            { id: 'first_win', name: '初尝胜利', desc: '完成第一关', icon: '🏆' },
+            { id: 'level_3', name: '渐入佳境', desc: '完成第3关', icon: '⭐' },
+            { id: 'level_6', name: '记忆大师', desc: '完成全部6关', icon: '👑' },
+            { id: 'perfect_3', name: '完美表现', desc: '任意关卡获得3星', icon: '🌟' },
+            { id: 'speed_30', name: '闪电记忆', desc: '30秒内完成任意关卡', icon: '⚡' },
+            { id: 'moves_min', name: '精准配对', desc: '用最少步数完成关卡', icon: '🎯' },
+            { id: 'streak_3', name: '连续配对', desc: '连续配对成功3次', icon: '🔥' },
+            { id: 'total_50', name: '配对达人', desc: '累计配对50次', icon: '💪' },
+            { id: 'total_100', name: '配对大师', desc: '累计配对100次', icon: '🏅' }
+        ];
+
+        // 游戏状态
+        let currentLevel = 1;
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let moves = 0;
+        let timer = 0;
+        let timerInterval = null;
+        let isLocked = false;
+        let streak = 0;
+
+        // 存储数据
+        let gameData = {
+            unlocked: [],
+            levelStars: {},
+            unlockedLevel: 1,
+            totalMatches: 0
+        };
+
+        // 初始化
+        function init() {
+            loadGameData();
+            startLevel(currentLevel);
+        }
+
+        function loadGameData() {
+            try {
+                const saved = localStorage.getItem('memory_game_data');
+                if (saved) gameData = JSON.parse(saved);
+            } catch(e) {}
+        }
+
+        function saveGameData() {
+            try {
+                localStorage.setItem('memory_game_data', JSON.stringify(gameData));
+            } catch(e) {}
+        }
+
+        // 关卡系统
+        function startLevel(levelId) {
+            const level = levels.find(l => l.id === levelId);
+            if (!level) return;
+
+            currentLevel = levelId;
+            matchedPairs = 0;
+            moves = 0;
+            streak = 0;
+            flippedCards = [];
+            isLocked = false;
+
+            // 停止之前的计时器
+            if (timerInterval) clearInterval(timerInterval);
+            timer = 0;
+
+            // 更新UI
+            document.getElementById('currentLevel').textContent = levelId;
+            document.getElementById('moves').textContent = 0;
+            document.getElementById('matched').textContent = `0/${level.pairs}`;
+            document.getElementById('timer').textContent = '0:00';
+            document.getElementById('levelTitle').textContent = level.name;
+            document.getElementById('levelDesc').textContent = level.desc;
+
+            // 生成卡牌
+            generateCards(level);
+
+            // 开始计时
+            timerInterval = setInterval(() => {
+                timer++;
+                const mins = Math.floor(timer / 60);
+                const secs = timer % 60;
+                document.getElementById('timer').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+            }, 1000);
+
+            hideLevelSelect();
+            document.getElementById('winModal').classList.remove('show');
+        }
+
+        function generateCards(level) {
+            const board = document.getElementById('gameBoard');
+            board.innerHTML = '';
+            board.style.gridTemplateColumns = `repeat(${level.cols}, 1fr)`;
+
+            // 选择图案
+            const selectedEmojis = cardEmojis.slice(0, level.pairs);
+            const cardPairs = [...selectedEmojis, ...selectedEmojis];
+
+            // 洗牌
+            for (let i = cardPairs.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cardPairs[i], cardPairs[j]] = [cardPairs[j], cardPairs[i]];
+            }
+
+            cards = [];
+            cardPairs.forEach((emoji, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.dataset.index = index;
+                card.dataset.emoji = emoji;
+                card.innerHTML = `
+                    <div class="card-front">?</div>
+                    <div class="card-back">${emoji}</div>
+                `;
+                card.addEventListener('click', () => flipCard(card));
+                board.appendChild(card);
+                cards.push(card);
+            });
+        }
+
+        function flipCard(card) {
+            if (isLocked || card.classList.contains('flipped') || card.classList.contains('matched')) {
+                return;
+            }
+
+            card.classList.add('flipped');
+            flippedCards.push(card);
+
+            if (flippedCards.length === 2) {
+                moves++;
+                document.getElementById('moves').textContent = moves;
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            isLocked = true;
+            const [card1, card2] = flippedCards;
+
+            if (card1.dataset.emoji === card2.dataset.emoji) {
+                // 配对成功
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                matchedPairs++;
+                streak++;
+
+                const level = levels.find(l => l.id === currentLevel);
+                document.getElementById('matched').textContent = `${matchedPairs}/${level.pairs}`;
+
+                // 更新总配对数
+                gameData.totalMatches++;
+                saveGameData();
+
+                // 检查成就
+                unlockAchievement('first_match');
+                if (streak >= 3) unlockAchievement('streak_3');
+                if (gameData.totalMatches >= 50) unlockAchievement('total_50');
+                if (gameData.totalMatches >= 100) unlockAchievement('total_100');
+
+                flippedCards = [];
+                isLocked = false;
+
+                // 检查是否完成
+                if (matchedPairs === level.pairs) {
+                    setTimeout(() => winLevel(), 500);
+                }
+            } else {
+                // 配对失败
+                streak = 0;
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    flippedCards = [];
+                    isLocked = false;
+                }, 800);
+            }
+        }
+
+        function winLevel() {
+            clearInterval(timerInterval);
+
+            const level = levels.find(l => l.id === currentLevel);
+            const minMoves = level.pairs; // 最少步数就是配对数
+
+            // 计算星级
+            let stars = 1;
+            if (moves <= minMoves * 1.5) stars = 3;
+            else if (moves <= minMoves * 2) stars = 2;
+
+            // 保存星级
+            const prevStars = gameData.levelStars[currentLevel] || 0;
+            if (stars > prevStars) {
+                gameData.levelStars[currentLevel] = stars;
+            }
+
+            // 解锁下一关
+            if (currentLevel >= gameData.unlockedLevel && currentLevel < levels.length) {
+                gameData.unlockedLevel = currentLevel + 1;
+            }
+            saveGameData();
+
+            // 检查成就
+            unlockAchievement('first_win');
+            if (currentLevel >= 3) unlockAchievement('level_3');
+            if (currentLevel >= 6) unlockAchievement('level_6');
+            if (stars === 3) unlockAchievement('perfect_3');
+            if (timer <= 30) unlockAchievement('speed_30');
+            if (moves === minMoves) unlockAchievement('moves_min');
+
+            // 显示胜利弹窗
+            const mins = Math.floor(timer / 60);
+            const secs = timer % 60;
+            document.getElementById('winStars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+            document.getElementById('winStats').textContent = `用时: ${mins}:${secs.toString().padStart(2, '0')} | 步数: ${moves}`;
+            document.getElementById('winModal').classList.add('show');
+        }
+
+        function restartLevel() {
+            document.getElementById('winModal').classList.remove('show');
+            startLevel(currentLevel);
+        }
+
+        function nextLevel() {
+            document.getElementById('winModal').classList.remove('show');
+            if (currentLevel < levels.length) {
+                startLevel(currentLevel + 1);
+            } else {
+                showLevelSelect();
+            }
+        }
+
+        // 关卡选择
+        function showLevelSelect() {
+            document.getElementById('gameArea').style.display = 'none';
+            document.getElementById('levelSelect').classList.add('show');
+            renderLevelGrid();
+        }
+
+        function hideLevelSelect() {
+            document.getElementById('levelSelect').classList.remove('show');
+            document.getElementById('gameArea').style.display = 'block';
+        }
+
+        function renderLevelGrid() {
+            const grid = document.getElementById('levelGrid');
+            grid.innerHTML = levels.map(level => {
+                const stars = gameData.levelStars[level.id] || 0;
+                const isUnlocked = level.id <= gameData.unlockedLevel;
+                const isCompleted = stars > 0;
+                const isCurrent = level.id === currentLevel;
+
+                let className = 'level-btn';
+                if (isCompleted) className += ' completed';
+                else if (isCurrent) className += ' current';
+                if (!isUnlocked) className += ' locked';
+
+                return `
+                    <div class="${className}" onclick="${isUnlocked ? `startLevel(${level.id})` : ''}">
+                        <div class="level-num">${isUnlocked ? level.id : '🔒'}</div>
+                        <div class="level-stars">${isUnlocked ? (stars > 0 ? '⭐'.repeat(stars) + '☆'.repeat(3-stars) : '☆☆☆') : ''}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 成就系统
+        function unlockAchievement(id) {
+            if (gameData.unlocked.includes(id)) return false;
+            gameData.unlocked.push(id);
+            saveGameData();
+            const ach = achievements.find(a => a.id === id);
+            if (ach) showAchievementToast(ach);
+            return true;
+        }
+
+        function showAchievementToast(ach) {
+            const toast = document.createElement('div');
+            toast.className = 'achievement-toast';
+            toast.innerHTML = `${ach.icon} 成就解锁：${ach.name}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function showAchievementModal() {
+            renderAchievementList();
+            document.getElementById('achievementModal').classList.add('show');
+        }
+
+        function closeAchievementModal() {
+            document.getElementById('achievementModal').classList.remove('show');
+        }
+
+        function renderAchievementList() {
+            const list = document.getElementById('achievementList');
+            list.innerHTML = achievements.map(ach => {
+                const unlocked = gameData.unlocked.includes(ach.id);
+                return `
+                    <div class="achievement-item ${unlocked ? 'unlocked' : 'locked'}">
+                        <div class="achievement-icon">${ach.icon}</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">${ach.name}</div>
+                            <div class="achievement-desc">${ach.desc}</div>
+                        </div>
+                        ${unlocked ? '<span style="color:#22c55e;font-size:1.2em">✓</span>' : '<span style="color:#9ca3af">🔒</span>'}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 启动游戏
+        init();
+    </script>
+    <script src="fullscreen-btn.js"></script>
+</body>
+</html>
