@@ -1,0 +1,1 @@
+(function(){var a='case',b='-entry';function c(){return a+b;}window['JSReverseChallenge']={'id':'level6','answer':c()};}());

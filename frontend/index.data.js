@@ -303,6 +303,12 @@
         url: '一次方程学习.html',
         title: '一次方程学习',
         description: '认识一次方程与基础解法'
+      },
+      {
+        id: 'js_reverse',
+        url: 'JS Reverse/index.html',
+        title: 'JS逆向闯关',
+        description: '以侦探破案方式学习加密、混淆与逆向分析'
       }
     ],
     ai: [

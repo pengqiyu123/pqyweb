@@ -1,0 +1,15 @@
+{
+  "compact": true,
+  "identifierNamesGenerator": "mangled",
+  "stringArray": true,
+  "stringArrayEncoding": [
+    "rc4"
+  ],
+  "stringArrayThreshold": 1,
+  "stringArrayRotate": true,
+  "stringArrayShuffle": true,
+  "controlFlowFlattening": true,
+  "controlFlowFlatteningThreshold": 0.75,
+  "deadCodeInjection": true,
+  "deadCodeInjectionThreshold": 0.2
+}

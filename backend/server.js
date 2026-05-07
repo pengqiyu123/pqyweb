@@ -6,7 +6,7 @@ const cors = require('cors');
 const fs = require('fs');
 
 const app = express();
-const PORT = 8000;
+const PORT = Number(process.env.PORT || 8000);
 
 // 中间件
 app.use(cors());

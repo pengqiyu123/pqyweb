@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>JS逆向闯关 | 暗影入侵</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="css/js-reverse.css">
+</head>
+<body class="jsr-page">
+    <div class="jsr-app" data-testid="jsr-app">
+        <header class="jsr-topbar" data-testid="jsr-hero">
+            <div class="jsr-brand">
+                <p class="jsr-kicker">Shadow Intrusion Casefile</p>
+                <h1 class="jsr-title">暗影入侵 · JS逆向闯关训练场</h1>
+                <p class="jsr-subtitle">把 18 份证据拼回完整攻击链。每一关不是一题，而是一次案件推进动作。</p>
+                <div class="jsr-hero-grid">
+                    <div class="jsr-hero-card">
+                        <span>案件摘要</span>
+                        <strong id="jsr-case-summary">异常通信、伪签名与脚本混淆共同指向一场有组织的前端入侵。</strong>
+                    </div>
+                    <div class="jsr-hero-card">
+                        <span>当前行动目标</span>
+                        <strong id="jsr-current-objective">从第 1 份证据开始，确认攻击者到底在伪装什么。</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="jsr-actions">
+                <div class="jsr-dashboard" data-testid="jsr-summary">
+                    <div class="jsr-summary-card">
+                        <span>总星数</span>
+                        <strong id="jsr-total-stars">0</strong>
+                    </div>
+                    <div class="jsr-summary-card">
+                        <span>调查积分</span>
+                        <strong id="jsr-total-score">0</strong>
+                    </div>
+                    <div class="jsr-summary-card">
+                        <span>线索碎片</span>
+                        <strong id="jsr-clue-count">0 / 18</strong>
+                    </div>
+                    <div class="jsr-summary-card">
+                        <span>剧情进度</span>
+                        <strong id="jsr-story-progress">0%</strong>
+                    </div>
+                </div>
+                <div class="jsr-action-row">
+                    <button id="jsr-open-tools" class="btn btn-outline-info btn-sm" aria-controls="jsr-tools-drawer" aria-expanded="false">工具工作台</button>
+                    <button id="jsr-reset-progress" class="btn btn-outline-light btn-sm">重新调查</button>
+                    <a href="../index.html" class="btn btn-primary btn-sm">返回导航站</a>
+                </div>
+            </div>
+        </header>
+
+        <main class="jsr-main">
+            <section id="hub-view" class="jsr-view" data-testid="hub-view" data-view-state="active" aria-hidden="false">
+                <div class="jsr-hub-layout">
+                    <section class="jsr-board-section">
+                        <div class="jsr-section-head">
+                            <div>
+                                <p class="jsr-section-tag">案件板</p>
+                                <h2>分幕证据墙</h2>
+                            </div>
+                            <p id="jsr-stage-note" class="jsr-note">每张证据卡都对应一个逆向训练关卡。</p>
+                        </div>
+                        <div id="jsr-current-mission" class="jsr-current-mission" data-testid="jsr-current-mission"></div>
+                        <div id="jsr-stage-board" class="jsr-stage-board" data-testid="jsr-stage-board"></div>
+                    </section>
+
+                    <aside class="jsr-side-panel">
+                        <section class="jsr-panel jsr-sticky-panel">
+                            <div class="jsr-panel-head">
+                                <div>
+                                    <p class="jsr-section-tag">调查轨迹</p>
+                                    <h3>当前提示摘要</h3>
+                                </div>
+                                <span class="jsr-chip" id="jsr-story-chip">0% 已归档</span>
+                            </div>
+                            <div id="jsr-investigation-brief" class="jsr-brief-stack" data-testid="jsr-investigation-brief"></div>
+                        </section>
+
+                        <section class="jsr-panel">
+                            <div class="jsr-panel-head">
+                                <p class="jsr-section-tag">调查阶段</p>
+                                <h3>阶段徽章</h3>
+                            </div>
+                            <div id="jsr-badges" class="jsr-badge-list"></div>
+                        </section>
+
+                        <section class="jsr-panel">
+                            <div class="jsr-panel-head">
+                                <p class="jsr-section-tag">荣誉档案</p>
+                                <h3>成就系统</h3>
+                            </div>
+                            <div id="jsr-achievements" class="jsr-achievement-list"></div>
+                        </section>
+
+                        <section class="jsr-panel">
+                            <div class="jsr-panel-head">
+                                <p class="jsr-section-tag">案件时间线</p>
+                                <h3>线索推进</h3>
+                            </div>
+                            <div id="jsr-timeline" class="jsr-timeline"></div>
+                        </section>
+                    </aside>
+                </div>
+            </section>
+
+            <section id="level-view" class="jsr-view d-none" data-testid="level-view" data-view-state="inactive" aria-hidden="true">
+                <div class="jsr-level-layout">
+                    <aside class="jsr-level-sidebar jsr-panel" data-testid="jsr-level-sidebar">
+                        <button id="jsr-back-button" class="btn btn-outline-light btn-sm mb-3">
+                            <i class="fa-solid fa-arrow-left me-2"></i>返回案件板
+                        </button>
+                        <p class="jsr-section-tag">案情摘要轨</p>
+                        <h2 id="jsr-level-title" class="jsr-level-title"></h2>
+                        <p id="jsr-level-brief" class="jsr-level-brief"></p>
+                        <div id="jsr-level-presentation" class="jsr-brief-stack"></div>
+                        <div class="jsr-meta">
+                            <div><span>证据文件</span><strong id="jsr-evidence-file"></strong></div>
+                            <div><span>调查阶段</span><strong id="jsr-level-group"></strong></div>
+                            <div><span>验收标准</span><strong id="jsr-acceptance"></strong></div>
+                            <div><span>当前星级</span><strong id="jsr-current-stars">3 星</strong></div>
+                            <div><span>尝试次数</span><strong id="jsr-attempts">尝试次数：0</strong></div>
+                        </div>
+                    </aside>
+
+                    <section class="jsr-level-main">
+                        <div class="jsr-level-grid-panels">
+                            <section class="jsr-panel" data-testid="jsr-task-panel">
+                                <div class="jsr-panel-head">
+                                    <div>
+                                        <p class="jsr-section-tag">证据内容</p>
+                                        <h3>交互任务</h3>
+                                    </div>
+                                    <span id="jsr-stage-badge" class="jsr-chip">行动中</span>
+                                </div>
+                                <div id="jsr-task-area" class="jsr-task-area" data-testid="jsr-task-area"></div>
+                                <div class="jsr-submit-row">
+                                    <button id="jsr-validate-button" class="btn btn-primary" data-testid="jsr-submit">提交验证</button>
+                                </div>
+                                <div id="jsr-feedback" class="jsr-feedback" aria-live="polite" data-testid="jsr-feedback"></div>
+                            </section>
+
+                            <section class="jsr-panel" data-testid="jsr-preview-panel">
+                                <div class="jsr-panel-head">
+                                    <div>
+                                        <p class="jsr-section-tag">混淆代码查看器</p>
+                                        <h3>证据片段</h3>
+                                    </div>
+                                    <span class="jsr-chip">静态只读</span>
+                                </div>
+                                <pre id="jsr-code-preview" class="jsr-code-preview"></pre>
+                            </section>
+
+                            <section class="jsr-panel" data-testid="jsr-hints-panel">
+                                <div class="jsr-panel-head">
+                                    <div>
+                                        <p class="jsr-section-tag">AI 协助分析</p>
+                                        <h3>渐进提示</h3>
+                                    </div>
+                                    <button id="jsr-hint-button" class="btn btn-outline-info btn-sm" data-testid="jsr-hint-button">请求 AI 分析</button>
+                                </div>
+                                <ol id="jsr-hints" class="jsr-hints"></ol>
+                            </section>
+
+                            <section class="jsr-panel" data-testid="jsr-tutorial-panel">
+                                <div class="jsr-panel-head">
+                                    <div>
+                                        <p class="jsr-section-tag">教程速查</p>
+                                        <h3>概念说明</h3>
+                                    </div>
+                                    <span class="jsr-chip">教学友好</span>
+                                </div>
+                                <div id="jsr-tutorial" class="jsr-tutorial"></div>
+                            </section>
+                        </div>
+                    </section>
+                </div>
+            </section>
+
+            <section id="report-view" class="jsr-view d-none" data-testid="report-view" data-view-state="inactive" aria-hidden="true">
+                <div class="jsr-report jsr-panel">
+                    <div class="jsr-report-hero">
+                        <div>
+                            <p class="jsr-section-tag">结案报告</p>
+                            <h2>暗影入侵真相</h2>
+                            <p id="jsr-report-headline" class="jsr-level-brief">所有线索已拼合完成，最终攻击链已经归档。</p>
+                        </div>
+                        <div class="jsr-report-mark" aria-hidden="true">
+                            <span>CASE CLOSED</span>
+                        </div>
+                    </div>
+                    <div id="jsr-report-summary" class="jsr-report-summary"></div>
+                    <div class="jsr-report-columns">
+                        <section class="jsr-report-section">
+                            <div class="jsr-panel-head">
+                                <div>
+                                    <p class="jsr-section-tag">关键线索</p>
+                                    <h3>线索拼图</h3>
+                                </div>
+                            </div>
+                            <div id="jsr-report-clues" class="jsr-report-clues"></div>
+                        </section>
+                        <section class="jsr-report-section">
+                            <div class="jsr-panel-head">
+                                <div>
+                                    <p class="jsr-section-tag">案件复盘</p>
+                                    <h3>时间线归档</h3>
+                                </div>
+                            </div>
+                            <div id="jsr-report-timeline" class="jsr-timeline"></div>
+                            <div class="jsr-hidden-file" data-testid="jsr-hidden-file">
+                                <strong>隐藏档案</strong>
+                                <p>档案室已留出扩展槽位。首版仅保留彩蛋提示，不影响正式结案。</p>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="jsr-report-actions">
+                        <button id="jsr-report-back" class="btn btn-outline-light">返回案件板</button>
+                        <button id="jsr-report-reset" class="btn btn-primary">重新调查</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="jsr-tools-drawer" class="jsr-drawer d-none" aria-hidden="true" aria-modal="true" role="dialog" data-testid="jsr-tools-drawer">
+        <div class="jsr-drawer-backdrop" data-close-tools="true"></div>
+        <div class="jsr-drawer-panel">
+            <div class="jsr-drawer-head">
+                <div>
+                    <p class="jsr-section-tag">工具工作台</p>
+                    <h3>本地逆向辅助</h3>
+                    <p class="jsr-note">把常用分析动作放进一个工作区，边查边做，不中断主线。</p>
+                </div>
+                <button id="jsr-close-tools" class="btn btn-outline-light btn-sm">关闭</button>
+            </div>
+            <div class="jsr-tool-tabs" data-testid="jsr-tool-tabs">
+                <button class="jsr-tool-tab active" data-tool-filter="all">全部</button>
+                <button class="jsr-tool-tab" data-tool-filter="codec">编码</button>
+                <button class="jsr-tool-tab" data-tool-filter="hash">摘要</button>
+                <button class="jsr-tool-tab" data-tool-filter="crypto">加解密</button>
+                <button class="jsr-tool-tab" data-tool-filter="code">代码</button>
+            </div>
+            <div class="jsr-tools-grid">
+                <section class="jsr-tool-card" data-tool-category="codec" data-testid="tool-base64">
+                    <h4>Base64</h4>
+                    <textarea id="jsr-tool-base64-input" placeholder="输入文本"></textarea>
+                    <div class="jsr-tool-actions">
+                        <button id="jsr-tool-base64-encode" class="btn btn-sm btn-primary">编码</button>
+                        <button id="jsr-tool-base64-decode" class="btn btn-sm btn-outline-info">解码</button>
+                    </div>
+                    <textarea id="jsr-tool-base64-output" readonly></textarea>
+                </section>
+                <section class="jsr-tool-card" data-tool-category="hash" data-testid="tool-hash">
+                    <h4>MD5 / SHA256</h4>
+                    <textarea id="jsr-tool-hash-input" placeholder="输入待哈希文本"></textarea>
+                    <div class="jsr-tool-actions">
+                        <button id="jsr-tool-md5" class="btn btn-sm btn-primary">MD5</button>
+                        <button id="jsr-tool-sha256" class="btn btn-sm btn-outline-info">SHA256</button>
+                    </div>
+                    <textarea id="jsr-tool-hash-output" readonly></textarea>
+                </section>
+                <section class="jsr-tool-card" data-tool-category="crypto" data-testid="tool-aes">
+                    <h4>AES</h4>
+                    <input id="jsr-tool-aes-key" type="text" placeholder="密钥">
+                    <textarea id="jsr-tool-aes-input" placeholder="输入待加解密文本"></textarea>
+                    <div class="jsr-tool-actions">
+                        <button id="jsr-tool-aes-encrypt" class="btn btn-sm btn-primary">加密</button>
+                        <button id="jsr-tool-aes-decrypt" class="btn btn-sm btn-outline-info">解密</button>
+                    </div>
+                    <textarea id="jsr-tool-aes-output" readonly></textarea>
+                </section>
+                <section class="jsr-tool-card" data-tool-category="code" data-testid="tool-beautify">
+                    <h4>JS格式化</h4>
+                    <textarea id="jsr-tool-beautify-input" placeholder="输入待格式化代码"></textarea>
+                    <div class="jsr-tool-actions">
+                        <button id="jsr-tool-beautify" class="btn btn-sm btn-primary">格式化</button>
+                    </div>
+                    <textarea id="jsr-tool-beautify-output" readonly></textarea>
+                </section>
+                <section class="jsr-tool-card" data-tool-category="codec" data-testid="tool-hex">
+                    <h4>Hex / 字符串</h4>
+                    <textarea id="jsr-tool-hex-input" placeholder="输入文本或16进制"></textarea>
+                    <div class="jsr-tool-actions">
+                        <button id="jsr-tool-to-hex" class="btn btn-sm btn-primary">转Hex</button>
+                        <button id="jsr-tool-from-hex" class="btn btn-sm btn-outline-info">转字符串</button>
+                    </div>
+                    <textarea id="jsr-tool-hex-output" readonly></textarea>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/lib/crypto-js.min.js"></script>
+    <script src="js/lib/beautify.min.js"></script>
+    <script src="js/hub.data.js"></script>
+    <script src="js/progress.js"></script>
+    <script src="js/verify.js"></script>
+    <script src="js/tools.js"></script>
+    <script src="js/render.js"></script>
+</body>
+</html>

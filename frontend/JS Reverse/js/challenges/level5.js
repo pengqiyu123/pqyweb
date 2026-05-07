@@ -1,0 +1,1 @@
+(function(){var d='sha',e='dow',f='-pw';window['JSReverseChallenge']={'id':'level5','answer':d+e+f};}());

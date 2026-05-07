@@ -1,0 +1,1 @@
+(function(){window.JSReverseChallenge={id:'level8',answer:atob('aXNBZG1pbg==')};})();

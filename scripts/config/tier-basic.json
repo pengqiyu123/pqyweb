@@ -1,0 +1,6 @@
+{
+  "compact": true,
+  "identifierNamesGenerator": "mangled",
+  "renameGlobals": false,
+  "stringArray": false
+}

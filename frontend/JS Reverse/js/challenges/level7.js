@@ -1,0 +1,1 @@
+(function(){function a(b,c){return b+c+'trace';}window['JSReverseChallenge']={'id':'level7','answer':a('10010','1715000000')};}());
