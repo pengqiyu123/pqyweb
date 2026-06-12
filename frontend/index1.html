@@ -347,6 +347,243 @@
             margin-top: clamp(2.5rem, 5vw, 4rem);
         }
 
+        .tab-shell {
+            position: sticky;
+            top: 94px;
+            z-index: 8;
+            margin: clamp(1.4rem, 3vw, 2.4rem) auto 0;
+            padding: 0.55rem;
+            border-radius: 999px;
+            background: rgba(17, 14, 58, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            box-shadow: 0 18px 45px rgba(7, 5, 32, 0.35);
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .tab-shell::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-track {
+            display: flex;
+            justify-content: center;
+            gap: 0.55rem;
+            min-width: max-content;
+        }
+
+        .tab-button,
+        .resource-view-button,
+        .resource-page-button {
+            border: 0;
+            cursor: pointer;
+            font: inherit;
+            color: var(--text-primary);
+            transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .tab-button {
+            position: relative;
+            padding: 0.7rem 1.4rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .tab-button::after {
+            content: "";
+            position: absolute;
+            left: 1.2rem;
+            right: 1.2rem;
+            bottom: 0.25rem;
+            height: 2px;
+            border-radius: 999px;
+            background: var(--accent-2);
+            opacity: 0;
+            transform: scaleX(0.35);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .tab-button:hover,
+        .resource-view-button:hover,
+        .resource-page-button:not(:disabled):hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.16);
+        }
+
+        .tab-button.is-active {
+            color: #082033;
+            background: linear-gradient(135deg, var(--accent-2), rgba(255, 255, 255, 0.9));
+            border-color: rgba(112, 228, 255, 0.7);
+            box-shadow: 0 10px 28px rgba(112, 228, 255, 0.24);
+        }
+
+        .tab-button.is-active::after {
+            opacity: 1;
+            transform: scaleX(1);
+        }
+
+        .tab-panel[hidden] {
+            display: none !important;
+        }
+
+        .resource-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.1rem;
+            padding: 0.8rem;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .resource-toolbar-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .resource-view-switch {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .resource-view-button,
+        .resource-page-button {
+            border-radius: 999px;
+            padding: 0.5rem 0.9rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            font-size: 0.84rem;
+        }
+
+        .resource-view-button.is-active {
+            color: #05233a;
+            background: var(--accent-2);
+            border-color: rgba(112, 228, 255, 0.9);
+        }
+
+        .baidu-resource-card {
+            min-height: 168px;
+        }
+
+        .baidu-corner-badge {
+            position: absolute;
+            top: 0.65rem;
+            right: 0.65rem;
+            z-index: 1;
+            padding: 0.2rem 0.55rem;
+            border-radius: 999px;
+            background: #06a7ff;
+            color: #fff;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0;
+            box-shadow: 0 8px 22px rgba(6, 167, 255, 0.32);
+        }
+
+        .resource-pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            color: var(--text-muted);
+        }
+
+        .resource-page-button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .resource-accordion {
+            display: grid;
+            gap: 0.7rem;
+        }
+
+        .resource-accordion-item {
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.055);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .resource-accordion-trigger {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.95rem 1rem;
+            border: 0;
+            background: transparent;
+            color: var(--text-primary);
+            cursor: pointer;
+            text-align: left;
+            font: inherit;
+        }
+
+        .resource-accordion-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.7rem;
+            min-width: 0;
+        }
+
+        .resource-accordion-title i {
+            color: var(--accent-2);
+        }
+
+        .resource-accordion-panel {
+            max-height: 0;
+            overflow: hidden;
+            padding: 0 1rem;
+            color: var(--text-muted);
+            transition: max-height 0.25s ease, padding 0.25s ease;
+        }
+
+        .resource-accordion-panel.is-open {
+            max-height: 220px;
+            padding: 0 1rem 1rem;
+        }
+
+        .resource-open-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin-top: 0.75rem;
+            color: #061f35;
+            background: var(--accent-2);
+            text-decoration: none;
+            padding: 0.45rem 0.8rem;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .resource-category-group {
+            margin-bottom: 1.6rem;
+        }
+
+        .resource-category-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            margin: 0 0 0.8rem;
+            padding: 0.38rem 0.75rem;
+            border-radius: 999px;
+            background: rgba(112, 228, 255, 0.14);
+            color: var(--accent-2);
+            font-size: 0.95rem;
+        }
+
         .section-header {
             display: flex;
             justify-content: space-between;
@@ -586,6 +823,25 @@
                 justify-content: center;
             }
 
+            .tab-shell {
+                top: 0;
+                margin-inline: -0.4rem;
+                border-radius: 18px;
+            }
+
+            .tab-track {
+                justify-content: flex-start;
+            }
+
+            .tab-button {
+                padding: 0.62rem 1rem;
+                font-size: 0.86rem;
+            }
+
+            .resource-toolbar {
+                align-items: flex-start;
+            }
+
             .hero {
                 padding: 1.6rem;
             }
@@ -674,8 +930,10 @@
                 <h1>煜的工具站</h1><span>Cartoon · Texture · Tech</span>
             </div>
         </a>
-        <nav class="nav-links"><a href="#hero">首页</a><a href="#tools">工具银河</a><a href="#playground">趣味星球</a><a
-                href="#learning">学习星河</a><a href="#ai">AI 星云</a><a href="#about">关于站点</a></nav>
+        <nav class="nav-links"><a href="#hero">首页</a><a href="#tools" data-tab-link="tools">工具银河</a><a
+                href="#resources" data-tab-link="resources">百度资源</a><a href="#playground"
+                data-tab-link="playground">趣味星球</a><a href="#learning" data-tab-link="learning">学习星河</a><a href="#ai"
+                data-tab-link="ai">AI 星云</a></nav>
     </header>
     <div class="style-switch-bar">
         <div class="style-switch-left"><a href="index.html" class="style-link-main"><i
@@ -688,7 +946,7 @@
             <div>
                 <h2>登上奇妙飞船，启航奇思妙想</h2>
                 <p>我们将卡通的想象力、质感设计与科技力量融合，用一个页面串联你的全部灵感工具。跟随星轨探索，从学习到创作，均可一键起飞。</p>
-                <div class="cta-group"><a class="btn-ghost" href="#tools">立即巡航</a></div>
+                <div class="cta-group"><a class="btn-ghost" href="#tools" data-tab-link="tools">立即巡航</a></div>
                 <div class="mini-badges" style="margin-top:1.2rem;"><span>🌌 星空渐变</span><span>🪐 轻盈动效</span><span>✨
                         玻璃质感</span></div>
             </div>
@@ -707,11 +965,21 @@
                 </div>
             </div>
         </section>
-        <section class="section" id="tools">
+        <nav class="tab-shell" data-testid="tab-shell" aria-label="星际奇妙站栏目">
+            <div class="tab-track" role="tablist" aria-label="栏目切换">
+                <button class="tab-button" type="button" role="tab" data-tab-target="tools" data-testid="tab-button-tools">工具银河</button>
+                <button class="tab-button" type="button" role="tab" data-tab-target="resources" data-testid="tab-button-resources">百度资源</button>
+                <button class="tab-button" type="button" role="tab" data-tab-target="playground" data-testid="tab-button-playground">趣味星球</button>
+                <button class="tab-button" type="button" role="tab" data-tab-target="learning" data-testid="tab-button-learning">学习星河</button>
+                <button class="tab-button" type="button" role="tab" data-tab-target="ai" data-testid="tab-button-ai">AI 星云</button>
+            </div>
+        </nav>
+        <div class="tab-content">
+        <section class="section tab-panel" id="tools" data-tab="tools" role="tabpanel">
             <div class="section-header">
                 <h3>工具银河</h3><span>精选常用学习 / 创意工具 · 持续补给中</span>
             </div>
-            <div class="card-grid"><a class="tool-card" href="um-web.legacy.v1.10.8/index.html" target="_blank">
+            <div class="card-grid"><a class="tool-card" href="um-web.legacy.v1.10.8/index.html" target="_blank" rel="noopener noreferrer">
                     <div class="tool-icon" style="color:#ff9bd9;"><i class="fas fa-music"></i></div>
                     <h4>音乐解码器</h4>
                     <p>轻松处理音乐文件格式，卡通面板内置操作提示，适配多平台。</p>
@@ -721,72 +989,67 @@
                     <h4>后缀批量转换</h4>
                     <p>快速转换文件类型，搭配科技感提示灯，确保批量操作安全。</p>
                     <div class="mini-badges"><span>批量</span><span>文件</span></div>
-                </a><a class="tool-card" href="https://gallery.timeline.ink/latest" target="_blank">
+                </a><a class="tool-card" href="https://gallery.timeline.ink/latest" target="_blank" rel="noopener noreferrer">
                     <div class="tool-icon" style="color:#ffe18d;"><i class="fas fa-image"></i></div>
                     <h4>拾光壁纸库</h4>
                     <p>银河质感壁纸一键收藏，背景与本站的星轨风格相呼应。</p>
                     <div class="mini-badges"><span>壁纸</span><span>灵感</span></div>
-                </a><a class="tool-card" href="https://www.datatool.vip/" target="_blank">
+                </a><a class="tool-card" href="https://www.datatool.vip/" target="_blank" rel="noopener noreferrer">
                     <div class="tool-icon" style="color:#8bf3b6;"><i class="fas fa-video"></i></div>
                     <h4>无水印视频下载</h4>
                     <p>支持抖音 / 快手等平台。</p>
                     <div class="mini-badges"><span>视频</span><span>采集</span></div>
-                </a><a class="tool-card" href="https://obsproject.com/" target="_blank">
+                </a><a class="tool-card" href="https://obsproject.com/" target="_blank" rel="noopener noreferrer">
                     <div class="tool-icon" style="color:#7fd0ff;"><i class="fas fa-desktop"></i></div>
                     <h4>OBS 录制与直播</h4>
                     <p>开源屏幕录制与直播推流软件，适合课堂演示与录屏。</p>
                     <div class="mini-badges"><span>录屏</span><span>直播</span></div>
-                </a><a class="tool-card" href="https://ezgame.cc/tools/gamepadviewer.com/#" target="_blank">
+                </a><a class="tool-card" href="https://ezgame.cc/tools/gamepadviewer.com/#" target="_blank" rel="noopener noreferrer">
                     <div class="tool-icon" style="color:#b7ff9b;"><i class="fas fa-gamepad"></i></div>
                     <h4>手柄按键可视化</h4>
                     <p>在线展示手柄按键输入状态，适合录制教学或直播演示。</p>
                     <div class="mini-badges"><span>手柄</span><span>可视化</span></div>
-                </a><a class="tool-card" href="https://www.xjlz365.com/" target="_blank">
+                </a><a class="tool-card" href="https://www.xjlz365.com/" target="_blank" rel="noopener noreferrer">
                     <div class="tool-icon" style="color:#ffb8a1;"><i class="fas fa-link"></i></div>
                     <h4>乡间郎中</h4>
                     <p>跳转到乡间郎中站点。</p>
                     <div class="mini-badges"><span>网站</span></div>
-                </a><a class="tool-card" href="https://store.steampowered.com/" target="_blank">
+                </a><a class="tool-card" href="https://store.steampowered.com/" target="_blank" rel="noopener noreferrer">
                     <div class="tool-icon" style="color:#66a6ff;"><i class="fab fa-steam"></i></div>
                     <h4>Steam 官网</h4>
                     <p>游戏下载与社区，获取最新 PC 游戏资讯。</p>
                     <div class="mini-badges"><span>游戏</span></div>
-                </a><a class="tool-card" href="https://github.com/btjawa/BiliTools" target="_blank">
+                </a><a class="tool-card" href="https://github.com/btjawa/BiliTools" target="_blank" rel="noopener noreferrer">
                     <div class="tool-icon" style="color:#9dd9ff;"><i class="fas fa-wrench"></i></div>
                     <h4>BiliTools</h4>
                     <p>开源哔哩哔哩工具集合，支持多种辅助操作。</p>
                     <div class="mini-badges"><span>开源</span><span>工具</span></div>
-                </a><a class="tool-card" href="https://github.com/zhaoolee/ChineseBQB?tab=readme-ov-file" target="_blank">
+                </a><a class="tool-card" href="https://github.com/zhaoolee/ChineseBQB?tab=readme-ov-file" target="_blank" rel="noopener noreferrer">
                     <div class="tool-icon" style="color:#ffcf70;"><i class="fas fa-smile"></i></div>
                     <h4>中文表情包仓库</h4>
                     <p>丰富的中文表情包资源，直接下载使用。</p>
                     <div class="mini-badges"><span>表情</span></div>
-                </a><a class="tool-card" href="https://github.com/TapXWorld/ChinaTextbook?tab=readme-ov-file" target="_blank">
+                </a><a class="tool-card" href="https://github.com/TapXWorld/ChinaTextbook?tab=readme-ov-file" target="_blank" rel="noopener noreferrer">
                     <div class="tool-icon" style="color:#b6ffae;"><i class="fas fa-book"></i></div>
                     <h4>所有年级教材下载</h4>
                     <p>收录各年级教材电子版，便于查阅与备课。</p>
                     <div class="mini-badges"><span>教材</span></div>
-                </a><a class="tool-card" href="https://pan.baidu.com/s/5RSjHfAHWqwdnz2MTQFzRQw" target="_blank">
-                    <div class="tool-icon" style="color:#ffc1c1;"><i class="fas fa-print"></i></div>
-                    <h4>打印机（百度网盘）</h4>
-                    <p>网盘资源链接，包含打印机相关文件。</p>
-                    <div class="mini-badges"><span>资源</span></div>
-                </a><a class="tool-card" href="https://mineru.net/OpenSourceTools/Extractor" target="_blank">
+                </a><a class="tool-card" href="https://mineru.net/OpenSourceTools/Extractor" target="_blank" rel="noopener noreferrer">
                     <div class="tool-icon" style="color:#ff9fa6;"><i class="fas fa-file-pdf"></i></div>
                     <h4>ExtractorPDF</h4>
                     <p>PDF 提取工具，便捷获取文档内容。</p>
                     <div class="mini-badges"><span>PDF</span><span>提取</span></div>
-                </a><a class="tool-card" href="https://abra.js.org/" target="_blank">
+                </a><a class="tool-card" href="https://abra.js.org/" target="_blank" rel="noopener noreferrer">
                     <div class="tool-icon" style="color:#c4b5ff;"><i class="fas fa-lock"></i></div>
                     <h4>Abra.js 文本加密</h4>
                     <p>简洁的前端文本加解密工具。</p>
                     <div class="mini-badges"><span>加密</span></div>
-                </a><a class="tool-card" href="https://pakeplus.pages.dev/zh/" target="_blank">
+                </a><a class="tool-card" href="https://pakeplus.pages.dev/zh/" target="_blank" rel="noopener noreferrer">
                     <div class="tool-icon" style="color:#ffd4a8;"><i class="fas fa-box"></i></div>
                     <h4>PakePlus 网页打包</h4>
                     <p>将网页快速打包为桌面应用的简便工具。</p>
                     <div class="mini-badges"><span>打包</span><span>桌面</span></div>
-                </a><a class="tool-card" href="https://www.aishort.top/en/" target="_blank">
+                </a><a class="tool-card" href="https://www.aishort.top/en/" target="_blank" rel="noopener noreferrer">
                     <div class="tool-icon" style="color:#a78bfa;"><i class="fas fa-magic"></i></div>
                     <h4>aishort</h4>
                     <p>精选 AI 提示词库，涵盖写作、编程、教育等多领域，提升对话效率。</p>
@@ -798,7 +1061,23 @@
                     <div class="mini-badges"><span>表格</span><span>AI</span><span>Excel</span></div>
                 </a></div>
         </section>
-        <section class="section" id="playground">
+        <section class="section tab-panel" id="resources" data-tab="resources" role="tabpanel" hidden>
+            <div class="section-header">
+                <div>
+                    <h3>百度网盘资源</h3><span>精选网盘资源分享 · 点击直接跳转</span>
+                </div>
+            </div>
+            <div class="resource-toolbar">
+                <span class="resource-toolbar-label" id="resource-view-label">资源视图</span>
+                <div class="resource-view-switch" role="group" aria-labelledby="resource-view-label">
+                    <button class="resource-view-button" type="button" data-resource-view="page" data-testid="resource-view-page">分页</button>
+                    <button class="resource-view-button" type="button" data-resource-view="accordion" data-testid="resource-view-accordion">折叠</button>
+                    <button class="resource-view-button" type="button" data-resource-view="category" data-testid="resource-view-category">分类</button>
+                </div>
+            </div>
+            <div id="baiduResourceContent" aria-live="polite"></div>
+        </section>
+        <section class="section tab-panel" id="playground" data-tab="playground" role="tabpanel" hidden>
             <div class="section-header">
                 <h3>趣味星球</h3><span>趣味互动小游戏 · 适合课间与课堂放松</span>
             </div>
@@ -895,7 +1174,7 @@
                 </a>
             </div>
         </section>
-        <section class="section" id="learning">
+        <section class="section tab-panel" id="learning" data-tab="learning" role="tabpanel" hidden>
             <div class="section-header">
                 <h3>学习星河</h3><span>学科互动 / 知识练习 · 在探索中学习</span>
             </div>
@@ -919,7 +1198,7 @@
                         <h4>古诗排序</h4>
                         <p>拖动句子，按顺序拼出完整古诗</p>
                     </div>
-                </a><a class="mini-card" href="现代汉语词典/汉语字典.html" target="_blank" rel="noopener"><i
+                </a><a class="mini-card" href="现代汉语词典/汉语字典.html" target="_blank" rel="noopener noreferrer"><i
                         class="fas fa-book-reader"></i>
                     <div>
                         <h4>汉语字典</h4>
@@ -958,44 +1237,45 @@
                 </a>
             </div>
         </section>
-        <section class="section" id="ai">
+        <section class="section tab-panel" id="ai" data-tab="ai" role="tabpanel" hidden>
             <div class="section-header">
                 <h3>AI 智能星云</h3><span>聚合主流大模型助手 · 一键开启 AI 对话</span>
             </div>
-            <div class="playground"><a class="mini-card" href="https://www.qianwen.com/chat" target="_blank"><i
+            <div class="playground"><a class="mini-card" href="https://www.qianwen.com/chat" target="_blank" rel="noopener noreferrer"><i
                         class="fas fa-robot"></i>
                     <div>
                         <h4>通义千问</h4>
                         <p>阿里巴巴大模型助手</p>
                     </div>
-                </a><a class="mini-card" href="https://www.doubao.com/chat" target="_blank"><i
+                </a><a class="mini-card" href="https://www.doubao.com/chat" target="_blank" rel="noopener noreferrer"><i
                         class="fas fa-comment-dots"></i>
                     <div>
                         <h4>豆包 AI</h4>
                         <p>字节跳动智能助手</p>
                     </div>
-                </a><a class="mini-card" href="https://chat.deepseek.com/" target="_blank"><i class="fas fa-meteor"></i>
+                </a><a class="mini-card" href="https://chat.deepseek.com/" target="_blank" rel="noopener noreferrer"><i class="fas fa-meteor"></i>
                     <div>
                         <h4>DeepSeek</h4>
                         <p>国产大模型探索站</p>
                     </div>
-                </a><a class="mini-card" href="https://www.kimi.com/" target="_blank"><i class="fas fa-star"></i>
+                </a><a class="mini-card" href="https://www.kimi.com/" target="_blank" rel="noopener noreferrer"><i class="fas fa-star"></i>
                     <div>
                         <h4>Kimi</h4>
                         <p>长文档理解与创作助手</p>
                     </div>
-                </a><a class="mini-card" href="https://chatgpt.com/" target="_blank"><i class="fas fa-infinity"></i>
+                </a><a class="mini-card" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer"><i class="fas fa-infinity"></i>
                     <div>
                         <h4>ChatGPT</h4>
                         <p>多场景通用型 AI 聊天助手</p>
                     </div>
-                </a><a class="mini-card" href="https://gemini.google.com/app" target="_blank"><i class="fas fa-gem"></i>
+                </a><a class="mini-card" href="https://gemini.google.com/app" target="_blank" rel="noopener noreferrer"><i class="fas fa-gem"></i>
                     <div>
                         <h4>Gemini</h4>
                         <p>Google 智能助手</p>
                     </div>
                 </a></div>
         </section>
+        </div>
     </main>
     <footer>
         <p>&copy; 2025 煜的工具站. All rights reserved.</p>
@@ -1078,6 +1358,12 @@
                 (function () {
                     if (!window.INDEX_DATA) return;
 
+                    const TAB_IDS = ['tools', 'resources', 'playground', 'learning', 'ai'];
+                    const RESOURCE_VIEW_KEY = 'baidu_resource_view';
+                    const RESOURCE_PAGE_SIZE = 8;
+                    let resourcePage = 1;
+                    let resourceView = localStorage.getItem(RESOURCE_VIEW_KEY) || 'page';
+
                     const TOOL_META = {
                         music: { icon: 'fa-music', color: '#ff9bd9', badges: ['音频', '提取'] },
                         suffix: { icon: 'fa-exchange-alt', color: '#92f3ff', badges: ['批量', '文件'] },
@@ -1090,7 +1376,6 @@
                         bilitools: { icon: 'fa-wrench', color: '#9dd9ff', badges: ['开源', '工具'] },
                         chinese_bqb: { icon: 'fa-smile', color: '#ffcf70', badges: ['表情'] },
                         china_textbook: { icon: 'fa-book', color: '#b6ffae', badges: ['教材'] },
-                        printer_baidu: { icon: 'fa-print', color: '#ffc1c1', badges: ['资源'] },
                         extractor_pdf: { icon: 'fa-file-pdf', color: '#ff9fa6', badges: ['PDF', '提取'] },
                         abra: { icon: 'fa-lock', color: '#c4b5ff', badges: ['加密'] },
                         pakeplus: { icon: 'fa-box', color: '#ffd4a8', badges: ['打包', '桌面'] },
@@ -1131,7 +1416,8 @@
                         food_chain: { icon: 'fa-fish' },
                         fast_skill: { icon: 'fa-lightbulb' },
                         fast_calc: { icon: 'fa-calculator' },
-                        linear: { icon: 'fa-equals' }
+                        linear: { icon: 'fa-equals' },
+                        js_reverse: { icon: 'fa-user-secret' }
                     };
 
                     const AI_META = {
@@ -1143,39 +1429,280 @@
                         gemini: { icon: 'fa-gem' }
                     };
 
+                    const RESOURCE_ICON_MAP = {
+                        '设计素材': 'fa-palette',
+                        'AI 工具': 'fa-robot',
+                        '办公设备': 'fa-print',
+                        '游戏': 'fa-gamepad',
+                        '开发工具': 'fa-code',
+                        '视频工具': 'fa-film'
+                    };
+
+                    function el(tag, className, text) {
+                        var node = document.createElement(tag);
+                        if (className) node.className = className;
+                        if (typeof text === 'string') node.textContent = text;
+                        return node;
+                    }
+
+                    function setBlankLink(link) {
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                    }
+
+                    function appendBadges(container, badges) {
+                        (badges || []).forEach(function (badge) {
+                            container.appendChild(el('span', '', badge));
+                        });
+                    }
+
+                    function createToolCard(item, meta) {
+                        var card = el('a', 'tool-card');
+                        card.href = item.url;
+                        if (item.target === '_blank') setBlankLink(card);
+
+                        var icon = el('div', 'tool-icon');
+                        icon.style.color = meta.color || '#9dd9ff';
+                        var iconNode = el('i');
+                        iconNode.className = (meta.iconClass || 'fas') + ' ' + (meta.icon || 'fa-link');
+                        icon.appendChild(iconNode);
+
+                        card.appendChild(icon);
+                        card.appendChild(el('h4', '', item.title));
+                        card.appendChild(el('p', '', item.description));
+                        var badges = el('div', 'mini-badges');
+                        appendBadges(badges, meta.badges);
+                        card.appendChild(badges);
+                        return card;
+                    }
+
+                    function createMiniCard(item, meta) {
+                        var card = el('a', 'mini-card');
+                        card.href = item.url;
+                        if (item.target === '_blank') setBlankLink(card);
+                        var icon = el('i');
+                        icon.className = 'fas ' + (meta.icon || 'fa-link');
+                        var copy = el('div');
+                        copy.appendChild(el('h4', '', item.title));
+                        copy.appendChild(el('p', '', item.description));
+                        card.appendChild(icon);
+                        card.appendChild(copy);
+                        return card;
+                    }
+
                     function renderTools(container, items) {
                         if (!container) return;
-                        container.innerHTML = items.map(function (item) {
+                        container.replaceChildren();
+                        items.forEach(function (item) {
                             var meta = TOOL_META[item.id] || { icon: 'fa-link', color: '#9dd9ff', badges: [] };
-                            var iconClass = meta.iconClass || 'fas';
-                            var target = item.target ? ' target="' + item.target + '"' : '';
-                            var badges = (meta.badges || []).map(function (badge) {
-                                return '<span>' + badge + '</span>';
-                            }).join('');
-
-                            return '<a class="tool-card" href="' + item.url + '"' + target + '>' +
-                                '<div class="tool-icon" style="color:' + meta.color + ';"><i class="' + iconClass + ' ' + meta.icon + '"></i></div>' +
-                                '<h4>' + item.title + '</h4>' +
-                                '<p>' + item.description + '</p>' +
-                                '<div class="mini-badges">' + badges + '</div>' +
-                                '</a>';
-                        }).join('');
+                            container.appendChild(createToolCard(item, meta));
+                        });
                     }
 
                     function renderMiniCards(container, items, metaMap) {
                         if (!container) return;
-                        container.innerHTML = items.map(function (item) {
-                            var meta = metaMap[item.id] || { icon: 'fa-link' };
-                            var target = item.target ? ' target="' + item.target + '"' : '';
-                            return '<a class="mini-card" href="' + item.url + '"' + target + '><i class="fas ' + meta.icon + '"></i>' +
-                                '<div><h4>' + item.title + '</h4><p>' + item.description + '</p></div></a>';
-                        }).join('');
+                        container.replaceChildren();
+                        items.forEach(function (item) {
+                            container.appendChild(createMiniCard(item, metaMap[item.id] || { icon: 'fa-link' }));
+                        });
+                    }
+
+                    function createResourceCard(resource) {
+                        var meta = {
+                            icon: RESOURCE_ICON_MAP[resource.category] || 'fa-link',
+                            color: '#70e4ff',
+                            badges: [resource.category].concat(resource.tags || [])
+                        };
+                        var card = createToolCard(resource, meta);
+                        card.classList.add('baidu-resource-card');
+                        card.dataset.testid = 'baidu-resource-card';
+                        setBlankLink(card);
+                        card.prepend(el('span', 'baidu-corner-badge', '百度网盘'));
+                        return card;
+                    }
+
+                    function renderPaginatedView(container, resources) {
+                        var totalPages = Math.max(1, Math.ceil(resources.length / RESOURCE_PAGE_SIZE));
+                        resourcePage = Math.min(resourcePage, totalPages);
+                        var start = (resourcePage - 1) * RESOURCE_PAGE_SIZE;
+                        var grid = el('div', 'card-grid');
+                        resources.slice(start, start + RESOURCE_PAGE_SIZE).forEach(function (resource) {
+                            grid.appendChild(createResourceCard(resource));
+                        });
+                        container.appendChild(grid);
+
+                        var pager = el('div', 'resource-pagination');
+                        var prev = el('button', 'resource-page-button', '上一页');
+                        prev.type = 'button';
+                        prev.disabled = resourcePage <= 1;
+                        prev.dataset.testid = 'resource-prev-page';
+                        prev.addEventListener('click', function () {
+                            resourcePage -= 1;
+                            renderBaiduResources();
+                        });
+
+                        var status = el('span', '', resourcePage + ' / ' + totalPages);
+                        status.dataset.testid = 'resource-pagination-status';
+
+                        var next = el('button', 'resource-page-button', '下一页');
+                        next.type = 'button';
+                        next.disabled = resourcePage >= totalPages;
+                        next.dataset.testid = 'resource-next-page';
+                        next.addEventListener('click', function () {
+                            resourcePage += 1;
+                            renderBaiduResources();
+                        });
+
+                        pager.append(prev, status, next);
+                        container.appendChild(pager);
+                    }
+
+                    function renderAccordionView(container, resources) {
+                        var list = el('div', 'resource-accordion');
+                        resources.forEach(function (resource) {
+                            var item = el('div', 'resource-accordion-item');
+                            item.dataset.testid = 'baidu-resource-accordion';
+
+                            var trigger = el('button', 'resource-accordion-trigger');
+                            trigger.type = 'button';
+                            trigger.dataset.testid = 'accordion-trigger-' + resource.id;
+                            trigger.setAttribute('aria-expanded', 'false');
+
+                            var title = el('span', 'resource-accordion-title');
+                            var icon = el('i');
+                            icon.className = 'fas ' + (RESOURCE_ICON_MAP[resource.category] || 'fa-link');
+                            title.appendChild(icon);
+                            title.appendChild(el('span', '', resource.title + '（百度网盘）'));
+                            trigger.appendChild(title);
+                            trigger.appendChild(el('span', '', '展开'));
+
+                            var panel = el('div', 'resource-accordion-panel');
+                            panel.hidden = true;
+                            panel.dataset.testid = 'accordion-panel-' + resource.id;
+                            panel.appendChild(el('p', '', resource.description));
+                            var badges = el('div', 'mini-badges');
+                            appendBadges(badges, [resource.category].concat(resource.tags || []));
+                            panel.appendChild(badges);
+                            var link = el('a', 'resource-open-link', '打开网盘');
+                            link.href = resource.url;
+                            setBlankLink(link);
+                            panel.appendChild(link);
+
+                            trigger.addEventListener('click', function () {
+                                var isOpen = panel.classList.toggle('is-open');
+                                panel.hidden = !isOpen;
+                                trigger.setAttribute('aria-expanded', String(isOpen));
+                                trigger.lastElementChild.textContent = isOpen ? '收起' : '展开';
+                            });
+
+                            item.append(trigger, panel);
+                            list.appendChild(item);
+                        });
+                        container.appendChild(list);
+                    }
+
+                    function renderCategoryView(container, resources) {
+                        var groups = resources.reduce(function (acc, resource) {
+                            var key = resource.category || '其他';
+                            if (!acc[key]) acc[key] = [];
+                            acc[key].push(resource);
+                            return acc;
+                        }, {});
+
+                        Object.keys(groups).forEach(function (category) {
+                            var group = el('div', 'resource-category-group');
+                            group.dataset.testid = 'resource-category-group';
+                            var title = el('h4', 'resource-category-title', category);
+                            title.dataset.testid = 'category-title-' + category;
+                            group.appendChild(title);
+                            var grid = el('div', 'card-grid');
+                            groups[category].forEach(function (resource) {
+                                grid.appendChild(createResourceCard(resource));
+                            });
+                            group.appendChild(grid);
+                            container.appendChild(group);
+                        });
+                    }
+
+                    function renderBaiduResources() {
+                        var resources = INDEX_DATA.baiduResources || [];
+                        var container = document.getElementById('baiduResourceContent');
+                        if (!container) return;
+                        container.replaceChildren();
+
+                        document.querySelectorAll('[data-resource-view]').forEach(function (button) {
+                            var active = button.dataset.resourceView === resourceView;
+                            button.classList.toggle('is-active', active);
+                            button.setAttribute('aria-pressed', String(active));
+                        });
+
+                        if (resourceView === 'accordion') {
+                            renderAccordionView(container, resources);
+                        } else if (resourceView === 'category') {
+                            renderCategoryView(container, resources);
+                        } else {
+                            renderPaginatedView(container, resources);
+                        }
+                    }
+
+                    function switchTab(tabId, options) {
+                        var nextTab = TAB_IDS.indexOf(tabId) >= 0 ? tabId : 'tools';
+                        document.querySelectorAll('.tab-panel').forEach(function (panel) {
+                            var active = panel.dataset.tab === nextTab;
+                            panel.hidden = !active;
+                        });
+                        document.querySelectorAll('[data-tab-target]').forEach(function (button) {
+                            var active = button.dataset.tabTarget === nextTab;
+                            button.classList.toggle('is-active', active);
+                            button.setAttribute('aria-selected', String(active));
+                            button.tabIndex = active ? 0 : -1;
+                        });
+                        if (!options || options.updateHash !== false) {
+                            history.replaceState(null, '', '#' + nextTab);
+                        }
+                    }
+
+                    function initTabs() {
+                        document.querySelectorAll('[data-tab-target]').forEach(function (button) {
+                            button.addEventListener('click', function () {
+                                switchTab(button.dataset.tabTarget);
+                            });
+                        });
+
+                        document.querySelectorAll('[data-tab-link]').forEach(function (link) {
+                            link.addEventListener('click', function (event) {
+                                event.preventDefault();
+                                switchTab(link.dataset.tabLink);
+                            });
+                        });
+
+                        window.addEventListener('hashchange', function () {
+                            switchTab(location.hash.replace('#', ''), { updateHash: false });
+                        });
+
+                        switchTab(location.hash.replace('#', ''), { updateHash: false });
+                    }
+
+                    document.querySelectorAll('[data-resource-view]').forEach(function (button) {
+                        button.addEventListener('click', function () {
+                            resourceView = button.dataset.resourceView;
+                            resourcePage = 1;
+                            localStorage.setItem(RESOURCE_VIEW_KEY, resourceView);
+                            renderBaiduResources();
+                        });
+                    });
+
+                    function secureRuntimeBlankLinks() {
+                        document.querySelectorAll('a[target="_blank"]').forEach(setBlankLink);
                     }
 
                     renderTools(document.querySelector('#tools .card-grid'), INDEX_DATA.tools);
                     renderMiniCards(document.querySelector('#playground .playground'), INDEX_DATA.funGames, GAME_META);
                     renderMiniCards(document.querySelector('#learning .playground'), INDEX_DATA.learning, LEARN_META);
                     renderMiniCards(document.querySelector('#ai .playground'), INDEX_DATA.ai, AI_META);
+                    renderBaiduResources();
+                    initTabs();
+                    secureRuntimeBlankLinks();
                 })();
             </script>
 </body>

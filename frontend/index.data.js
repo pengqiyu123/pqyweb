@@ -78,13 +78,6 @@
         target: '_blank'
       },
       {
-        id: 'printer_baidu',
-        url: 'https://pan.baidu.com/s/5RSjHfAHWqwdnz2MTQFzRQw',
-        title: '打印机（百度网盘）',
-        description: '网盘资源链接，包含打印机相关文件。',
-        target: '_blank'
-      },
-      {
         id: 'extractor_pdf',
         url: 'https://mineru.net/OpenSourceTools/Extractor',
         title: 'ExtractorPDF',
@@ -309,6 +302,64 @@
         url: 'JS Reverse/index.html',
         title: 'JS逆向闯关',
         description: '以侦探破案方式学习加密、混淆与逆向分析'
+      }
+    ],
+    baiduResources: [
+      {
+        id: 'bd_raster_wallpaper',
+        title: '光栅壁纸',
+        description: '光栅壁纸网盘资源',
+        url: 'https://pan.baidu.com/s/10smcMF36m2XFZ4XFAsYXSw?pwd=9b14',
+        category: '设计素材',
+        tags: ['壁纸', '光栅']
+      },
+      {
+        id: 'bd_open_autoglm',
+        title: 'Open-AutoGLM',
+        description: 'Open-AutoGLM 网盘资源',
+        url: 'https://pan.baidu.com/s/1PUC-H_30ybZwSzpzrCh16Q?pwd=vwcp',
+        category: 'AI 工具',
+        tags: ['AI', '开源']
+      },
+      {
+        id: 'bd_printer',
+        title: '打印机',
+        description: '网盘资源链接，包含打印机相关文件',
+        url: 'https://pan.baidu.com/s/1Shun68rVKWgBTv3AgmGBwA?pwd=v1o7',
+        category: '办公设备',
+        tags: ['打印机', '驱动']
+      },
+      {
+        id: 'bd_open_autoglm_html',
+        title: 'Open-AutoGLM-HTML',
+        description: 'Open-AutoGLM-HTML 网盘资源',
+        url: 'https://pan.baidu.com/s/1yjLtYPGpmbFKEHWOoQVqqw?pwd=7ccc',
+        category: 'AI 工具',
+        tags: ['AI', 'HTML']
+      },
+      {
+        id: 'bd_forza_horizon5',
+        title: '极限竞速：地平线5',
+        description: '极限竞速：地平线5 游戏资源',
+        url: 'https://pan.baidu.com/s/1L5mZTJbk7rvjhUvjkLMshQ?pwd=d4es',
+        category: '游戏',
+        tags: ['赛车', '游戏']
+      },
+      {
+        id: 'bd_vscode_claude_codex',
+        title: 'VSCode 插件桥接 ClaudeCode 与 Codex',
+        description: 'VSCode 插件桥接 claudecode 与 Codex',
+        url: 'https://pan.baidu.com/s/1_b76rZygozWIsTvl_X8Iyw?pwd=yfpr',
+        category: '开发工具',
+        tags: ['VSCode', 'Claude', 'Codex']
+      },
+      {
+        id: 'bd_jianying_10_7',
+        title: '剪映邪修导出 10.7.0',
+        description: '剪映邪修导出10.7.0 版本',
+        url: 'https://pan.baidu.com/s/1rzBMX1oQ9O5hSODgz-wTrg?pwd=5gf3',
+        category: '视频工具',
+        tags: ['剪映', '视频编辑']
       }
     ],
     ai: [
