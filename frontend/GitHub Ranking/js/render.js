@@ -3,26 +3,22 @@
 
   var GHR = global.GHR;
 
-  /* ── 状态 ── */
+  /* ── 应用状态 ── */
   var state = {
     activeTab:    'stars',
     activeLang:   '',
-    items:        [],
-    fromCache:    false,
-    totalCount:   0,
+    allItems:     {},          // { stars: [...], trending: [...], updated: [...] }
+    langItems:    null,        // { python: {items:[...], totalCount:N}, ... }  从 languages.json 加载
+    meta:         null,        // { updatedAt, tabs, languages, perTabCount }
+    filteredItems: [],         // 当前展示的条目（可能经过语言筛选）
     loading:      false,
-    error:        null,
-    lastUpdated:  null
+    error:        null
   };
 
   /* ── DOM 引用 ── */
   var $tabs, $langPills, $content, $statusLeft, $statusRight;
   var $searchWrap, $searchInput, $searchBtn;
   var $refreshBtn, $rateBadge, $lastUpdate, $autoRefresh;
-
-  /* ── 自动刷新定时器 ── */
-  var autoRefreshTimer = null;
-  var countdownTimer   = null;
 
   /* ══════════════════════════════════════════
      初始化
@@ -44,8 +40,7 @@
     renderTabs();
     renderLangPills();
     bindEvents();
-    updateRateBadge();
-    loadData();
+    loadAllData();
   });
 
   /* ══════════════════════════════════════════
@@ -56,9 +51,7 @@
     GHR.TABS.forEach(function (tab) {
       var cls = 'ghr-tab' + (tab.id === state.activeTab ? ' active' : '');
       html += '<button class="' + cls + '" data-tab="' + tab.id + '" role="tab">'
-            + '<i class="fas ' + tab.icon + '"></i> '
-            + tab.label
-            + '</button>';
+            + tab.label + '</button>';
     });
     $tabs.innerHTML = html;
   }
@@ -84,39 +77,68 @@
      事件绑定
      ══════════════════════════════════════════ */
   function bindEvents() {
-    // Tab 点击
     $tabs.addEventListener('click', function (e) {
       var btn = e.target.closest('.ghr-tab');
       if (!btn || state.loading) return;
       switchTab(btn.getAttribute('data-tab'));
     });
 
-    // 语言筛选点击
     $langPills.addEventListener('click', function (e) {
       var btn = e.target.closest('.ghr-lang-pill');
       if (!btn || state.loading) return;
       switchLang(btn.getAttribute('data-lang'));
     });
 
-    // 刷新按钮
+    // 刷新 = 重新加载本地数据（清除浏览器缓存）
     $refreshBtn.addEventListener('click', function () {
       if (state.loading) return;
-      clearCacheForCurrent();
-      loadData();
+      loadAllData(true);
     });
 
-    // 搜索按钮
     $searchBtn.addEventListener('click', function () {
       if (state.loading) return;
       doSearch();
     });
 
-    // 搜索回车
     $searchInput.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') {
         e.preventDefault();
         if (!state.loading) doSearch();
       }
+    });
+  }
+
+  /* ══════════════════════════════════════════
+     加载所有本地数据
+     ══════════════════════════════════════════ */
+  function loadAllData(bustCache) {
+    state.loading = true;
+    state.error = null;
+    $content.innerHTML =
+      '<div class="ghr-loading">'
+      + '<div class="ghr-loading-spinner"></div>'
+      + '<div class="ghr-loading-text">正在加载榜单数据...</div>'
+      + '</div>';
+    $refreshBtn.classList.add('ghr-btn-loading');
+
+    var cacheBuster = bustCache ? '?t=' + Date.now() : '';
+
+    Promise.all([
+      GHR.loadTabData('stars').then(function (d) { state.allItems.stars = d.items; }),
+      GHR.loadTabData('trending').then(function (d) { state.allItems.trending = d.items; }),
+      GHR.loadTabData('updated').then(function (d) { state.allItems.updated = d.items; }),
+      GHR.loadMeta().then(function (m) { state.meta = m; }).catch(function () { /* meta 可选 */ }),
+      GHR.loadLanguageData().then(function (d) { state.langItems = d; }).catch(function () { /* 语言榜可选 */ })
+    ]).then(function () {
+      state.loading = false;
+      $refreshBtn.classList.remove('ghr-btn-loading');
+      renderCurrentView();
+      updateFooter();
+    }).catch(function (err) {
+      state.loading = false;
+      $refreshBtn.classList.remove('ghr-btn-loading');
+      state.error = err;
+      renderError(err);
     });
   }
 
@@ -127,27 +149,22 @@
     if (tabId === state.activeTab && tabId !== 'search') return;
     state.activeTab = tabId;
 
-    // 更新 Tab 激活状态
     var tabs = $tabs.querySelectorAll('.ghr-tab');
     tabs.forEach(function (t) {
       t.classList.toggle('active', t.getAttribute('data-tab') === tabId);
     });
 
-    // 显示/隐藏搜索框
     $searchWrap.classList.toggle('visible', tabId === 'search');
 
-    // 加载数据
     if (tabId === 'search') {
-      // 如果搜索框有内容就自动搜索
       if ($searchInput.value.trim()) {
         doSearch();
       } else {
         renderEmpty('search');
       }
-      // 聚焦搜索框
       setTimeout(function () { $searchInput.focus(); }, 100);
     } else {
-      loadData();
+      renderCurrentView();
     }
   }
 
@@ -158,22 +175,47 @@
     if (langId === state.activeLang) return;
     state.activeLang = langId;
 
-    // 更新 pill 激活状态
     var pills = $langPills.querySelectorAll('.ghr-lang-pill');
     pills.forEach(function (p) {
       p.classList.toggle('active', p.getAttribute('data-lang') === langId);
     });
 
-    // 重新加载
+    // 如果在搜索 tab，重新搜索
     if (state.activeTab === 'search' && $searchInput.value.trim()) {
       doSearch();
-    } else if (state.activeTab !== 'search') {
-      loadData();
+    } else {
+      renderCurrentView();
     }
   }
 
   /* ══════════════════════════════════════════
-     搜索
+     获取当前 Tab + 语言对应的条目
+     ══════════════════════════════════════════ */
+  function getFilteredItems() {
+    var tabId = state.activeTab;
+    var lang  = state.activeLang;
+
+    // 如果选了特定语言，优先从语言分类数据取
+    if (lang && state.langItems && state.langItems[lang]) {
+      return state.langItems[lang].items || [];
+    }
+
+    // 否则取全语言 tab 数据
+    return state.allItems[tabId] || [];
+  }
+
+  /* ══════════════════════════════════════════
+     渲染当前视图
+     ══════════════════════════════════════════ */
+  function renderCurrentView() {
+    if (state.activeTab === 'search') return;
+    var items = getFilteredItems();
+    state.filteredItems = items;
+    renderTable(items, false);
+  }
+
+  /* ══════════════════════════════════════════
+     搜索（唯一需要调 API 的功能）
      ══════════════════════════════════════════ */
   function doSearch() {
     var keyword = $searchInput.value.trim();
@@ -181,79 +223,31 @@
       renderEmpty('search');
       return;
     }
+    state.loading = true;
     state.error = null;
-    setLoading(true);
-    var url = GHR.buildSearchQuery(keyword, state.activeLang);
-    GHR.fetchRepos(url).then(function (result) {
-      state.items = result.items;
-      state.fromCache = result.fromCache;
-      state.totalCount = result.totalCount || result.items.length;
-      state.lastUpdated = new Date();
-      setLoading(false);
-      renderTable();
-      startAutoRefresh(GHR.CACHE_TTL);
+    $content.innerHTML =
+      '<div class="ghr-loading">'
+      + '<div class="ghr-loading-spinner"></div>'
+      + '<div class="ghr-loading-text">正在搜索...</div>'
+      + '</div>';
+
+    GHR.searchRepos(keyword, state.activeLang).then(function (result) {
+      state.loading = false;
+      state.filteredItems = result.items;
+      renderTable(result.items, result.fromCache);
+      updateSearchRateBadge();
     }).catch(function (err) {
-      setLoading(false);
+      state.loading = false;
       state.error = err;
       renderError(err);
+      updateSearchRateBadge();
     });
-  }
-
-  /* ══════════════════════════════════════════
-     数据加载
-     ══════════════════════════════════════════ */
-  function loadData() {
-    var url = GHR.buildQuery(state.activeTab, state.activeLang);
-    if (!url) return; // 搜索 tab 且无 URL
-
-    state.error = null;
-    setLoading(true);
-
-    GHR.fetchRepos(url).then(function (result) {
-      state.items = result.items;
-      state.fromCache = result.fromCache;
-      state.totalCount = result.totalCount || result.items.length;
-      state.lastUpdated = new Date();
-      setLoading(false);
-      renderTable();
-      updateRateBadge();
-      startAutoRefresh(GHR.CACHE_TTL);
-    }).catch(function (err) {
-      setLoading(false);
-      state.error = err;
-      renderError(err);
-      updateRateBadge();
-    });
-  }
-
-  /* ══════════════════════════════════════════
-     清除当前查询的缓存
-     ══════════════════════════════════════════ */
-  function clearCacheForCurrent() {
-    GHR.cacheCleanup();
-  }
-
-  /* ══════════════════════════════════════════
-     设置加载状态
-     ══════════════════════════════════════════ */
-  function setLoading(loading) {
-    state.loading = loading;
-    $refreshBtn.classList.toggle('ghr-btn-loading', loading);
-    if (loading) {
-      $content.innerHTML =
-        '<div class="ghr-loading">'
-        + '<div class="ghr-loading-spinner"></div>'
-        + '<div class="ghr-loading-text">正在加载 GitHub 数据...</div>'
-        + '</div>';
-      clearTimers();
-    }
   }
 
   /* ══════════════════════════════════════════
      渲染表格
      ══════════════════════════════════════════ */
-  function renderTable() {
-    var items = state.items;
+  function renderTable(items, fromCache) {
     if (!items || items.length === 0) {
       renderEmpty(state.activeTab);
       return;
@@ -280,7 +274,7 @@
         var color = GHR.LANG_COLORS[repo.language.toLowerCase()] || '#888';
         langHtml = '<span class="ghr-lang-tag">'
                  + '<span class="ghr-lang-tag-dot" style="background:' + color + '"></span>'
-                 + repo.language
+                 + escapeHtml(repo.language)
                  + '</span>';
       }
 
@@ -313,8 +307,14 @@
     $content.innerHTML = html;
 
     // 状态栏
-    var cacheTag = state.fromCache ? '<span class="ghr-status-dot from-cache"></span> 来自缓存' : '<span class="ghr-status-dot"></span> 实时数据';
-    $statusLeft.innerHTML = cacheTag;
+    if (state.activeTab === 'search') {
+      var tag = fromCache
+        ? '<span class="ghr-status-dot from-cache"></span> 来自搜索缓存'
+        : '<span class="ghr-status-dot"></span> 实时搜索';
+      $statusLeft.innerHTML = tag;
+    } else {
+      $statusLeft.innerHTML = '<span class="ghr-status-dot"></span> 本地数据（每日自动更新）';
+    }
     $statusRight.textContent = '共 ' + items.length + ' 条结果';
   }
 
@@ -323,7 +323,7 @@
      ══════════════════════════════════════════ */
   function renderEmpty(tabId) {
     var icon = tabId === 'search' ? 'fa-search' : 'fa-inbox';
-    var msg  = tabId === 'search' ? '输入关键词开始搜索 GitHub 仓库' : '暂无数据，请稍后再试';
+    var msg  = tabId === 'search' ? '输入关键词开始搜索 GitHub 仓库' : '暂无数据，等待下次自动更新';
     $content.innerHTML =
       '<div class="ghr-empty">'
       + '<div class="ghr-empty-icon"><i class="fas ' + icon + '"></i></div>'
@@ -338,10 +338,8 @@
      ══════════════════════════════════════════ */
   function renderError(err) {
     var icon = 'fa-exclamation-triangle';
-    var msg = err.message || '请求失败，请稍后重试';
-    if (err.type === 'rate_limited') {
-      icon = 'fa-clock';
-    }
+    var msg = err.message || '加载失败，请稍后重试';
+    if (err.type === 'rate_limited') icon = 'fa-clock';
     $content.innerHTML =
       '<div class="ghr-error">'
       + '<div class="ghr-error-icon"><i class="fas ' + icon + '"></i></div>'
@@ -352,46 +350,24 @@
   }
 
   /* ══════════════════════════════════════════
-     限流显示
+     底部信息
      ══════════════════════════════════════════ */
-  function updateRateBadge() {
-    var rate = GHR.getRateLimit();
-    var remaining = rate.remaining;
-    $rateBadge.textContent = '剩余 ' + remaining + ' 次/小时';
-    $rateBadge.classList.toggle('warning', remaining <= 10);
-  }
-
-  /* ══════════════════════════════════════════
-     自动刷新 & 倒计时
-     ══════════════════════════════════════════ */
-  function startAutoRefresh(intervalMs) {
-    clearTimers();
-
-    // 更新上次刷新时间
-    if (state.lastUpdated) {
-      $lastUpdate.textContent = '上次更新: ' + formatTime(state.lastUpdated);
+  function updateFooter() {
+    if (state.meta && state.meta.updatedAt) {
+      var d = new Date(state.meta.updatedAt);
+      $lastUpdate.textContent = '数据更新: ' + formatDate(d);
+    } else {
+      $lastUpdate.textContent = '数据更新: --';
     }
-
-    // 倒计时
-    var target = Date.now() + intervalMs;
-    countdownTimer = setInterval(function () {
-      var left = Math.max(0, target - Date.now());
-      var mins = Math.floor(left / 60000);
-      var secs = Math.floor((left % 60000) / 1000);
-      $autoRefresh.textContent = '缓存过期: ' + mins + '分' + secs + '秒后刷新';
-    }, 1000);
-
-    // 到期自动刷新
-    autoRefreshTimer = setTimeout(function () {
-      if (state.activeTab !== 'search') {
-        loadData();
-      }
-    }, intervalMs);
+    $autoRefresh.textContent = '由 GitHub Actions 每日自动刷新';
+    $rateBadge.textContent = '每日数据';
+    $rateBadge.classList.remove('warning');
   }
 
-  function clearTimers() {
-    if (autoRefreshTimer) { clearTimeout(autoRefreshTimer); autoRefreshTimer = null; }
-    if (countdownTimer)   { clearInterval(countdownTimer);   countdownTimer = null; }
+  function updateSearchRateBadge() {
+    var rate = GHR.getSearchRateLimit();
+    $rateBadge.textContent = '搜索剩余 ' + rate.remaining + ' 次';
+    $rateBadge.classList.toggle('warning', rate.remaining <= 10);
   }
 
   /* ══════════════════════════════════════════
@@ -407,11 +383,13 @@
     return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
-  function formatTime(date) {
-    var h = String(date.getHours()).padStart(2, '0');
-    var m = String(date.getMinutes()).padStart(2, '0');
-    var s = String(date.getSeconds()).padStart(2, '0');
-    return h + ':' + m + ':' + s;
+  function formatDate(d) {
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    var h = String(d.getHours()).padStart(2, '0');
+    var min = String(d.getMinutes()).padStart(2, '0');
+    return y + '-' + m + '-' + day + ' ' + h + ':' + min;
   }
 
 })(window);

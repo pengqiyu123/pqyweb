@@ -1,0 +1,10 @@
+{
+  "updatedAt": null,
+  "tabs": ["stars", "trending", "updated"],
+  "languages": ["python", "javascript", "typescript", "go", "rust", "java", "cpp"],
+  "perTabCount": {
+    "stars": 0,
+    "trending": 0,
+    "updated": 0
+  }
+}
