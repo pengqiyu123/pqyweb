@@ -110,6 +110,12 @@
         url: '表格转Excel.html',
         title: '图片转Excel表格',
         description: '上传图片到AI识别表格，自动生成Excel并支持下载。'
+      },
+      {
+        id: 'github_ranking',
+        url: 'GitHub Ranking/index.html',
+        title: 'GitHub 排行榜',
+        description: '实时热门仓库排行，多维度语言筛选与搜索。'
       }
     ],
     funGames: [

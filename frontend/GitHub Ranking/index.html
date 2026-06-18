@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub 实时排行榜</title>
+  <link rel="icon" href="../images/LOG.ico" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/github-ranking.css">
+</head>
+<body class="ghr-page">
+
+  <!-- 背景层 -->
+  <div class="ghr-bg-layer"></div>
+  <div class="ghr-grid-overlay"></div>
+
+  <div class="ghr-app">
+
+    <!-- ═══ 顶栏 ═══ -->
+    <header class="ghr-topbar">
+      <a href="../index.html" class="ghr-back-link">
+        <i class="fas fa-arrow-left"></i> 返回首页
+      </a>
+      <div class="ghr-brand">
+        <div class="ghr-brand-icon"><i class="fab fa-github"></i></div>
+        <div class="ghr-brand-text">
+          <h1>GitHub 实时排行榜</h1>
+          <p>Real-time GitHub Repository Rankings</p>
+        </div>
+      </div>
+      <div class="ghr-topbar-actions">
+        <span id="ghr-rate-badge" class="ghr-rate-badge"></span>
+        <button id="ghr-refresh-btn" class="ghr-btn ghr-btn-primary">
+          <i class="fas fa-sync-alt ghr-btn-icon"></i> 刷新
+        </button>
+      </div>
+    </header>
+
+    <!-- ═══ Tab 栏 ═══ -->
+    <nav id="ghr-tabs" class="ghr-tabs" role="tablist">
+      <!-- JS 填充 -->
+    </nav>
+
+    <!-- ═══ 筛选栏 ═══ -->
+    <div class="ghr-filter-bar">
+      <span class="ghr-filter-label"><i class="fas fa-filter"></i> 语言</span>
+      <div id="ghr-lang-pills" class="ghr-lang-pills">
+        <!-- JS 填充 -->
+      </div>
+      <div id="ghr-search-wrap" class="ghr-search-wrap">
+        <input id="ghr-search-input" type="text" class="ghr-search-input"
+               placeholder="输入关键词搜索仓库..." autocomplete="off">
+        <button id="ghr-search-btn" class="ghr-btn ghr-btn-primary">
+          <i class="fas fa-search"></i> 搜索
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══ 状态栏 ═══ -->
+    <div class="ghr-status-bar">
+      <span id="ghr-status-left"></span>
+      <span id="ghr-status-right"></span>
+    </div>
+
+    <!-- ═══ 主内容区 ═══ -->
+    <div id="ghr-content">
+      <!-- JS 填充：表格 / 加载 / 错误 -->
+    </div>
+
+    <!-- ═══ 底部 ═══ -->
+    <footer class="ghr-footer">
+      <span>数据来源：<a href="https://docs.github.com/en/rest" target="_blank" rel="noopener noreferrer">GitHub REST API</a></span>
+      <span id="ghr-last-update"></span>
+      <span id="ghr-auto-refresh"></span>
+    </footer>
+
+  </div>
+
+  <!-- 脚本按依赖顺序加载 -->
+  <script src="js/data.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/render.js"></script>
+  <script src="../fullscreen-btn.js"></script>
+</body>
+</html>
