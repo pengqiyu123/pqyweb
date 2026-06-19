@@ -366,6 +366,14 @@
         url: 'https://pan.baidu.com/s/1rzBMX1oQ9O5hSODgz-wTrg?pwd=5gf3',
         category: '视频工具',
         tags: ['剪映', '视频编辑']
+      },
+      {
+        id: 'bd_valorant_music',
+        title: '无畏契约音乐盒子',
+        description: '无畏契约音乐盒子网盘资源',
+        url: 'https://pan.baidu.com/s/1KsT4RjE4BKTcTlEzoWvQUg?pwd=rpaj',
+        category: '游戏',
+        tags: ['无畏契约', '音乐']
       }
     ],
     ai: [
