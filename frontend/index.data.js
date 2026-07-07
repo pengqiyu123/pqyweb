@@ -116,6 +116,12 @@
         url: 'GitHub Ranking/index.html',
         title: 'GitHub 排行榜',
         description: '实时热门仓库排行，多维度语言筛选与搜索。'
+      },
+      {
+        id: 'mindmap',
+        url: 'mindmap/index.html',
+        title: '思维导图制作',
+        description: '导入 AI 整理的大纲，一键生成思维导图，支持导出 PNG / SVG / PDF / HTML。'
       }
     ],
     funGames: [
